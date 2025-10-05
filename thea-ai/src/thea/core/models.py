@@ -9,4 +9,3 @@ class Cita(Base):
     fecha = Column(Date, nullable=False)          # fecha de la cita
     hora = Column(Time, nullable=False)           # hora
     descripcion = Column(String, nullable=False)  # motivo o nota
-
