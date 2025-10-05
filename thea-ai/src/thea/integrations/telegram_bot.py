@@ -1,8 +1,9 @@
-
 from telebot import TeleBot
+from settings import TELEGRAM_TOKEN
+bot = TeleBot(TELEGRAM_TOKEN)
+
 from thea.core.scheduler_agent import SchedulerAgent
 
-bot = TeleBot("8297680422:AAGhueCQccdmc4vhVUma0lj6mL0p8h1OorI")  # ¡Pon tu token real!
 
 @bot.message_handler(commands=['start'])
 def welcome(message):
