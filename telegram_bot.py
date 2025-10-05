@@ -1,3 +1,7 @@
+import sys
+import os
+sys.path.append(os.path.abspath("thea-ai/src"))
+from thea.core.scheduler_agent import SchedulerAgent
 from telebot import TeleBot
 from settings import TELEGRAM_TOKEN
 bot = TeleBot(TELEGRAM_TOKEN)
