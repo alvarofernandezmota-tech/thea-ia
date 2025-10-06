@@ -6,7 +6,7 @@ DB_CONFIG = {
     'host': 'localhost',
     'database': 'thea_ia',
     'user': 'postgres',
-    'password': 'tu_contraseña',  # Cambia por tu contraseña de postgres
+    'password': 'PutaVidx21',  # Cambia por tu contraseña de postgres
     'port': '5432'
 }
 
