@@ -205,3 +205,96 @@ mensaje (TEXT, NO NULL): Descripción del suceso o error
 contexto (JSONB, NULL): Datos adicionales para diagnóstico
 
 timestamp (TIMESTAMP, NO NULL): Marca temporal del registro
+
+## dia 7
+## 📝 Actualización de Hoy – Punto Actual de Desarrollo
+
+**Fecha de implementación:** 7 de Octubre, 2025
+
+### ✔️ Lo que hemos completado hasta hoy
+
+- **Reestructuración de la arquitectura**  
+  Se definió un **sistema multiagente** con separación clara de responsabilidades:  
+  - **Adapter (scripts/telegram_adapter.py):** gestión exclusiva de I/O con Telegram  
+  - **Core (src/core):** NLU, detección de intención y gestión de contexto  
+  - **Agentes especializados (src/agents):** cada uno maneja un flujo concreto (agendar, consultar, modificar, cancelar)
+
+- **Creación de carpetas y módulos base**  
+  - `src/core/`  
+  - `src/agents/base_agent.py`  
+  - `src/agents/scheduling/agent.py`  
+  - `src/agents/query/`  
+  - `src/agents/modify/`  
+  - `src/agents/cancel/`  
+  - `src/services/`  
+  - `scripts/`
+
+- **IntentDetector (src/core/intent_detector.py)**  
+  - Detección de intenciones por reglas y patrones (keywords y frases completas)  
+  - Cálculo de nivel de confianza para cada intención
+
+- **Máquina de estados mejorada (src/services/state_machine.py)**  
+  - Estados: `IDLE`, `ASK_TITLE`, `ASK_DATE`, `ASK_DURATION`, `CONFIRM_EVENT`  
+  - Transiciones claras para cada paso del flujo de agendado
+
+- **Agente de Scheduling completo (src/agents/scheduling/agent.py)**  
+  - Inicio de flujo (“agendar”)  
+  - Captura de título, fecha/hora y duración  
+  - Validaciones inteligentes: formatos de hora, duraciones flexibles, solapamientos  
+  - Confirmación final y limpieza de contexto
+
+- **Modularización del Telegram Adapter (scripts/telegram_adapter.py)**  
+  - Enrutamiento de mensajes al `AgentDispatcher` del Core  
+  - Anti-concurrencia por usuario  
+  - Logging y métricas integradas
+
+- **Procesamiento flexible e inteligente**  
+  - **Fechas y horas:** soporte 24h y 12h (`14:30`, `2:30pm`, `14h30`, `a las 10`)  
+  - **Duración:** reconocimiento de múltiples formatos (`30 min`, `1h 15m`, `media hora`, `una hora y media`)  
+  - **Personalización:** aprendizaje de duración típica, saludo por nombre, emojis contextuales  
+  - **Validaciones:** detección de horas ilógicas, comandos de escape (`cancelar`, `salir`), sugerencias de alternativas
+
+- **Preparación para escalabilidad**  
+  - Core desacoplado de adapters y agentes  
+  - Interfaces claras para añadir nuevos agentes o canales (WhatsApp, Slack)  
+  - Base lista para integrar IA/LLM en el módulo de NLU sin afectar el flujo de agentes
+
+***
+
+**Punto actual – Siguiente paso:**  
+Implementar `src/core/user_context.py` para centralizar la gestión de estados, datos temporales y preferencias de usuario, y así completar la base del Core antes de crear `agent_dispatcher.py`. 
+
+
+
+
+## 📝 Actualización de Hoy – Punto Actual de Desarrollo
+
+Fecha de implementación: 8 de Octubre, 2025
+
+🔍 Estado actual del repositorio
+Carpeta src/core/
+– Vacía: faltan los módulos clave:
+  - intent_detector.py
+  - user_context.py
+  - agent_dispatcher.py
+
+Carpeta src/agents/
+– Solo existe el agente de “scheduling” completo.
+– Faltan los siguientes submódulos:
+  - query/agent.py
+  - modify/agent.py
+  - cancel/agent.py
+
+Carpeta src/services/
+– state_machine.py recién creada, pero aún no integrada con el Core.
+
+Carpeta scripts/
+– telegram_adapter.py ya modularizado y funcionando.
+
+Pruebas (tests/)
+– Hay tests para QueryAgent, pero aún faltan tests para los nuevos módulos.
+
+📍 Punto actual de desarrollo
+Listos para arrancar la implementación del Core.
+Primer paso: crear src/core/user_context.py para gestionar estados y datos temporales de usuario.
+A continuación, se implementará agent_dispatcher.py y se continuarán poblando los módulos del Core según la arquitectura modular definida.
