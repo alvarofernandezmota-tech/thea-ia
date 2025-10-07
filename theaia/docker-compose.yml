@@ -1,0 +1,11 @@
+version: "3.8"
+
+services:
+  bot:
+    build: .
+    command: python scripts/telegram_adapter.py
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"     # Exponer métricas Prometheus
+    restart: unless-stopped
