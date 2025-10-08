@@ -1,5 +1,5 @@
 {
-    "crear evento": "create_event",
-    "evento": "create_event",
-    "recordar": "create_event"
+    "recordar": "schedule_reminder",
+    "avísame": "schedule_reminder",
+    "recuérdame": "schedule_reminder"
 }

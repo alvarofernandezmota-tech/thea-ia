@@ -1,5 +1,5 @@
 {
-    "crear evento": "create_event",
-    "evento": "create_event",
-    "recordar": "create_event"
+    "qué tengo": "list_events",
+    "agenda": "list_events",
+    "mostrar agenda": "list_events"
 }

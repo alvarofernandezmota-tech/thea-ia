@@ -3,6 +3,15 @@
 import logging
 from aiogram import Dispatcher
 from aiogram.types import Message
+from theaia.core.router import process_user_input
+
+async def handle_message(message: Message):
+    user_id = message.from_user.id
+    text = message.text
+
+    response, _ = await process_user_input(user_id, text)
+    await message.answer(response)
+
 
 # Configura el logger para este módulo
 logger = logging.getLogger(__name__)
