@@ -48,3 +48,9 @@ bandit==1.7.5
 # Code quality
 pylint==3.0.3
 coverage==7.3.2
+
+pytest
+pytest-asyncio
+flake8
+black
+isort

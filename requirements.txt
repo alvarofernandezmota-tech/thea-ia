@@ -68,3 +68,10 @@ redis==5.0.1
 
 # Serialización
 orjson==3.9.10
+
+fastapi
+uvicorn[standard]
+aiogram
+python-dotenv
+psycopg2-binary
+redis
