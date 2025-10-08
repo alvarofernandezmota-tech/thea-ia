@@ -1,0 +1,126 @@
+# ==============================================
+# THEA IA 2.0 - GIT IGNORE
+# ==============================================
+
+# Archivos Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.virtualenv/
+
+# IDEs y editores
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.pydevproject
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Base de datos
+*.db
+*.sqlite3
+*.sql
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Archivos temporales
+.tmp/
+tmp/
+*.tmp
+*.temp
+.cache/
+.pytest_cache/
+
+# Archivos sensibles
+.env
+.env.local
+.env.production
+.env.staging
+*.key
+*.pem
+*.p12
+credentials/
+secrets/
+
+# Modelos ML entrenados
+models/*.pkl
+models/*.joblib
+models/*.h5
+models/*.pb
+models/cache/
+
+# Docker
+.dockerignore
+docker-compose.override.yml
+
+# Cobertura tests
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+.hypothesis/
+htmlcov/
+
+# Archivos sistema
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Alembic
+alembic/versions/*.py
+!alembic/versions/__init__.py
+!alembic/versions/001_initial.py
+
+# Archivos media subidos
+uploads/
+media/
+static/files/
+
+# Monitoring y métricas
+prometheus/data/
+grafana/data/
+monitoring/logs/
+
+# Backup archivos
+*.bak
+*.backup
+*.old
