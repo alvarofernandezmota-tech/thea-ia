@@ -1,0 +1,155 @@
+# ==============================================
+# THEA IA 2.0 - CONFIGURACIÓN PROYECTO
+# ==============================================
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "theaia"
+version = "2.0.0"
+description = "Agente conversacional inteligente con FSM y NLP para gestión de eventos y notas"
+authors = [
+    {name = "Alvaro Fernandez Mota", email = "alvarofernandezmota@gmail.com"}
+]
+maintainers = [
+    {name = "Alvaro Fernandez Mota", email = "alvarofernandezmota@gmail.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+keywords = ["chatbot", "fsm", "nlp", "telegram", "calendar", "ai"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "sqlalchemy>=2.0.23",
+    "alembic>=1.12.1",
+    "psycopg2-binary>=2.9.9",
+    "aiogram>=3.2.0",
+    "transitions>=0.9.0",
+    "spacy>=3.7.2",
+    "redis>=5.0.1",
+    "python-dotenv>=1.0.0",
+    "pydantic[email]>=2.5.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "pytest-cov>=4.1.0",
+    "black>=23.11.0",
+    "isort>=5.12.0",
+    "flake8>=6.1.0",
+    "mypy>=1.7.1",
+    "pre-commit>=3.6.0",
+]
+docs = [
+    "mkdocs>=1.5.3",
+    "mkdocs-material>=9.4.8",
+]
+ml = [
+    "scikit-learn>=1.3.2",
+    "nltk>=3.8.1",
+    "numpy>=1.24.4",
+    "pandas>=2.1.4",
+]
+
+[project.urls]
+Homepage = "https://github.com/alvarofernandezmota-tech/thea-ia"
+Documentation = "https://github.com/alvarofernandezmota-tech/thea-ia/blob/main/README.md"
+Repository = "https://github.com/alvarofernandezmota-tech/thea-ia.git"
+"Bug Tracker" = "https://github.com/alvarofernandezmota-tech/thea-ia/issues"
+
+[project.scripts]
+theaia = "theaia.main:main"
+
+# Configuración herramientas desarrollo
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["theaia"]
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src/theaia"]
+omit = [
+    "*/tests/*",
+    "*/venv/*",
+    "*/__pycache__/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+]
+
+[tool.mypy]
+python_version = "3.11"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "transitions.*",
+    "aiogram.*",
+    "spacy.*",
+]
+ignore_missing_imports = true

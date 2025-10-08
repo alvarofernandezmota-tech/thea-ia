@@ -1,0 +1,74 @@
+# ==============================================
+# THEA IA 2.0 - DOCKER COMPOSE
+# ==============================================
+
+version: '3.8'
+
+services:
+  # Aplicación principal
+  theaia-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: theaia-app
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - ENVIRONMENT=development
+      - DATABASE_URL=postgresql://theaia_user:theaia_password@postgres:5432/theaia_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+    networks:
+      - theaia-network
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Base de datos PostgreSQL
+  postgres:
+    image: postgres:15-alpine
+    container_name: theaia-postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: theaia_db
+      POSTGRES_USER: theaia_user
+      POSTGRES_PASSWORD: theaia_password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init:/docker-entrypoint-initdb.d
+    networks:
+      - theaia-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U theaia_user -d theaia_db" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Redis para caché y sesiones
+  redis:
+    image: redis:7-alpine
+    container_name: theaia-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes --requirepass redis_password
+    volumes:
+      - redis_data:/data
+    networks:
+      - theaia-network
+    healthcheck:
+      test:
