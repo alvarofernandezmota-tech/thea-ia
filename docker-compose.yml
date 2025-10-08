@@ -1,41 +1,41 @@
-# ==============================================
-# THEA IA 2.0 - DOCKER COMPOSE
-# ==============================================
-
-version: '3.8'
-
 services:
-  # Aplicación principal
   theaia-app:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: theaia-app
     restart: unless-stopped
+
     ports:
       - "8000:8000"
+
+    # Variables esenciales
     environment:
       - ENVIRONMENT=development
-      - DATABASE_URL=postgresql://theaia_user:theaia_password@postgres:5432/theaia_db
       - REDIS_HOST=redis
       - REDIS_PORT=6379
+
+    # Carga el resto desde .env (incluye TELEGRAM_*, DATABASE_URL, etc.)
     env_file:
       - .env
+
     depends_on:
       - postgres
       - redis
+
     volumes:
       - ./logs:/app/logs
       - ./models:/app/models
+
     networks:
       - theaia-network
+
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8000/health" ]
       interval: 30s
       timeout: 10s
       retries: 3
 
-  # Base de datos PostgreSQL
   postgres:
     image: postgres:15-alpine
     container_name: theaia-postgres
@@ -58,7 +58,6 @@ services:
       timeout: 5s
       retries: 5
 
-  # Redis para caché y sesiones
   redis:
     image: redis:7-alpine
     container_name: theaia-redis
@@ -71,4 +70,16 @@ services:
     networks:
       - theaia-network
     healthcheck:
-      test:
+      test: [ "CMD", "redis-cli", "--raw", "ping" ]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+volumes:
+  postgres_data:
+  redis_data:
+
+
+networks:
+  theaia-network:
+    driver: bridge
