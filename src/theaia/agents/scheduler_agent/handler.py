@@ -1,42 +1,26 @@
-# src/theaia/agents/event_agent/handler.py
+# src/theaia/agents/scheduler_agent/handler.py
 
-import json
-from pathlib import Path
 from theaia.agents.base_agent import BaseAgent
 from theaia.models.context import UserContext
+from theaia.services.scheduler_service import SchedulerService
 
-class EventAgent(BaseAgent):
+class SchedulerAgent(BaseAgent):
     """
-    Agente para gestionar eventos: crear, listar, modificar y cancelar.
+    Agente para programar recordatorios y notificaciones.
     """
-    INTENT = "create_event"
+    INTENT = "schedule_reminder"
 
     def __init__(self):
-        # Carga vocabulario
-        vocab_path = Path(__file__).parent / "model" / "vocab.json"
-        if vocab_path.exists():
-            self.vocab = json.loads(vocab_path.read_text(encoding="utf-8"))
-        else:
-            self.vocab = {}
+        self.service = SchedulerService()
 
     async def handle(self, text: str, ctx: UserContext, entities: dict):
-        # Inicio de flujo: pedir título
         if ctx.state is None:
-            ctx.state = "creating_event"
-            return "¿Cuál es el título del evento?", ctx
+            ctx.state = "scheduling"
+            return "¿Cuándo quieres el recordatorio? (YYYY-MM-DD HH:MM)", ctx
 
-        # Recibo el título, pido fecha
-        if ctx.state == "creating_event":
-            ctx.data["title"] = text
-            ctx.state = "asking_date"
-            return "¿Qué fecha y hora? (YYYY-MM-DD HH:MM)", ctx
-
-        # Recibo la fecha, guardo el evento y cierro flujo
-        if ctx.state == "asking_date":
-            ctx.data["date"] = text
-            # Aquí llamarías a tu servicio de eventos para persistir
+        if ctx.state == "scheduling":
+            scheduled = await self.service.schedule(ctx.user_id, text)
             ctx.state = None
-            return f"Evento «{ctx.data['title']}» para {ctx.data['date']} creado ✅", ctx
+            return f"Recordatorio programado para {text} ✅", ctx
 
-        # Caso por defecto
-        return "No pude procesar tu solicitud de evento. Usa /help para más información.", ctx
+        return "No entendí cuándo programar. Usa /help para más detalles.", ctx
