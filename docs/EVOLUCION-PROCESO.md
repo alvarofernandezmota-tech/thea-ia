@@ -358,3 +358,171 @@ Total proyecto: ████▓▓▓▓▓▓▓▓ 20%
 ---
 
 **📝 NOTA:** Este documento se actualiza en cada sesión de desarrollo para mantener trazabilidad completa del proceso evolutivo del proyecto.
+
+  ##### 8/10/25 ######
+
+# PROCESO DE EVOLUCIÓN - THEA IA 2.0
+## Documentación Completa del Desarrollo
+
+---
+
+## 📋 ÍNDICE DE DOCUMENTACIÓN
+
+1. [**EVOLUCIÓN DEL PROYECTO**](#evolución-del-proyecto)
+2. [**HITOS Y MILESTONES**](#hitos-y-milestones) 
+3. [**DECISIONES ARQUITECTÓNICAS**](#decisiones-arquitectónicas)
+4. [**LOG DE CAMBIOS DIARIOS**](#log-de-cambios-diarios)
+5. [**ESTADO DE COMPONENTES**](#estado-de-componentes)
+6. [**MÉTRICAS DE PROGRESO**](#métricas-de-progreso)
+7. [**VISUALIZACIONES**](#visualizaciones)
+8. [**RETROSPECTIVAS**](#retrospectivas)
+9. [**HEALTH CHECK**](#health-check)
+
+---
+
+## 🚀 EVOLUCIÓN DEL PROYECTO
+
+### Línea temporal del desarrollo
+
+2025-10-08 (Miércoles) - INICIO THEA IA 2.0
+├── 15:47 - Inicio sesión de reestructuración
+├── 15:48 - Investigación estructura actual
+├── 15:56 - Definición nueva arquitectura modular
+├── 16:02 - Creación roadmap paso a paso
+├── 16:15 - Migración planificada de archivos existentes
+├── 16:20 - Inicio creación estructura carpetas
+├── 16:56 - Finalización documentación README completa
+├── 17:06 - Inicio documentación proceso evolución
+├── 19:30 - Modularización completa sub-agentes
+├── 20:15 - Implementación registro dinámico agentes
+├── 21:00 - Integración router.py en Core
+├── 21:45 - Actualización README con roadmap 11 fases
+├── 22:17 - Roadmap extendido con validación y MLOps
+└── 23:00 - Conexión intent_detector y entity_extractor completada
+
+text
+
+### Fases evolutivas identificadas
+
+#### FASE 0: ANÁLISIS Y PLANIFICACIÓN ✅
+- **Estado:** COMPLETADO  
+- **Duración:** 08/10/2025 15:47 - 17:06  
+- **Entregables:** Todos completados  
+
+#### FASE 1: FUNDAMENTOS ✅
+- **Estado:** COMPLETADO  
+- **Duración:** 08/10/2025 17:06 - 19:30  
+- **Entregables:** Completados  
+
+#### FASE 2: CORE DEVELOPMENT 🟠
+- **Estado:** EN PROGRESO (40%)  
+- **Inicio:** 08/10/2025 19:30  
+- **Avance hoy:**  
+  - Intent detector conectado al router (100%)  
+  - Entity extractor conectado al router (100%)  
+- **Entregables actuales:**  
+  - ✅ Modularización sub-agentes  
+  - ✅ Registry dinámico  
+  - ✅ Router integrado  
+  - ✅ ML components conectados  
+  - ⬜ Persistir contexto  
+  - ⬜ Pruebas end-to-end  
+  - ⬜ Validación arquitectural  
+  - ⬜ Reforzar registry (5 sub-tareas)  
+
+#### FASE 3: ADAPTADORES 🔄
+- **Estado:** PLANIFICADO  
+
+#### FASES 4-11: PLANIFICADAS 🔄
+- **Estado:** ROADMAP EXTENDIDO  
+
+---
+
+## 📊 LOG DE CAMBIOS DIARIOS
+
+### 📅 2025-10-09 (Jueves)
+
+#### Sesión 22:00 - 23:30 (1h 30min)
+
+**🏗️ CORE DEVELOPMENT**  
+- Finalizada conexión de `intent_detector` y `entity_extractor` al router  
+- Ajustes en flujo de mensajes Core → Agentes  
+
+**🔄 ROADMAP**  
+- Actualizado progreso Fase 2 a 40%  
+
+**📈 MÉTRICAS SESIÓN:**  
+- 🟠 Fase 2 progreso: +10%  
+- ⏱️ Tiempo productivo: 90%  
+
+**🔄 ESTADO AL FINAL DEL DÍA:**  
+- Fase 2: 40% completada  
+
+---
+
+## 📊 ESTADO DE COMPONENTES
+
+| Componente         | Estado      | Progreso | Próximo hito             |
+|--------------------|-------------|----------|--------------------------|
+| Intent Detector    | ✅ Conectado | 100%     | Escalar pruebas E2E      |
+| Entity Extractor   | ✅ Conectado | 100%     | Persistir contexto       |
+| Context Manager    | ⬜ Planificado | 0%     | Implementar persistencia |
+| FSM Advanced       | ⬜ Planificado | 20%    | Callbacks avanzados      |
+
+---
+
+## 📊 MÉTRICAS DE PROGRESO
+
+![Progreso Total](https://img.shields.io/badge/Progreso-40%25-orange)  
+![Fase 2](https://img.shields.io/badge/Fase%202-40%25-yellow)
+
+FASE 2 (Core): 🟠🟠🟠🟠◻◻◻◻◻◻ (40%)
+
+text
+
+---
+
+## VISUALIZACIONES
+
+gantt
+dateFormat YYYY-MM-DD
+title Thea IA 2.0 Roadmap Evolution
+
+section Core
+Intent Detector :done, f2b, after f2a, 2d
+Entity Extractor :done, f2c, after f2b, 1d
+Persistir contexto : f2d, after f2c, 2d
+
+text
+
+---
+
+## 🎭 RETROSPECTIVAS
+
+- **Logro de hoy:** Conexión completa de módulos ML al router  
+- **Desafío:** Ajustes de mensajes y tests básicos pendientes  
+- **Mejora:** Documentar schema de mensajes Core → Agentes  
+- **Objetivo próximo:** Persistencia de contexto y pruebas E2E  
+
+---
+
+## 📋 HEALTH CHECK
+
+**🟢 PROYECTO SALUDABLE**  
+- Commits recientes: ✅  
+- Tests principales: ⚠️ Preparar suite  
+- Docs actualizadas: ✅  
+- Roadmap: ✅  
+- Blockers: 0  
+- Progreso semanal: 40%  
+**Acción:** Continuar con persistencia de contexto  
+
+## ========8/10/25======================
+
+## =============================================================================
+
+## ========9/10/25======================
+
+la espectativa para malana es completar la fase 2 y 
+llevar a finalizacion la fase 3 o al menos al 60 %
+

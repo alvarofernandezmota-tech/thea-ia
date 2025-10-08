@@ -133,51 +133,124 @@ text
 
 ## 🛣️ Roadmap de desarrollo
 
-### Matriz de fases y entregables
-
-| Fase | Componente                            | Tareas clave                                                             | Estado       | Estimación   | Responsable    |
-|------|---------------------------------------|---------------------------------------------------------------------------|--------------|--------------|----------------|
-| **1. Fundamentos**    | Estructura base             | ✅ Carpetas, archivos config, entorno                                      | ✅ Completada | 2 días       | DevOps/Backend |
-| **2. Core**          | FSM & Context               | ⏳ Integración router, contexto, registro agentes                          | 🟠 En progreso | 10–15 días   | Backend        |
-| **3. Adaptadores**   | Conectores                  | 🔲 Telegram, webhooks, handlers                                             | ⬜ Planificada | 4 días       | Integración    |
-| **4. Services**      | Lógica negocio              | 🔲 Eventos, usuarios, notas, scheduler                                      | ⬜ Planificada | 6 días       | Backend        |
-| **5. Persistencia**  | Base datos                  | 🔲 Modelos, repositorios, migraciones                                      | ⬜ Planificada | 4 días       | Backend/DB     |
-| **6. ML/NLP**        | Core & Agentes              | 🔲 Pipeline intent & NER del Core; ML por agente                           | ⬜ Planificada | 9 días       | IA/ML          |
-| **7. API**           | Endpoints                   | 🔲 Health, metrics, documentación                                           | ⬜ Planificada | 3 días       | Backend        |
-| **8. Testing**       | Calidad                     | 🔲 Unit, integration, E2E tests                                             | ⬜ Planificada | 5 días       | QA             |
-| **9. Infraestructura**| Despliegue                   | 🔲 Docker, CI/CD, monitoring                                                | ⬜ Planificada | 4 días       | DevOps         |
-| **10. Documentación**| Docs finales                | 🔲 Diagramas, guías, ADRs                                                    | ⬜ Planificada | 3 días       | Docs/All       |
-| **11. MLOps**        | Operaciones & ML Pipelines  | 🔲 CI/CD ML, versionado, drift detection                                     | ⬜ Planificada | 5 días       | IA/ML/DevOps   |
-
-### Cronograma estimado
-- **Duración total:** 6–8 semanas
-- **Hitos principales:**
-  - ✅ **Semana 1:** Fundamentos y estructura base
-  - 🎯 **Semana 2–3:** Core FSM y enrutamiento completo
-  - 🎯 **Semana 4:** Adaptadores y servicios clave
-  - 🎯 **Semana 5–6:** Persistencia, ML/NLP inicial y testing
-  - 🎯 **Semana 7:** Infraestructura & despliegue
-  - 🎯 **Semana 8:** Documentación final y MLOps
+### Fase 1 – Fundamentos  
+| Tarea                                        | Estado        | Estimación |
+|----------------------------------------------|---------------|------------|
+| Carpeta y archivos de configuración base     | ✅ Completada  | 0.5 días   |
+| Entorno local y scripts de setup             | ✅ Completada  | 0.5 días   |
+| Convenciones de código (PEP8, Black)         | ✅ Completada  | 1 día      |
 
 ---
 
-## 📓 Daily Changelog
-
-Mantén un diario de cambios en `docs/daily-changelog.md`, agregando cada día:
-
-2025-10-08
-Creada estructura de sub-agentes y registro dinámico
-
-Implementado router.py y adaptador Telegram integrado
-
-Definidos pasos de la Fase 2 y roadmap detallado
-
-YYYY-MM-DD
-…
-
-text
+### Fase 2 – Core (FSM & Context)  
+**Punto actual: Conectar intent_detector y entity_extractor**  
+| Tarea                                                                                                   | Estado         | Estimación |
+|---------------------------------------------------------------------------------------------------------|----------------|------------|
+| Integrar router en adaptadores                                                                          | ✅ Completada   | 1 día      |
+| Conectar intent_detector al router                                                                      | 🟠 En progreso  | 2 días     |
+| Conectar entity_extractor al router                                                                     | 🟠 En progreso  | 1 día      |
+| Persistir contexto de usuario (DB/Redis)                                                                | ⬜ Pendiente    | 2 días     |
+| Pruebas end-to-end (simulaciones sintéticas y reales)                                                   | ⬜ Pendiente    | 3 días     |
+| Validación arquitectural (diagramas UML, análisis estático)                                             | ⬜ Pendiente    | 2 días     |
+| **Reforzar registry.py:** Validación de INTENT único                                                    | ⬜ Pendiente    | 1 día      |
+| **Reforzar registry.py:** Ranking de intenciones y umbral de confianza                                  | ⬜ Pendiente    | 1 día      |
+| **Reforzar registry.py:** Fallback dinámico y logging de no entendidos                                  | ⬜ Pendiente    | 1 día      |
+| **Reforzar registry.py:** Hot-reload de agentes                                                         | ⬜ Pendiente    | 1 día      |
+| **Reforzar registry.py:** Métricas de despacho y alertas                                                | ⬜ Pendiente    | 1 día      |
 
 ---
+
+### Fase 3 – Adaptadores  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Telegram adapter: integración con router                                                | ⬜ Planificada  | 1 día      |
+| Webhook handler: integración con router                                                 | ⬜ Planificada  | 1 día      |
+| Validar payloads con Pydantic                                                           | ⬜ Planificada  | 1 día      |
+| Agent Validation (Dialogflow CX)                                                        | ⬜ Planificada  | 1 día      |
+| Pruebas de integración canal ↔ Core                                                     | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 4 – Services (Lógica de negocio)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| event_service, note_service, scheduler_service                                         | ⬜ Planificada  | 2 días     |
+| Validar inputs/outputs con Pydantic                                                    | ⬜ Planificada  | 1 día      |
+| Tests unitarios con mocks de repositorios                                              | ⬜ Planificada  | 2 días     |
+| Pruebas de regresión de lógica de negocio                                              | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 5 – Persistencia (Base de datos)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Modelos SQLAlchemy y migraciones Alembic                                               | ⬜ Planificada  | 1 día      |
+| Validación de integridad relacional y constraints                                      | ⬜ Planificada  | 1 día      |
+| Pruebas de migraciones en staging                                                      | ⬜ Planificada  | 2 días     |
+
+---
+
+### Fase 6 – ML/NLP (Core & Agentes)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Estructura ml/intent_detector y ml/ner_extractor                                       | ⬜ Planificada  | 1 día      |
+| Entrenamiento spaCy v3 (TextCategorizer + EntityRuler)                                 | ⬜ Planificada  | 2 días     |
+| fastText como alternativa ligera                                                       | ⬜ Planificada  | 1 día      |
+| Integración Transformer + AdapterHub para embeddings contextuales                      | ⬜ Planificada  | 2 días     |
+| Métodos ABMS: muestreo de sesiones y validación empírica de pipelines                  | ⬜ Planificada  | 2 días     |
+| Pruebas de precisión, recall y latencia                                                | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 7 – API (Endpoints)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Implementar /health y /metrics                                                         | ⬜ Planificada  | 1 día      |
+| Documentación OpenAPI y validación de esquemas                                         | ⬜ Planificada  | 1 día      |
+| Pruebas de contrato (mock server)                                                      | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 8 – Testing (Calidad)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Unit tests (core, agents, services)                                                    | ⬜ Planificada  | 2 días     |
+| Integration/E2E tests                                                                  | ⬜ Planificada  | 2 días     |
+| Pruebas de estrés y carga                                                              | ⬜ Planificada  | 1 día      |
+| Human-in-the-Loop: revisión manual de fallos de baja confianza                         | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 9 – Infraestructura (Despliegue)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Dockerización y multi-stage builds                                                     | ⬜ Planificada  | 1 día      |
+| Kubernetes manifests y HPA/VPA                                                         | ⬜ Planificada  | 1 día      |
+| CI/CD (GitHub Actions)                                                                 | ⬜ Planificada  | 1 día      |
+| Monitorización Prometheus/Grafana                                                      | ⬜ Planificada  | 1 día      |
+| Validar políticas de autoscaling en staging                                            | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 10 – Documentación (Docs finales)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Diagramas detallados (ARCHITECTURE.md)                                                 | ⬜ Planificada  | 1 día      |
+| ADRs para decisiones críticas                                                          | ⬜ Planificada  | 1 día      |
+| Guía de despliegue y playbooks DR                                                      | ⬜ Planificada  | 1 día      |
+| Changelog diario en `docs/README-diario.md`                                            | ⬜ Planificada  | 1 día      |
+
+---
+
+### Fase 11 – MLOps (Operaciones & ML Pipelines)  
+| Tarea                                                                                  | Estado         | Estimación |
+|----------------------------------------------------------------------------------------|----------------|------------|
+| Pipeline ML automatizado (CI/CD GPU)                                                   | ⬜ Planificada  | 1 día      |
+| Versionado de artefactos (MLflow/S3)                                                   | ⬜ Planificada  | 1 día      |
+| Drift detection y alertas de degradación de modelo                                     | ⬜ Planificada  | 1 día      |
+| Rollback y pruebas de rollback                                                         | ⬜ Planificada  | 2 días     |
+
+
 
 ## ⚡ Instalación rápida
 
