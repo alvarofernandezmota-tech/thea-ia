@@ -1,42 +1,36 @@
-# src/theaia/agents/event_agent/handler.py
-
-import json
-from pathlib import Path
-from theaia.agents.base_agent import BaseAgent
-from theaia.models.context import UserContext
-
-class EventAgent(BaseAgent):
-    """
-    Agente para gestionar eventos: crear, listar, modificar y cancelar.
-    """
-    INTENT = "create_event"
-
+class EventAgent:
     def __init__(self):
-        # Carga vocabulario
-        vocab_path = Path(__file__).parent / "model" / "vocab.json"
-        if vocab_path.exists():
-            self.vocab = json.loads(vocab_path.read_text(encoding="utf-8"))
+        pass
+
+    def process(self, user_id, message, current_state, current_data):
+        if current_state == 'initial':
+            response = "¿Qué tipo de evento quieres gestionar?"
+            new_state = 'awaiting_event_type'
+            new_data = current_data
+        elif current_state == 'awaiting_event_type':
+            event_type = message.strip()
+            new_data = {**current_data, 'event_type': event_type}
+            response = f"¿Qué fecha y hora tendrá el evento '{event_type}'?"
+            new_state = 'awaiting_event_datetime'
+        elif current_state == 'awaiting_event_datetime':
+            event_datetime = message.strip()
+            new_data = {**current_data, 'event_datetime': event_datetime}
+            response = f"Evento '{current_data.get('event_type', 'desconocido')}' registrado para {event_datetime}. ¿Lo confirmas?"
+            new_state = 'awaiting_event_confirmation'
+        elif current_state == 'awaiting_event_confirmation':
+            if message.lower() in ['sí', 'si', 'confirmo', 'confirmar']:
+                event_type = current_data.get('event_type', 'desconocido')
+                event_datetime = current_data.get('event_datetime', 'desconocido')
+                response = f"¡Evento '{event_type}' confirmado para {event_datetime}!"
+                new_state = 'completed'
+                new_data = current_data
+            else:
+                response = "Evento cancelado. ¿Quieres gestionar otro evento?"
+                new_state = 'initial'
+                new_data = {}
         else:
-            self.vocab = {}
+            response = "No entendí tu petición sobre eventos."
+            new_state = 'initial'
+            new_data = {}
 
-    async def handle(self, text: str, ctx: UserContext, entities: dict):
-        # Inicio de flujo: pedir título
-        if ctx.state is None:
-            ctx.state = "creating_event"
-            return "¿Cuál es el título del evento?", ctx
-
-        # Recibo el título, pido fecha
-        if ctx.state == "creating_event":
-            ctx.data["title"] = text
-            ctx.state = "asking_date"
-            return "¿Qué fecha y hora? (YYYY-MM-DD HH:MM)", ctx
-
-        # Recibo la fecha, guardo el evento y cierro flujo
-        if ctx.state == "asking_date":
-            ctx.data["date"] = text
-            # Aquí llamarías a tu servicio de eventos para persistir
-            ctx.state = None
-            return f"Evento «{ctx.data['title']}» para {ctx.data['date']} creado ✅", ctx
-
-        # Caso por defecto
-        return "No pude procesar tu solicitud de evento. Usa /help para más información.", ctx
+        return response, new_state, new_data

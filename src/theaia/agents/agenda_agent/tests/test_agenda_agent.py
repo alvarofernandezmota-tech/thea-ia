@@ -1,4 +1,4 @@
-from src.theaia.agents.agenda_agent.handler import AgendaAgent
+from theaia.agents.agenda_agent.handler import AgendaAgent
 
 def test_initial_to_awaiting_datetime():
     agent = AgendaAgent()

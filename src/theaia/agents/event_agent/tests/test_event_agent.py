@@ -1,28 +1,37 @@
-# src/theaia/agents/event_agent/tests/test_event_agent.py
-
-import asyncio
-import pytest
 from theaia.agents.event_agent.handler import EventAgent
-from theaia.models.context import UserContext
 
-@pytest.mark.asyncio
-async def test_event_creation_flow():
+def test_initial_to_awaiting_event_type():
     agent = EventAgent()
-    ctx = UserContext(user_id=1)
+    resp, state, data = agent.process('u1', 'quiero evento', 'initial', {})
+    assert 'tipo de evento' in resp.lower()
+    assert state == 'awaiting_event_type'
 
-    # Paso 1: inicia flujo
-    resp1, ctx1 = await agent.handle("crear evento", ctx, {})
-    assert "¿Cuál es el título" in resp1
-    assert ctx1.state == "creating_event"
+def test_event_type_to_awaiting_datetime():
+    agent = EventAgent()
+    resp, state, data = agent.process('u1', 'reunión', 'awaiting_event_type', {})
+    assert 'fecha y hora' in resp.lower()
+    assert state == 'awaiting_event_datetime'
+    assert data['event_type'] == 'reunión'
 
-    # Paso 2: recibo título
-    resp2, ctx2 = await agent.handle("Reunión con equipo", ctx1, {})
-    assert "¿Qué fecha" in resp2
-    assert ctx2.state == "asking_date"
-    assert ctx2.data["title"] == "Reunión con equipo"
+def test_event_datetime_to_confirmation():
+    agent = EventAgent()
+    current_data = {'event_type': 'reunión'}
+    resp, state, data = agent.process('u1', '2025-10-10 09:00', 'awaiting_event_datetime', current_data)
+    assert 'confirmas' in resp.lower()
+    assert state == 'awaiting_event_confirmation'
+    assert data['event_datetime'] == '2025-10-10 09:00'
 
-    # Paso 3: recibo fecha
-    resp3, ctx3 = await agent.handle("2025-10-09 15:00", ctx2, {})
-    assert "creado ✅" in resp3
-    assert ctx3.state is None
-    assert ctx3.data["date"] == "2025-10-09 15:00"
+def test_confirmation_completed():
+    agent = EventAgent()
+    current_data = {'event_type': 'reunión', 'event_datetime': '2025-10-10 09:00'}
+    resp, state, data = agent.process('u1', 'sí', 'awaiting_event_confirmation', current_data)
+    assert 'confirmado' in resp.lower()
+    assert state == 'completed'
+
+def test_event_cancellation():
+    agent = EventAgent()
+    current_data = {'event_type': 'reunión', 'event_datetime': '2025-10-10 09:00'}
+    resp, state, data = agent.process('u1', 'no', 'awaiting_event_confirmation', current_data)
+    assert 'cancelado' in resp.lower()
+    assert state == 'initial'
+    assert data == {}

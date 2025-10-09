@@ -1,21 +1,22 @@
-# src/theaia/agents/query_agent/handler.py
-
-from theaia.agents.base_agent import BaseAgent
-from theaia.models.context import UserContext
-from theaia.database.repositories.event_repository import EventRepository
-
-class QueryAgent(BaseAgent):
-    """
-    Agente para consultas generales sobre agenda y eventos.
-    """
-    INTENT = "list_events"
-
+class QueryAgent:
     def __init__(self):
-        self.repo = EventRepository()
+        pass
 
-    async def handle(self, text: str, ctx: UserContext, entities: dict):
-        events = await self.repo.list_by_user(ctx.user_id)
-        if not events:
-            return "No tienes eventos programados.", ctx
-        lines = [f"- {e.title} @ {e.date}" for e in events]
-        return "Tus eventos:\n" + "\n".join(lines), ctx
+    def process(self, user_id, message, current_state, current_data):
+        # Simulación: contesta qué citas, notas o eventos tiene el usuario
+        if current_state == 'initial':
+            if "cita" in message.lower():
+                response = "Tienes la siguiente cita registrada: " + str(current_data.get('appointment_datetime', 'No hay citas registradas.'))
+            elif "nota" in message.lower():
+                response = "Tu nota guardada es: " + str(current_data.get('note_text', 'No hay notas guardadas.'))
+            elif "evento" in message.lower():
+                response = "Tu evento registrado es: " + str(current_data.get('event_type', 'No hay eventos registrados.'))
+            else:
+                response = "¿Quieres consultar tus citas, notas o eventos?"
+            new_state = 'completed'
+            new_data = current_data
+        else:
+            response = "No entendí tu consulta. Puedes preguntar por 'citas', 'notas' o 'eventos'."
+            new_state = 'initial'
+            new_data = {}
+        return response, new_state, new_data

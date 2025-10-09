@@ -1,5 +1,8 @@
 {
-    "recordar": "schedule_reminder",
-    "avísame": "schedule_reminder",
-    "recuérdame": "schedule_reminder"
+    "keywords": [
+        "recordar",
+        "recordatorio",
+        "avisar",
+        "programar"
+    ]
 }

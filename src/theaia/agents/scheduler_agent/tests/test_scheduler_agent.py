@@ -1,23 +1,29 @@
-# src/theaia/agents/scheduler_agent/tests/test_scheduler_agent.py
-
-import pytest
 from theaia.agents.scheduler_agent.handler import SchedulerAgent
-from theaia.models.context import UserContext
 
-class FakeSchedulerService:
-    async def schedule(self, user_id, time_str):
-        return True
-
-@pytest.mark.asyncio
-async def test_scheduler_flow(monkeypatch):
+def test_initial_to_awaiting_reminder_time():
     agent = SchedulerAgent()
-    monkeypatch.setattr(agent, "service", FakeSchedulerService())
-    ctx = UserContext(user_id=1)
+    resp, state, data = agent.process('u1', 'quiero recordatorio', 'initial', {})
+    assert 'cuándo' in resp.lower()
+    assert state == 'awaiting_reminder_time'
 
-    resp1, ctx1 = await agent.handle("recordar", ctx, {})
-    assert "¿Cuándo quieres" in resp1
-    assert ctx1.state == "scheduling"
+def test_reminder_time_to_awaiting_message():
+    agent = SchedulerAgent()
+    resp, state, data = agent.process('u1', 'mañana a las 9', 'awaiting_reminder_time', {})
+    assert 'mensaje' in resp.lower()
+    assert state == 'awaiting_reminder_message'
+    assert data['reminder_time'] == 'mañana a las 9'
 
-    resp2, ctx2 = await agent.handle("2025-10-10 10:00", ctx1, {})
-    assert "programado" in resp2
-    assert ctx2.state is None
+def test_reminder_message_to_confirmation():
+    agent = SchedulerAgent()
+    current_data = {'reminder_time': 'mañana a las 9'}
+    resp, state, data = agent.process('u1', 'llamar al médico', 'awaiting_reminder_message', current_data)
+    assert 'confirmas' in resp.lower()
+    assert state == 'awaiting_confirmation'
+    assert data['reminder_message'] == 'llamar al médico'
+
+def test_confirmation_completed():
+    agent = SchedulerAgent()
+    current_data = {'reminder_time': 'mañana a las 9', 'reminder_message': 'llamar al médico'}
+    resp, state, data = agent.process('u1', 'sí', 'awaiting_confirmation', current_data)
+    assert 'confirmado' in resp.lower()
+    assert state == 'completed'
