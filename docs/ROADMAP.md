@@ -8,27 +8,31 @@
 | Convenciones de código (PEP8, Black)         | ✅ Completada  | 1 día      |
 
 ## ---Fase 2 – Core (FSM & Context)  
-## Punto actual: ~70% completado 
+## Punto actual: ~80% completado  
 
-Tarea                                                               |  Estado        |  Estimación  |  Duración Real  |  Fecha/Hora de Finalización
---------------------------------------------------------------------+----------------+--------------+-----------------+----------------------------
-Integrar router en adaptadores                                      |  ✅ Completada  |  1 día       |  2h             |  07/10/2025 - 15:00        
-Conectar intent_detector al router                                  |  ✅ Completada  |  2 días      |  3h             |  08/10/2025 - 18:30        
-Conectar entity_extractor al router                                 |  ✅ Completada  |  1 día       |  1h             |  08/10/2025 - 19:30        
-Persistir contexto de usuario (DB/Redis)                            |  ✅ Completada  |  1 día       |  1.5h           |  09/10/2025 - 14:30        
-Diseño/estandarización subagentes (handler.py, vocab, test)         |  ✅ Completada  |  0.5 días    |  1h             |  09/10/2025 - 16:00        
-Refactorización/alineación de subagentes existentes                 |  ✅ Completada  |  0.5 días    |  1h             |  09/10/2025 - 16:30        
-Implementación 7 agentes (agenda, scheduler, event, note, ...)      |  ✅ Completada  |  1 día       |  2h             |  09/10/2025 - 17:15        
-Adaptación de vocab.json para cada agente                           |  ✅ Completada  |  0.5 días    |  0.5h           |  09/10/2025 - 17:20        
-Implementación de tests unitarios para cada agente                  |  ✅ Completada  |  0.5 días    |  1h             |  09/10/2025 - 17:20        
-Actualización de imports y registry                                 |  ✅ Completada  |  0.5 días    |  0.25h          |  09/10/2025 - 17:21        
-Pruebas end-to-end (simulaciones sintéticas y reales)               |  ⬜ Pendiente   |  3 días      |  -              |  -                         
-Validación arquitectural (diagramas UML, análisis estático)         |  ⬜ Pendiente   |  2 días      |  -              |  -                         
-Reforzar registry.py: Validación de INTENT único                    |  ⬜ Pendiente   |  1 día       |  -              |  -                         
-Reforzar registry.py: Ranking de intenciones y umbral de confianza  |  ⬜ Pendiente   |  1 día       |  -              |  -                         
-Reforzar registry.py: Fallback dinámico y logging                   |  ⬜ Pendiente   |  1 día       |  -              |  -                         
-Reforzar registry.py: Hot-reload de agentes                         |  ⬜ Pendiente   |  1 día       |  -              |  -                         
-Reforzar registry.py: Métricas de despacho y alertas                |  ⬜ Pendiente   |  1 día       |  -              |  -                         
+Tarea                                                          | Estado           | Estimación   | Duración Real | Fecha/Hora de Finalización  
+---------------------------------------------------------------+------------------+--------------+---------------+----------------------------  
+Integrar router en adaptadores                                 | ✅ Completada     | 1 día        | 2h            | 07/10/2025 - 15:00          
+Conectar intent_detector al router                             | ✅ Completada     | 2 días       | 3h            | 08/10/2025 - 18:30          
+Conectar entity_extractor al router                            | ✅ Completada     | 1 día        | 1h            | 08/10/2025 - 19:30          
+Persistir contexto de usuario (DB/Redis)                       | ✅ Completada     | 1 día        | 1.5h          | 09/10/2025 - 14:30          
+Diseño/estandarización subagentes (handler.py, vocab, test)    | ✅ Completada     | 0.5 días     | 1h            | 09/10/2025 - 16:00          
+Refactorización/alineación de subagentes existentes            | ✅ Completada     | 0.5 días     | 1h            | 09/10/2025 - 16:30          
+Implementación 7 agentes (agenda, scheduler, event, note, ...) | ✅ Completada     | 1 día        | 2h            | 09/10/2025 - 17:15          
+Adaptación de vocab.json para cada agente                      | ✅ Completada     | 0.5 días     | 0.5h          | 09/10/2025 - 17:20          
+Implementación de tests unitarios para cada agente             | ✅ Completada     | 0.5 días     | 1h            | 09/10/2025 - 17:20          
+Actualización de imports y registry (paquete raíz “theaia”)    | ✅ Completada     | 0.5 días     | 0.5h          | 09/10/2025 - 19:30          
+Generación de reporte automatizado de cobertura (pytest-cov)   | ✅ Completada     | 0.5 días     | 0.25h         | 09/10/2025 - 19:40          
+Documentación y actualización README (test unitarios/cobertura)| ✅ Completada     | 0.25 días    | 0.25h         | 09/10/2025 - 19:45          
+Roadmap y checklist actualizado                                  | ✅ Completada     | 0.1 días     | 0.1h          | 09/10/2025 - 20:38          
+
+Pruebas end-to-end (flujos sintéticos y reales)                | ⬜ Pendiente      | 3 días       | -             | -                          
+Validación arquitectural (diagramas UML, análisis estático)    | ⬜ Pendiente      | 2 días       | -             | -                          
+Reforzar registry.py: Validación de INTENT único               | ⬜ Pendiente      | 1 día        | -             | -                          
+Reforzar registry.py: Ranking de intenciones y umbral          | ⬜ Pendiente      | 1 día        | -             | -                          
+Reforzar registry.py: Fallback dinámico y logging              | ⬜ Pendiente      | 1 día        | -             | -                          
+Reforzar registry.py: Hot-reload de agentes                    | ⬜ Pendiente      | 1 día        | -             | -                          
+Reforzar registry.py: Métricas de despacho y alertas           | ⬜ Pendiente      | 1 día        | -             | -
 
 ### 🤖 Fase 2.5 – TheaScaler Agent (Escalador de Desarrollo)  
 **⭐ ACTIVACIÓN: Inmediatamente después de completar Fase 2**  
