@@ -582,5 +582,24 @@ Planificamos que el siguiente paso será ejecutar todos los tests unitarios inde
 
 Después de que todos los tests estén en verde, haremos la prueba End-to-End (E2E) del Core.
 
+14:07 – Organización del día y estructura de proyecto
 
+15:00 – Discusión y ajuste de roadmap
 
+16:00 – Diseño e implementación de 7 agentes (handler.py, vocab.json, tests)
+
+17:20 – Commit y push de cambios en estructura de agentes
+
+19:30 – Corrección de imports a paquete raíz “theaia”
+
+19:40 – Generación de reporte de cobertura con pytest-cov (htmlcov)
+
+19:45 – Actualización del README con resultados de tests y cobertura
+
+20:38 – Actualización del roadmap y checklist de Fase 2
+
+20:42 – Commit y push de todos los cambios realizados hoy
+## =================9/10/25
+## ============================================================
+## ============================================================
+## =================10/10/25
