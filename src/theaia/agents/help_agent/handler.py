@@ -1,20 +1,19 @@
-# src/theaia/agents/help_agent/handler.py
+import json
+import os
 
-from theaia.agents.base_agent import BaseAgent
-from theaia.models.context import UserContext
+class HelpAgent:
+    def __init__(self):
+        # Lee comandos soportados desde vocab.json
+        dir_path = os.path.dirname(__file__)
+        try:
+            with open(os.path.join(dir_path, "model", "vocab.json"), encoding="utf-8") as f:
+                vocab = json.load(f)
+            self.commands = vocab.get("commands", ["agendar", "nota", "recordar", "ayuda", "consultar"])
+        except Exception:
+            self.commands = ["agendar", "nota", "recordar", "ayuda", "consultar"]
 
-class HelpAgent(BaseAgent):
-    """
-    Agente que muestra ayuda y lista de comandos.
-    """
-    INTENT = "help"
-
-    async def handle(self, text: str, ctx: UserContext, entities: dict):
-        commands = (
-            "/start – Reiniciar conversación\n"
-            "/help – Mostrar esta ayuda\n"
-            "/crear_evento – Crear evento\n"
-            "/nota – Guardar una nota\n"
-            "/agenda – Listar eventos"
-        )
-        return f"Comandos disponibles:\n{commands}", ctx
+    def process(self, user_id, message, current_state, current_data):
+        response = "Puedo ayudarte con: " + ", ".join(self.commands)
+        new_state = "initial"
+        new_data = {}
+        return response, new_state, new_data

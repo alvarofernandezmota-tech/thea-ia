@@ -1,5 +1,9 @@
 {
-    "qué tengo": "list_events",
-    "agenda": "list_events",
-    "mostrar agenda": "list_events"
+    "keywords": [
+        "consultar",
+        "¿qué tengo",
+        "muéstrame",
+        "listado",
+        "ver"
+    ]
 }

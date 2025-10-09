@@ -1,4 +1,5 @@
-from src.theaia.agents.fallback_agent.handler import FallbackAgent
+from theaia.agents.fallback_agent.handler import FallbackAgent
+
 
 def test_fallback_gives_suggestion():
     agent = FallbackAgent()

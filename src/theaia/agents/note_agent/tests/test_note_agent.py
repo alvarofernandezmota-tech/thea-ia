@@ -1,19 +1,15 @@
-# src/theaia/agents/note_agent/tests/test_note_agent.py
-
-import pytest
 from theaia.agents.note_agent.handler import NoteAgent
-from theaia.models.context import UserContext
 
-@pytest.mark.asyncio
-async def test_note_creation_flow():
+
+def test_initial_to_awaiting_note_text():
     agent = NoteAgent()
-    ctx = UserContext(user_id=1)
+    resp, state, data = agent.process('u1', 'quiero guardar una nota', 'initial', {})
+    assert 'guardar' in resp.lower()
+    assert state == 'awaiting_note_text'
 
-    resp1, ctx1 = await agent.handle("nota", ctx, {})
-    assert "¿Qué nota" in resp1
-    assert ctx1.state == "creating_note"
-
-    resp2, ctx2 = await agent.handle("Comprar leche", ctx1, {})
-    assert "Nota guardada" in resp2
-    assert ctx2.state is None
-    assert "Comprar leche" in ctx2.data["notes"]
+def test_awaiting_note_text_to_completed():
+    agent = NoteAgent()
+    resp, state, data = agent.process('u1', 'Compra pan y leche', 'awaiting_note_text', {})
+    assert 'guardada' in resp.lower()
+    assert state == 'completed'
+    assert data['note_text'] == 'Compra pan y leche'

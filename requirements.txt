@@ -76,3 +76,4 @@ python-dotenv
 psycopg2-binary
 redis
 pytest
+pytest-cov

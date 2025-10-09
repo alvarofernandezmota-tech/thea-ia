@@ -523,6 +523,64 @@ text
 
 ## ========9/10/25======================
 
-la espectativa para malana es completar la fase 2 y 
+-la espectativa para malana es completar la fase 2 y 
 llevar a finalizacion la fase 3 o al menos al 60 %
+- empezamos el dia organizando el proyeecto y lo que vamos a hacer hoy.
+14:07
+
+Organizamos la estructura del proyecto y planificamos la jornada.
+
+Decidimos que el trabajo comienza a las 14:30 o 15:00 para relajarnos primero.
+
+15:00
+
+Actualización del roadmap general:
+
+Planteamos implementar el aprendizaje del core automático.
+
+Definimos la implementación estructural de subagentes.
+
+Propuesta de crear un agente especial para ayudar al escalamiento de Thea IA, con acceso y conocimiento total del proyecto.
+
+Creamos el archivo roadmap.md para centralizar todo el roadmap en un solo archivo.
+
+16:00 ~ 17:20
+
+Añadimos y definimos siete agentes para el core:
+
+agenda → citas
+
+scheduler → recordar, recordatorio
+
+event → eventos, reuniones de equipo
+
+note → notas, apuntar
+
+query → “qué tengo”, “muéstrame”
+
+help → ayuda, “qué puedo hacer”
+
+fallback → manejo por defecto
+
+Diseñamos la arquitectura y la estructura de carpetas y archivos para todos los agentes, alineando los nuevos y antiguos al mismo patrón.
+
+Implementamos uno a uno:
+
+handler.py
+
+model/vocab.json
+
+tests/test_<agent>_agent.py
+
+init.py
+
+17:20
+
+Listos para hacer commit y push de todos los cambios en la estructura de agentes.
+
+Planificamos que el siguiente paso será ejecutar todos los tests unitarios independientes de cada agente.
+
+Después de que todos los tests estén en verde, haremos la prueba End-to-End (E2E) del Core.
+
+
 
