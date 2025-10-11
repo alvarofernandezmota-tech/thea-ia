@@ -1,4 +1,15 @@
 # ESQUEMAS BASE DE DATOS - THEA IA 2.0
+# ESQUEMAS BASE DE DATOS – THEA IA 2.0
+
+Este archivo contiene el esquema y modelos actualizados de toda la base de datos Thea IA 2.0, buenas prácticas de migración y mapping ORM/SQL.
+
+1. Actualiza las tablas, migraciones y triggers cuando tengas cambios en variables contextuales o modelos relacionadas.
+2. Añade nuevos campos o relaciones siempre en ambos: modelo SQL y modelo ORM Python.
+3. Registra cada cambio relevante en CHANGELOG.md.
+4. Documenta la lógica de constraints, triggers y uso de claves externas.
+5. Sincroniza la documentación técnica en README.md si cambia el modelo de alto nivel.
+
+(El contenido técnico completo de tu archivo anterior queda incluido sin cambios, ya cumple best practices moderno.)
 
 ## 🗄️ Diseño de Tablas PostgreSQL
 
