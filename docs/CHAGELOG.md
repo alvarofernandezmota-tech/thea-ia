@@ -621,19 +621,69 @@ Mañana se continuará el trabajo a partir del archivo siguiente a MIGRACIONES.m
 
 ## ======================================== 
 ## ===========
-CHANGELOG - 11/10/2025 (15:32 CEST)
-Renombrados y homogeneizados archivos
-(15:00 CEST) Todos los archivos .MD convertidos a .md minúscula, siguiendo la convención profesional.
-Ejemplo: ROADMAPAUDITORIA.MD → roadmap_auditoria.md, CHAGELONG.md → changelog.md, etc.
 
-Revisión y validación de archivos del core
-(15:10 CEST) Auditoría completa y mejora del core (state_machine.py, router.py, context.py, context_manager.py, bot_factory.py, callbacks.py).
+CHANGELOG - 11/10/2025 (20:01 CEST)
+Auditoría modular y profesional — Día 11/10/2025
+15:40 - 16:20 CEST | Auditoría y reestructuración carpeta ml/
 
-Documentación y guía de testing en el core
-(15:18 CEST) Añadidos y auditados archivos README.md y TESTING.md en el core según estándar de calidad, onboarding y mantenimiento.
+Se revisa y se homogeneiza la estructura de la carpeta ml/ con subcarpetas: pipelines/, models/, intent_detector/, entity_extractor/, notebooks/, data/.
 
-Implantación de regla para doc y tests obligatorios por módulo
-(15:22 CEST) Toda carpeta/módulo ya debe tener README.md y TESTING.md propios para pasar auditoría y roadmap.
+Implementación de carpetas de tests unitarios en pipelines/, intent_detector/ y entity_extractor/ bajo estándares de modularidad ML/NLP.
 
-Preparación y cierre de la fase de auditoría/escalado
-(15:32 CEST) El roadmap y auditoría quedan listos para transición a la fase técnica/desarrollo, trazabilidad asegurada.
+Acotación profesional y regla en README.md sobre la incorporación de tests según complejidad y evolución de los scripts ML.
+
+16:20 - 16:45 CEST | Auditoría completa de carpeta models/
+
+Validación y organización de archivos para cada entidad principal: agenda.py, event.py, note.py, scheduler.py, domain_entities.py.
+
+Añadidos README.md y TESTING.md en models/ con criterios de cobertura y explicación de arquitectura.
+
+Documentación modular y estructura profesional lista para integración, extensión y auditoría.
+
+16:45 - 17:30 CEST | Auditoría, cierre y documentación de carpeta services/
+
+Estructuración de todos los servicios por agente y feature: agenda_service.py, event_service.py, note_service.py, scheduler_service.py, domain_service.py...
+
+Desacoplamiento y alineamiento con agentes, database y ML.
+
+Redacción de README.md para servicios, con explicación de flujos, dependencias y ejemplos de integración/API.
+
+Añadido TESTING.md específico para futura cobertura y validación.
+
+17:30 - 19:50 CEST | Auditoría, organización y segmentación carpeta tests/
+
+Reorganización total de tests/ en subcarpetas por agente/feature:
+
+tests/agents/agenda/, event/, note/, help/, scheduler/, query/, fallback/.
+
+tests/ml/, fixtures/, e2e/, core/, database/, services/, utils/
+
+Creación y organización de archivos test_pipeline.py, test_service.py, test_db.py y similares en cada subcarpeta.
+
+Implementación de README.md y TESTING.md global y acotación en cada grupo de tests.
+
+Preparación para escalabilidad, integración continua y trabajo colaborativo en calidad/QA.
+
+19:50 - 20:00 CEST | Actualización integración del roadmap de auditoría
+
+Se actualiza el roadmap principal, reflejando todos los hitos auditados y segmentados por módulos/carpeta.
+
+Integración de reglas de escalabilidad, aseguramiento de calidad y bloqueos para releases/sprints.
+
+Documentación de responsables y fechas para trazabilidad profesional.
+
+Resumen del día:
+La organización modular, la documentación y la trazabilidad de calidad para ml/, models/, services/, tests/ quedan completadas, listas para evolucionar y auditar.
+El equipo tiene onboarding claro, reglas de calidad y trazabilidad instantánea.
+
+
+## ======================================== 
+## ===========
+
+CHANGELOG - 12/10/2025
+
+-acabar auditoria completa test y sus sub-carpetas y utils.
+-actualizar readme y arquitectura.
+-palnificamos siguiente auditoria y las posibles implementacones y buscamos fecahn para hacer la misma, o buscams organizar la auditoria por seccione spara que no se haga tan pesado hacer una auditoria de 3 dias casi unas 15 h de trabj.
+-volvemos a la parte del core donde lo dejamos y intentamos acabarla.
+-todo preparado para empezar en el chat de mañana 12.
