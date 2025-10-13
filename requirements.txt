@@ -77,3 +77,5 @@ psycopg2-binary
 redis
 pytest
 pytest-cov
+SQLAlchemy==2.0.23
+psycopg2-binary==2.9.9
