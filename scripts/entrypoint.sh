@@ -1,13 +1,10 @@
 #!/bin/bash
-# ==============================================
-# THEA IA 2.0 - ENTRYPOINT SCRIPT
-# ==============================================
+# entrypoint.sh: Script principal de entrada para Docker o despliegue automatizado
 
-set -e
+echo "🟢 Iniciando entorno Thea IA 2.0..."
 
-# Colores para logs
-RED='\033
+# Migrar la base de datos antes de arrancar
+./scripts/migrate.sh upgrade
 
-Pasos:
-1. Copia este bloque en `scripts/entrypoint.sh`.  
-2. Dale permiso de ejecución:
+# Iniciar la aplicación
+exec "$@"
