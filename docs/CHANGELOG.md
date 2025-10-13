@@ -744,3 +744,35 @@ HOY: Cerramos Fase 1 con Bloque 1 auditoría
 DESPUÉS: Desarrollo puro Fase 2 sin interrupciones
 
 AL FINAL: Auditoría completa antes de Fase 3
+Hitos completados el 13/10/2025
+
+Hito 2 – Carpeta scripts/ auditada (16:05 CEST)
+
+Scripts: setup.sh, deploy.sh, migrate.sh, lint.sh, backup.sh, entrypoint.sh, test_runner.sh
+
+README.md de scripts/ completado
+
+Hito 3.1 – Estructura de src/theaia/tests/ creada (16:05 CEST)
+
+10 subcarpetas: agents/, core/, database/, services/, ml/, utils/, fixtures/, e2e/, unit/, integration/
+
+README.md global añadido
+
+Eliminados archivos sueltos (__init__.py, helpers.py, TESTING.md, readmi.md)
+
+Cierre Bloque 1 – Fase 1 (16:05 CEST)
+
+src/theaia/utils/: README.md y TESTING.md
+
+scripts/: estructura y documentación completa
+
+src/theaia/tests/: estructura de carpetas y guía global
+
+Actualización documentación principal (16:25 CEST)
+
+README.md raíz actualizado con “Estado Auditoría – Fase 1”
+
+docs/ARCHITECTURE.md actualizado con Apéndice de Auditoría y esquema de carpetas
+
+Estos hitos cubren la auditoría estructural de la Fase 1 y la preparación de la Fase 2.
+pasamos a fase 2 del core de nuevo
