@@ -1,7 +1,19 @@
+
 # src/theaia/database/__init__.py
 
-from .connections import engine
-from .models import Base
+"""
+Database package initializer.
 
-# Esto crea la tabla user_context junto a las del resto de tu modelo si lo hubiera
-Base.metadata.create_all(engine)
+This module exposes the SQLAlchemy engine for use across the application.
+"""
+
+from .connection import engine
+
+# Optionally expose session factory if defined in connection.py
+from .connection import get_session  # if you have this function
+
+# Import repositories to ensure they are registered or available when database package is imported
+from .repositories.user_repository import UserRepository  # example
+from .repositories.event_repository import EventRepository
+from .repositories.note_repository import NoteRepository
+from .repositories.context_repository import ContextRepository
