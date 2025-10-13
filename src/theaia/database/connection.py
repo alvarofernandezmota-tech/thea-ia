@@ -1,9 +1,9 @@
 # src/theaia/database/connections.py
-
+import os
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from .connection import engine
 
-DATABASE_URL = "postgresql://usuario:contraseña@localhost:5432/tu_basedatos"
 
-engine = create_engine(DATABASE_URL, echo=False)
-Session = sessionmaker(bind=engine)
+TESTING = os.getenv("ENV") == "TEST"
+engine_url = "sqlite:///:memory:" if TESTING else DATABASE_URL
+engine = create_engine(engine_url, echo=False)
