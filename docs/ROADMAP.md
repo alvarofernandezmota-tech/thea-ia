@@ -9,70 +9,63 @@
 
 ***
 
-### Fase 2 – Core (FSM & Context)  
-**Punto actual: ~80% completado**  
-| Tarea                                                          | Estado       | Estimación  | Duración Real | Finalización              |
-|----------------------------------------------------------------|--------------|-------------|---------------|---------------------------|
-| Integrar router en adaptadores                                 | ✅ Completada | 1 día       | 2 h            | 07/10/2025 15:00 CEST     |
-| Conectar intent_detector al router                             | ✅ Completada | 2 días      | 3 h            | 08/10/2025 18:30 CEST     |
-| Conectar entity_extractor al router                            | ✅ Completada | 1 día       | 1 h            | 08/10/2025 19:30 CEST     |
-| Persistir contexto de usuario (DB/Redis)                       | ✅ Completada | 1 día       | 1.5 h          | 09/10/2025 14:30 CEST     |
-| Diseño/estandarización subagentes (handler, vocab, tests)      | ✅ Completada | 0.5 días    | 1 h            | 09/10/2025 16:00 CEST     |
-| Refactorización/alineación de subagentes existentes            | ✅ Completada | 0.5 días    | 1 h            | 09/10/2025 16:30 CEST     |
-| Implementación de 7 agentes (agenda, scheduler, event, note, query, help, fallback) | ✅ Completada | 1 día       | 2 h            | 09/10/2025 17:15 CEST     |
-| Adaptación de vocab.json para cada agente                      | ✅ Completada | 0.5 días    | 0.5 h          | 09/10/2025 17:20 CEST     |
-| Tests unitarios para cada agente                               | ✅ Completada | 0.5 días    | 1 h            | 09/10/2025 18:00 CEST     |
-| Actualización de imports y registry (paquete raíz “theaia”)    | ✅ Completada | 0.5 días    | 0.5 h          | 09/10/2025 19:30 CEST     |
-| Reporte automatizado de cobertura (pytest-cov)                 | ✅ Completada | 0.5 días    | 0.25 h         | 09/10/2025 19:40 CEST     |
-| Documentación y actualización de README                        | ✅ Completada | 0.25 días   | 0.25 h         | 09/10/2025 19:45 CEST     |
-| Roadmap y checklist actualizado                                | ✅ Completada | 0.1 días    | 0.1 h          | 09/10/2025 20:00 CEST     |
-| **2.1 E2E Agendado (test_core_flow.py)**                       | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.2 E2E Contexto (test_context_flow.py)**                    | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.3 E2E Notas (test_e2e_notas_flow.py)**                     | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.4 E2E Consultas (test_e2e_query_flow.py)**                 | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.5 E2E Help (test_e2e_help_flow.py)**                       | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.6 E2E Fallback (test_e2e_fallback_flow.py)**               | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| **2.7 E2E Scheduler (test_e2e_scheduler_flow.py)**             | ⬜ Pendiente  | 0.5 días    | –              | –                         |
-| Validación arquitectural (diagramas UML, análisis estático)    | ⬜ Pendiente  | 2 días      | –              | –                         |
-| Reforzar registry (intents únicos, fallback dinámico, logs, hot-reload, métricas) | ⬜ Pendiente  | 5 días      | –              | –                         |
+Roadmap Completo Fase 2 – Core (FSM & Context)
+Punto actual: ~85% completado
+Tarea	Estado	Estimación	Duración Real	Finalización
+Integrar router en adaptadores	✅ Completada	1 día	2 h	07/10/2025 15:00 CEST
+Conectar intent_detector al router	✅ Completada	2 días	3 h	08/10/2025 18:30 CEST
+Conectar entity_extractor al router	✅ Completada	1 día	1 h	08/10/2025 19:30 CEST
+Persistir contexto de usuario (DB/Redis)	✅ Completada	1 día	1.5 h	09/10/2025 14:30 CEST
+Diseño/estandarización subagentes (handler, vocab, tests)	✅ Completada	0.5 días	1 h	09/10/2025 16:00 CEST
+Refactorización/alineación de subagentes existentes	✅ Completada	0.5 días	1 h	09/10/2025 16:30 CEST
+Implementación de 7 agentes (agenda, scheduler, event, note, query, help, fallback)	✅ Completada	1 día	2 h	09/10/2025 17:15 CEST
+Adaptación de vocab.json para cada agente	✅ Completada	0.5 días	0.5 h	09/10/2025 17:20 CEST
+Tests unitarios para cada agente	✅ Completada	0.5 días	1 h	09/10/2025 18:00 CEST
+Actualización de imports y registry (paquete raíz “theaia”)	✅ Completada	0.5 días	0.5 h	09/10/2025 19:30 CEST
+Reporte automatizado de cobertura (pytest-cov)	✅ Completada	0.5 días	0.25 h	09/10/2025 19:40 CEST
+Documentación y actualización de README	✅ Completada	0.25 días	0.25 h	09/10/2025 19:45 CEST
+Roadmap y checklist actualizado	✅ Completada	0.1 días	0.1 h	09/10/2025 20:00 CEST
+2.1 E2E Agendado (test_core_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 16:19 CEST
+2.2 E2E Contexto (test_context_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 16:24 CEST
+2.3 E2E Notas (test_e2e_notas_flow.py)	⬜ Pendiente	0.5 días	–	–
+2.4 E2E Consultas (test_e2e_query_flow.py)	⬜ Pendiente	0.5 días	–	–
+2.5 E2E Help (test_e2e_help_flow.py)	⬜ Pendiente	0.5 días	–	–
+2.6 E2E Fallback (test_e2e_fallback_flow.py)	⬜ Pendiente	0.5 días	–	–
+2.7 E2E Scheduler (test_e2e_scheduler_flow.py)	⬜ Pendiente	0.5 días	–	–
+Validación arquitectural (diagramas UML, análisis estático)	⬜ Pendiente	2 días	–	–
+Reforzar registry (intents únicos, fallback dinámico, logs, hot-reload, métricas)	⬜ Pendiente	5 días	–	–
+Pruebas de carga BDD: Simular múltiples sesiones concurrentes	⬜ Pendiente	–	–	–
+Revisión de seguridad: inyección de eventos y sanitización de inputs	⬜ Pendiente	–	–	–
+Checklist de calidad: PEP 8, type hints y docstrings	⬜ Pendiente	–	–	–
+Revisión por pares (PR review): validación antes de merge	⬜ Pendiente	–	–	–
 
-***
+## Fase 2.5 – TheaScaler Agent
+## Activación: tras completar Fase 2
 
-### Fase 2.5 – TheaScaler Agent  
-**⭐ Activación: tras completar Fase 2**  
-| Tarea                                            | Estado       | Estimación |
-|--------------------------------------------------|--------------|------------|
-| Análisis Repository vs Roadmap                   | ⬜ Planificada | 1 día      |
-| GitHub API Integration                           | ⬜ Planificada | 1 día      |
-| Code Generation Engine                           | ⬜ Planificada | 2 días     |
-| Automated Commits/PRs                            | ⬜ Planificada | 1 día      |
-| Progress Tracking Dashboard                      | ⬜ Planificada | 1 día      |
-| Quality Gates                                    | ⬜ Planificada | 1 día      |
-| Integration Testing TheaScaler                   | ⬜ Planificada | 1 día      |
-
-***
-
-## Fase 3 – Adaptadores y Validaciones
-## Objetivo 1: Integración de canales externos
-
+Tarea	Estado	Estimación
+Análisis Repository vs Roadmap	⬜ Planificada	1 día
+GitHub API Integration	⬜ Planificada	1 día
+Code Generation Engine	⬜ Planificada	2 días
+Automated Commits/PRs	⬜ Planificada	1 día
+Progress Tracking Dashboard	⬜ Planificada	1 día
+Quality Gates	⬜ Planificada	1 día
+Integration Testing TheaScaler	⬜ Planificada	1 día
+Fase 3 – Adaptadores y Validaciones
+Objetivo 1: Integración de canales externos
 Tarea	Estado	Estimación	Comentario
-Telegram adapter	⬜ Planificada	1 día	Soporte bidireccional mensajes
-Webhook handler	⬜ Planificada	0.5 días	Recepción y procesado webhooks
-Slack adapter	⬜ Planificada	0.5 días	(Opcional) integración Slack
-WhatsApp adapter	⬜ Planificada	0.5 días	(Opcional) integración WhatsApp
+Telegram adapter	⬜ Planificada	1 día	Soporte bidireccional de mensajes
+Webhook handler	⬜ Planificada	0.5 días	Recepción y procesado de webhooks
+Slack adapter	⬜ Planificada	0.5 días	Integración opcional con Slack
+WhatsApp adapter	⬜ Planificada	0.5 días	Integración opcional con WhatsApp
 Objetivo 2: Validación y estructuración de datos
-
 Tarea	Estado	Estimación	Comentario
 Validaciones Pydantic	⬜ Planificada	0.5 días	Schemas de entrada/salida
-Test unitarios adapters	⬜ Planificada	0.5 días	Coverage y mocks
+Tests unitarios adapters	⬜ Planificada	0.5 días	Coverage y mocks
 Documentación adapters	⬜ Planificada	0.25 días	README/TESTING para cada adapter
 Objetivo 3: Configuración y pruebas
-
 Tarea	Estado	Estimación	Comentario
 Configuración entorno adapters	⬜ Planificada	0.25 días	.env/cfg y settings.py
-Casos integración e2e	⬜ Planificada	0.25 días	Pruebas extremo a extremo
-
-***
+Casos integración E2E	⬜ Planificada	0.25 días	Pruebas extremo a extremo por canal
 
 ### Fase 4 – Monitoring & Orquestación  
 | Tarea                              | Estado       | Estimación |
