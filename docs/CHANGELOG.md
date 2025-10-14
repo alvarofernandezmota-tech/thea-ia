@@ -776,3 +776,51 @@ docs/ARCHITECTURE.md actualizado con Apéndice de Auditoría y esquema de carpet
 
 Estos hitos cubren la auditoría estructural de la Fase 1 y la preparación de la Fase 2.
 pasamos a fase 2 del core de nuevo
+
+Hoy has completado los siguientes hitos de la Fase 2 (Core Conversacional de Thea IA 2.0):
+
+Hitos conseguidos:
+1. state_machine.py
+
+Implementación y configuración completa de FSM.
+
+Conexión con handlers/agents reales mediante callbacks.
+
+2. test_state_machine.py
+
+Tests unitarios que garantizan la robustez, cobertura de los flujos y transiciones.
+
+3. callbacks.py
+
+Lógica modular de handlers/agentes centralizados, conectados al core.
+
+4. context.py
+
+Modelo profesional y flexible para la gestión del contexto de usuario/sesión.
+
+5. context_manager.py
+
+Gestor avanzado para creación, recuperación, guardado/borrado y manejo de todos los contextos del core.
+
+Cada uno con lógica revisada, adaptable a todos los agentes/dominios, y listo para ampliar/usar en el resto del sistema.
+
+# Changelog
+
+## 2025-10-14
+
+- **CoreRouter**  
+  - Detección temprana de intent y eco de fallback.  
+  - Recarga y persistencia de contexto en JSON.  
+  - Selección de agentes y metadatos (`pending_intent`, `pending_datetime`).  
+
+- **AgendaAgent**  
+  - Solicitud de fecha y hora en `initial`.  
+  - Validación de ISO en `awaiting_datetime`.  
+  - Confirmación y guardado de `last_event` con `uid`.  
+
+- **NoteAgent**  
+  - Solicitud de contenido de nota en `initial`.  
+  - Almacenamiento de nota en `awaiting_note_content`.  
+
+- Pruebas  
+  - Todos los tests unitarios y e2e para Core, AgendaAgent y NoteAgent pasan.
