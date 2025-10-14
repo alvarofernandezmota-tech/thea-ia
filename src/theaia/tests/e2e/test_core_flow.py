@@ -1,10 +1,16 @@
+import sys
+import os
 import pytest
+
+# Permite importar theaia aunque pytest no ajuste PYTHONPATH correctamente
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../../..', 'src')))
+
 from theaia.core.router import CoreRouter
 
 @pytest.mark.e2e
 def test_e2e_agenda_flow():
     router = CoreRouter()
-    uid = "u1"
+    uid = "test_u1"
     state = "initial"
     context = {}
 
