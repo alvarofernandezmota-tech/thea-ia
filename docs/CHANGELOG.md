@@ -823,4 +823,4 @@ Cada uno con lógica revisada, adaptable a todos los agentes/dominios, y listo p
   - Almacenamiento de nota en `awaiting_note_content`.  
 
 - Pruebas  
-  - Todos los tests unitarios y e2e para Core, AgendaAgent y NoteAgent pasan.
+  - Todos los tests unitarios y e2e para Core, AgendaAgen.
