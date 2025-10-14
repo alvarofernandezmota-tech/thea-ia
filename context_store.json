@@ -1,1 +1,1 @@
-{"test_u1": {"state": "completed", "data": {"pending_intent": "fallback", "pending_datetime": "s\u00ed", "appointment_datetime": "2025-10-10 09:00", "last_event": {"uid": "test_u1", "type": "appointment", "datetime": "2025-10-10 09:00"}}}}
+{"test_notas_1": {"state": "initial", "data": {}}}
