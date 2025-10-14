@@ -824,3 +824,5 @@ Cada uno con lógica revisada, adaptable a todos los agentes/dominios, y listo p
 
 - Pruebas  
   - Todos los tests unitarios y e2e para Core, AgendaAgen.
+  agente agendar el test e2e funciona perfectamente mañana 
+  seguimos con los demas agentes.

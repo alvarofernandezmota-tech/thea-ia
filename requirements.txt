@@ -79,3 +79,7 @@ pytest
 pytest-cov
 SQLAlchemy==2.0.23
 psycopg2-binary==2.9.9
+numpy
+spacy
+scikit-learn
+
