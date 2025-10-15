@@ -1,1 +1,1 @@
-{"test_notas_1": {"state": "initial", "data": {}}}
+{"test_persist": {"state": "agent_delegated", "data": {"foo": 123, "bar": "baz"}}}

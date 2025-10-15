@@ -1,51 +1,65 @@
-# CoreRouter
+Thea IA 2.0 - Núcleo Conversacional
+Este módulo contiene la arquitectura central del sistema conversacional de Thea IA 2.0. Gestiona la lógica base, el enrutamiento de intents y la integración nativa con FSM y agentes.
 
-El módulo **CoreRouter** orquesta el enrutamiento de mensajes y la persistencia de contexto en la aplicación.  
-Recibe un mensaje del usuario, detecta su intención, selecciona el agente adecuado y mantiene el estado entre interacciones.
+Arquitectura principal
+CoreRouter
+Es el punto de entrada de cada request.
 
-## Flujo de procesamiento
+Detecta intents, maneja desambiguación, delega flujo a ConversationManager y agentes.
 
-1. **Detección temprana de intención**  
-   - Se analiza el mensaje para identificar la intención (agenda, notas, evento, etc.).  
-   - Si estamos en estado `initial` y la intención es desconocida (`fallback`),  
-     se devuelve el mismo mensaje (eco) sin alterar el contexto.
+Compatible y flexible para ampliación de agentes futuros.
 
-2. **Recarga de contexto**  
-   - Si el estado es `initial` y no hay contexto en memoria, se intenta  
-     recargar el último estado y datos desde el repositorio JSON.
+ConversationManager
+Orquesta la gestión de contexto, ciclo de usuario y transición FSM.
 
-3. **Re-detección de intención**  
-   - Tras la recarga de contexto, se vuelve a detectar la intención para  
-     asegurar consistencia si el mensaje ya formaba parte de un flujo previo.
+Interactúa con la máquina de estados, maneja el ciclo conversacional de cada usuario.
 
-4. **Selección de agente**  
-   - En `initial`, se elige el agente según la intención detectada (`agenda`, `notas`, etc.).  
-   - En cualquier otro estado, se fuerza al **AgendaAgent** para continuar el flujo de citas.
+Encapsula lógica de persistencia y recuperación de contexto.
 
-5. **Inyección de metadatos en el contexto**  
-   - `pending_intent`: intención detectada en esta interacción.  
-   - `pending_datetime`: el texto del mensaje si no estamos en `initial`,  
-     para ayudar en pruebas e2e del flujo de agendado.
+Integración con FSM
+Enlazado directo con ConversationStateMachine: cada flujo de usuario es un ciclo FSM.
 
-6. **Delegación al agente**  
-   - Se invoca `agent.process()`, pasando `user_id`, `message`, `current_state` y `current_data`.  
-   - El agente retorna `response`, `new_state` y `new_data`.
+Soporta triggers: desambiguación, delegación, completado, error, timeout, reset.
 
-7. **Persistencia de contexto**  
-   - Se guarda en disco el nuevo estado y datos de contexto en el repositorio JSON.
+100% testable y escalable.
 
-## Ejemplo
+Persistencia de contexto
+Guarda y recupera estado/conversación de cada usuario vía context_repository.
 
-from theaia.core.router import CoreRouter
+Permite retomar sesiones, aprendizaje continuo y robustez ante fallos.
+
+Extensibilidad y agentes
+El Core está listo para nuevos agentes (ej: Agenda, Notas, etc) vía subclases y ampliaciones en la detección de intents y lógica FSM.
+
+Cada agente define su propio Ciclo FSM, transiciones y lógica de negocio.
+
+Tests y robustez
+Los tests incluidos (ver /tests/unit/) cubren:
+
+CoreRouter: intención, desambiguación, fallback, delegación, ciclo E2E.
+
+ConversationManager: inicialización, gestión de contexto, integración FSM.
+
+FSM: todas las transiciones y triggers fundamentales, error y reset.
+
+Persistencia: guardado y recuperación de contexto.
+
+Todos los tests pasan en CI antes de avanzar a agentes, asegurando integridad y evolución.
+
+Ejemplo de uso
+python
+from src.theaia.core.router import CoreRouter
 
 router = CoreRouter()
-uid = "user1"
-state, context = "initial", {}
-
-Usuario pide agendar
-resp, state, context = router.handle(uid, "quiero agendar cita", state, context)
-
-resp == "¿Para qué fecha y hora quieres agendar la cita?"
-state == "awaiting_datetime"
+resp, state, ctx = router.handle("user1", "Quiero agendar reunión")
+print(resp)    # Mensaje de desambiguación o delegación
+Diagrama de módulos
 text
-undefined
+CoreRouter
+   └─ ConversationManager
+         └─ ConversationStateMachine (FSM)
+               └─ Agentes (Agenda, Notas, ...)
+Recomendaciones
+Antes de ampliar agentes/funcionalidades, asegúrate siempre que TODOS los tests core pasan y la persistencia funciona.
+
+Documenta los cambios en el changelog por hito/ciclo para trazabilidad.

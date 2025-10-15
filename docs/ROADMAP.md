@@ -29,6 +29,14 @@ Documentación y actualización de README	✅ Completada	0.25 días	0.25 h	09/10
 Roadmap y checklist actualizado	✅ Completada	0.1 días	0.1 h	09/10/2025 20:00 CEST
 2.1 E2E Agendado (test_core_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 18:43 CEST
 2.2 E2E Contexto (test_context_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 16:24 CEST
+FSM implementado correctamente	✅ Completada	0.1 días	0.1 h	15/10/2025 19:30 CEST
+Actualizar CoreRouter para integrar FSM	⬜ Pendiente	0.2 días	–	–
+Corrección y revisión del Core completo	⬜ Pendiente	0.2 días	–	–
+Revisión del agente Agenda	⬜ Pendiente	0.2 días	–	–
+Verificación de funcionamiento de la máquina de estados	⬜ Pendiente	0.2 días	–	–
+Verificación de funcionamiento del FSM	⬜ Pendiente	0.2 días	–	–
+Actualizar README y CHANGELOG con versión 2.1.0	⬜ Pendiente	0.1 días	–	–
+Añadir tests E2E para desambiguación (test_fsm_disambiguation.py)	⬜ Pendiente	0.3 días	–	–
 2.3 E2E Notas (test_e2e_notas_flow.py)	⬜ Pendiente	0.5 días	–	–
 2.4 E2E Consultas (test_e2e_query_flow.py)	⬜ Pendiente	0.5 días	–	–
 2.5 E2E Help (test_e2e_help_flow.py)	⬜ Pendiente	0.5 días	–	–

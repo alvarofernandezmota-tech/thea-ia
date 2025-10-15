@@ -1,81 +1,73 @@
 # src/theaia/core/router.py
 
 from typing import Tuple, Dict, Any
+from src.theaia.core.fsm.conversation_manager import ConversationManager
 from src.theaia.database.repositories.context_repository import load_context, save_context
-from src.theaia.agents.agenda_agent.handler import AgendaAgent
-from src.theaia.agents.note_agent.handler import NoteAgent
-from src.theaia.agents.event_agent.handler import EventAgent
-from src.theaia.agents.fallback_agent.handler import FallbackAgent
-from src.theaia.agents.help_agent.handler import HelpAgent
-from src.theaia.agents.query_agent.handler import QueryAgent
-from src.theaia.agents.scheduler_agent.handler import SchedulerAgent
+from src.theaia.agents.agenda_agent import AgendaAgent
+from src.theaia.agents.note_agent import NoteAgent
+from src.theaia.agents.reminder_agent import ReminderAgent
+from src.theaia.agents.fallback_agent import FallbackAgent
+# ... otros imports de agentes
 
 class CoreRouter:
     def __init__(self):
         self.agents = {
             'agenda': AgendaAgent(),
             'notas': NoteAgent(),
-            'event': EventAgent(),
+            'recordatorio': ReminderAgent(),
             'fallback': FallbackAgent(),
-            'help': HelpAgent(),
-            'query': QueryAgent(),
-            'scheduler': SchedulerAgent(),
+            # ... otros agentes
         }
+        self.conversation_managers: Dict[str, ConversationManager] = {}
 
     def handle(self, uid: str, message: str, state: str, context: Dict[str, Any]
               ) -> Tuple[str, str, Dict[str, Any]]:
-        # 1. Early fallback echo on initial
-        intent = self._detect_intent(message)
-        if state == "initial" and intent == "fallback":
-            return message, state, context
 
-        # 2. Reload context if present
-        if state == "initial" and not context:
+        # Obtener o crear ConversationManager para este usuario
+        if uid not in self.conversation_managers:
+            self.conversation_managers[uid] = ConversationManager(uid)
             saved = load_context(uid)
             if saved:
-                state = saved["state"]
-                context = saved["data"]
+                cm = self.conversation_managers[uid]
+                cm.fsm.state = saved.get("fsm_state", "initial")
+                cm.fsm.context = saved.get("context", {})
 
-        # 3. Re-detect intent after reload
-        intent = self._detect_intent(message)
+        cm = self.conversation_managers[uid]
 
-        # 4. Agent selection
-        if state == "initial":
-            agent = self.agents.get(intent, self.agents['fallback'])
-        else:
-            agent = self.agents['agenda']
+        # Detectar intents candidatos
+        intents = self._detect_multiple_intents(message)
 
-        # 5. Inject context metadata
-        context = {
-            **context,
-            "pending_intent": intent,
-            "pending_datetime": message if state != "initial" else None
-        }
+        # Procesar con FSM
+        response, new_state, new_context = cm.process_input(message, intents)
 
-        # 6. Delegate to agent
-        response, new_state, new_data = agent.process(
-            user_id=uid,
-            message=message,
-            current_state=state,
-            current_data=context
-        )
+        # Persistir estado y contexto
+        save_context(uid, new_state, {
+            "fsm_state": cm.fsm.state,
+            "context": cm.fsm.context,
+            **new_context
+        })
 
-        # 7. Persist context
-        save_context(uid, new_state, new_data)
-        return response, new_state, new_data
+        return response, new_state, new_context
 
-    def _detect_intent(self, message: str) -> str:
+    def _detect_multiple_intents(self, message: str) -> list:
+        """Detecta múltiples intents candidatos usando palabras clave."""
         msg = message.lower()
+        candidates = []
+
         if any(w in msg for w in ['cita','agendar','reunión','meeting']):
-            return 'agenda'
-        if any(w in msg for w in ['nota','recordar','apuntar']):
-            return 'notas'
+            candidates.append('agenda')
+        if any(w in msg for w in ['nota','apuntar','escribir','documentar']):
+            candidates.append('notas')
+        if any(w in msg for w in ['recordatorio','recordar','avisar','alerta']):
+            candidates.append('recordatorio')
         if any(w in msg for w in ['evento','calendar']):
-            return 'event'
+            candidates.append('event')
         if any(w in msg for w in ['ayuda','help']):
-            return 'help'
+            candidates.append('help')
         if any(w in msg for w in ['consulta','pregunta','query']):
-            return 'query'
+            candidates.append('query')
         if any(w in msg for w in ['programar','schedule']):
-            return 'scheduler'
-        return 'fallback'
+            candidates.append('scheduler')
+        # ... otros intents
+
+        return candidates if candidates else ['fallback']

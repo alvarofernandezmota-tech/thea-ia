@@ -52,6 +52,23 @@ theaia/
 Sección 3: Instalación rápida
 text
 ---
+### FSM – Orquestación y Desambiguación
+
+En la versión **2.1.0** se ha incorporado el submódulo **core/fsm** que aporta:
+
+- **Desambiguación Inteligente** entre nota, cita y recordatorio  
+- **Orquestación Global** de flujos conversacionales  
+- **Gestión de estados finitos** (FSM) con timeouts y reintentos  
+- **Delegación a agentes** de forma centralizada  
+
+Componentes clave en `src/theaia/core/fsm/`:
+
+- **conversation_manager.py**: `ConversationManager`, corazón del FSM global.  
+- **state_machine.py**: Clase base (`BaseStateMachine`) y `ConversationStateMachine`.  
+- **states/global_states.py**: Enumeración `GlobalState`, validación y descripciones.  
+- **states/disambiguation_state.py**: Lógica de desambiguación y plantillas.  
+- **states/agent_states.py**: Mapeo de intents a `AgentType` y estados iniciales.  
+- **transitions.py**: Reglas de transición, condiciones y callbacks de logging.  
 
 ## ⚡ Instalación rápida
 

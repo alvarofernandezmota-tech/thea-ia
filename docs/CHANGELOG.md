@@ -822,7 +822,75 @@ Cada uno con lógica revisada, adaptable a todos los agentes/dominios, y listo p
   - Solicitud de contenido de nota en `initial`.  
   - Almacenamiento de nota en `awaiting_note_content`.  
 
-- Pruebas  
-  - Todos los tests unitarios y e2e para Core, AgendaAgen.
+- Todos los tests unitarios y e2e para Core, AgendaAgen.
   agente agendar el test e2e funciona perfectamente mañana 
   seguimos con los demas agentes.
+  -para mañana la tarea principal será entrar en el core (CoreRouter y FSM) y adaptar la lógica para mostrar la pregunta de desambiguación (“¿Quieres guardar esto como nota, cita o recordatorio?”) cada vez que haya ambigüedad en el intent detectado.
+
+Así profesionalizas la UX del asistente y evitas errores en flujos que mezclan intenciones.
+
+Lo harás de manera centralizada, sin repartir la lógica y dejando todos los subagentes limpios.
+
+El cambio será escalable y compatible tanto para chat como para web/app.
+
+Cuando empieces mañana, localiza el punto de intent detection y routeo; ahí es donde vas a controlar la lógica y añadir el estado/fsm “awaiting_disambiguation”. Si tienes cualquier duda de código, estructura o test de este flujo, compártelo aquí y te ayudo a implementarlo directamente.
+
+¡Avanzaste mucho hoy y este diseño te va a quitar problemas de raíz!
+
+
+###  15/10/25
+🎯 HITO COMPLETADO - FSM THEA IA 2.0
+✅ MILESTONE ALCANZADO
+Fecha y Hora: Miércoles, 15 de Octubre de 2025 - 19:30 CEST
+
+🚀 FSM IMPLEMENTADO CORRECTAMENTE
+✅ Arquitectura FSM Completa:
+ConversationManager - Núcleo del sistema ✅
+
+State Machine - Máquina de estados base ✅
+
+Global States - Estados y validaciones ✅
+
+Transitions - Configuración de transiciones ✅
+
+Disambiguation Handler - Manejo de ambigüedad ✅
+
+Agent States - Mapeo de agentes ✅
+
+README Documentation - Documentación completa ✅
+
+✅ DESAMBIGUACIÓN DE MENSAJE COMPLETADA:
+Funcionalidad implementada:
+
+✅ Detección automática de ambigüedad entre nota/cita/recordatorio
+
+✅ Pregunta moderna: "¿Quieres guardar esto como nota, cita o recordatorio?"
+
+✅ Procesamiento inteligente de respuesta del usuario
+
+✅ Manejo de reintentos (máx 3 intentos)
+
+✅ Timeouts configurables (5 min para desambiguación)
+
+✅ Recuperación de errores y estados
+
+✅ Logging completo y métricas
+
+- Submódulo FSM completo en `src/theaia/core/fsm` con:
+  - `conversation_manager.py` (FSM global y desambiguación)
+  - `state_machine.py` (BaseStateMachine y ConversationStateMachine)
+  - `states/global_states.py` (GlobalState, validación y descripciones)
+  - `states/disambiguation_state.py` (Lógica de desambiguación)
+  - `states/agent_states.py` (Mapeo de intents a agentes y estados)
+  - `transitions.py` (Reglas de transición, condiciones y callbacks)
+- Documentación interna (`src/theaia/core/fsm/README.md`) con ejemplos de uso.
+
+Actualizar README y CHANGELOG con versión 2.0.0	✅ Completada	0.1 días	0.1 h	15/10/2025 20:35 CEST
+Añadir tests E2E para desambiguación (test_fsm_disambiguation.py)	✅ Completada	0.3 días	0.3 h	15/10/2025 20:40 CEST
+Corrección y revisión del Core completo	✅ Completada	0.2 días	0.2 h	15/10/2025 20:26 CEST
+Actualizar CoreRouter	Refactor e integración FSM y ConversationManager	Completado	15/10/2025 20:16 CEST	Unit/Integration
+Revisión completa del Core	Comprobación, corrección y test formal del ciclo CoreRouter	Completado	15/10/2025 20:26 CEST	Unit/Integration
+FSM básico: transiciones y triggers	Implementación e integración de pruebas unitarias FSM (ambigüedad, delegación, resolución)	Completado	15/10/2025 20:35 CEST	Unit
+FSM avanzado: errores y timeout	Test unitario de transición de timeout, error y reset FSM	Completado	15/10/2025 21:00 CEST	Unit
+ConversationManager: ciclo completo	Pruebas unitarias e integración ciclo ConversationManager incluido FSM y contexto	Completado	15/10/2025 20:40 CEST	Unit/Integration
+Persistencia de contexto	Test unitario de guardado/carga de contexto robusta en Core	Completado	15/10/2025 21:09 CEST	Unit
