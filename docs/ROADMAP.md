@@ -13,7 +13,6 @@ Es el cimiento para CI/CD y revisiones automáticas (Black, Flake8).
 
 ## Fase 2 – Core (FSM & Context)
 
-Tarea	Estado	Estimación	Duración Real	Finalización
 Integrar router en adaptadores	✅ Completada	1 día	2 h	07/10/2025 15:00 CEST
 Conectar intent_detector al router	✅ Completada	2 días	3 h	08/10/2025 18:30 CEST
 Conectar entity_extractor al router	✅ Completada	1 día	1 h	08/10/2025 19:30 CEST
@@ -30,8 +29,12 @@ Roadmap y checklist actualizado	✅ Completada	0.1 días	0.1 h	09/10/2025 20:00 
 2.1 E2E Agendado (test_core_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 18:43 CEST
 2.2 E2E Contexto (test_context_flow.py)	✅ Completada	0.5 días	0.5 h	14/10/2025 16:24 CEST
 FSM implementado correctamente	✅ Completada	0.1 días	0.1 h	15/10/2025 19:30 CEST
-Actualizar CoreRouter para integrar FSM	⬜ Pendiente	0.2 días	–	–
-Corrección y revisión del Core completo	⬜ Pendiente	0.2 días	–	–
+Tests unitarios CoreRouter y ConversationManager	✅ Completada	0.2 días	0.2 h	15/10/2025 20:16 CEST
+Revisión completa del Core (corrección y validación formal)	✅ Completada	0.2 días	0.2 h	15/10/2025 20:26 CEST
+Tests unitarios FSM: transiciones, triggers y helpers	✅ Completada	0.1 días	0.1 h	15/10/2025 20:35 CEST
+Tests avanzados FSM: error, timeout y reset	✅ Completada	0.1 días	0.1 h	15/10/2025 21:00 CEST
+Tests persistencia: guardar/cargar contexto usuario	✅ Completada	0.1 días	0.1 h	15/10/2025 21:09 CEST
+Actualización de README y changelog con todos los hitos	✅ Completada	0.1 días	0.1 h	15/10/2025 21:10 CEST
 Revisión del agente Agenda	⬜ Pendiente	0.2 días	–	–
 Verificación de funcionamiento de la máquina de estados	⬜ Pendiente	0.2 días	–	–
 Verificación de funcionamiento del FSM	⬜ Pendiente	0.2 días	–	–

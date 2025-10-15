@@ -5,18 +5,26 @@ from src.theaia.core.fsm.conversation_manager import ConversationManager
 from src.theaia.database.repositories.context_repository import load_context, save_context
 from src.theaia.agents.agenda_agent import AgendaAgent
 from src.theaia.agents.note_agent import NoteAgent
-from src.theaia.agents.reminder_agent import ReminderAgent
+from src.theaia.agents.event_agent import EventAgent
 from src.theaia.agents.fallback_agent import FallbackAgent
-# ... otros imports de agentes
+from src.theaia.agents.help_agent import HelpAgent
+from src.theaia.agents.query_agent import QueryAgent
+from src.theaia.agents.scheduler_agent import SchedulerAgent
+# from src.theaia.agents.reminder_agent import ReminderAgent  # COMENTADO TEMPORALMENTE
+
 
 class CoreRouter:
     def __init__(self):
         self.agents = {
             'agenda': AgendaAgent(),
             'notas': NoteAgent(),
-            'recordatorio': ReminderAgent(),
+            'event': EventAgent(),
+            'help': HelpAgent(),
+            'query': QueryAgent(),
+            'scheduler': SchedulerAgent(),
+            # 'recordatorio': ReminderAgent(),      # COMENTADO TEMPORALMENTE
+            # 'notificacion': ReminderAgent(),      # COMENTADO TEMPORALMENTE
             'fallback': FallbackAgent(),
-            # ... otros agentes
         }
         self.conversation_managers: Dict[str, ConversationManager] = {}
 
@@ -58,8 +66,10 @@ class CoreRouter:
             candidates.append('agenda')
         if any(w in msg for w in ['nota','apuntar','escribir','documentar']):
             candidates.append('notas')
-        if any(w in msg for w in ['recordatorio','recordar','avisar','alerta']):
-            candidates.append('recordatorio')
+        # if any(w in msg for w in ['recordatorio','recordar','avisar','alerta']):
+        #     candidates.append('recordatorio')
+        # if any(w in msg for w in ['notificación','notificar','notificacion']):
+        #     candidates.append('notificacion')
         if any(w in msg for w in ['evento','calendar']):
             candidates.append('event')
         if any(w in msg for w in ['ayuda','help']):
@@ -68,6 +78,5 @@ class CoreRouter:
             candidates.append('query')
         if any(w in msg for w in ['programar','schedule']):
             candidates.append('scheduler')
-        # ... otros intents
 
         return candidates if candidates else ['fallback']
