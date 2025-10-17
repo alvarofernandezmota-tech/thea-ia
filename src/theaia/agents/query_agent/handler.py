@@ -1,22 +1,43 @@
-class QueryAgent:
-    def __init__(self):
-        pass
+# src/theaia/agents/query_agent/handler.py
 
-    def process(self, user_id, message, current_state, current_data):
-        # Simulación: contesta qué citas, notas o eventos tiene el usuario
-        if current_state == 'initial':
-            if "cita" in message.lower():
-                response = "Tienes la siguiente cita registrada: " + str(current_data.get('appointment_datetime', 'No hay citas registradas.'))
-            elif "nota" in message.lower():
-                response = "Tu nota guardada es: " + str(current_data.get('note_text', 'No hay notas guardadas.'))
-            elif "evento" in message.lower():
-                response = "Tu evento registrado es: " + str(current_data.get('event_type', 'No hay eventos registrados.'))
-            else:
-                response = "¿Quieres consultar tus citas, notas o eventos?"
-            new_state = 'completed'
-            new_data = current_data
-        else:
-            response = "No entendí tu consulta. Puedes preguntar por 'citas', 'notas' o 'eventos'."
-            new_state = 'initial'
-            new_data = {}
-        return response, new_state, new_data
+from src.theaia.agents.query_agent.model.query_fsm import QueryFSM
+
+class QueryAgent:
+    """
+    Agente de Thea IA 2.0 encargado de responder consultas generales,
+    preguntas informativas y búsquedas de información.
+    Orquesta el flujo de conversación mediante su FSM interna.
+    """
+
+    def __init__(self):
+        self.fsm = QueryFSM()
+
+    def can_handle(self, intent: str) -> bool:
+        """Determina si este agente puede manejar el intent proporcionado."""
+        return intent.lower() in [
+            "consulta", "pregunta", "buscar", "información", 
+            "qué", "cómo", "cuándo", "dónde", "por qué"
+        ]
+
+    def handle(self, user_id: str, message: str, context: dict) -> dict:
+        """
+        Procesa el mensaje del usuario y actualiza el contexto mediante la FSM.
+        
+        Args:
+            user_id: Identificador único del usuario
+            message: Mensaje de entrada del usuario
+            context: Contexto conversacional actual
+            
+        Returns:
+            dict con status, message, fsm_state y context actualizados
+        """
+        self.fsm.context.update(context)
+        response, state = self.fsm.process_message(message, context)
+        status = "ok" if state not in ["error"] else "error"
+
+        return {
+            "status": status,
+            "message": response,
+            "fsm_state": state,
+            "context": self.fsm.context
+        }

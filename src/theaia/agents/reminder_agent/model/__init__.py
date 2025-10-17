@@ -1,3 +1,5 @@
-# src/theaia/agents/event_agent/__init__.py
+# src/theaia/agents/reminder_agent/model/__init__.py
 
-# Hace que Python trate este directorio como un paquete
+from .reminder_fsm import ReminderFSM
+
+__all__ = ["ReminderFSM"]

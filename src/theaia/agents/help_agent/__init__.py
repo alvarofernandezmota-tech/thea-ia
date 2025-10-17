@@ -1,4 +1,5 @@
-# src/theaia/agents/event_agent/__init__.py
+# src/theaia/agents/help_agent/__init__.py
 
-# Hace que Python trate este directorio como un paquete
 from .handler import HelpAgent
+
+__all__ = ["HelpAgent"]

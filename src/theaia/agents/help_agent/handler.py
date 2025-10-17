@@ -1,19 +1,43 @@
-import json
-import os
+# src/theaia/agents/help_agent/handler.py
+
+from src.theaia.agents.help_agent.model.help_fsm import HelpFSM
 
 class HelpAgent:
-    def __init__(self):
-        # Lee comandos soportados desde vocab.json
-        dir_path = os.path.dirname(__file__)
-        try:
-            with open(os.path.join(dir_path, "model", "vocab.json"), encoding="utf-8") as f:
-                vocab = json.load(f)
-            self.commands = vocab.get("commands", ["agendar", "nota", "recordar", "ayuda", "consultar"])
-        except Exception:
-            self.commands = ["agendar", "nota", "recordar", "ayuda", "consultar"]
+    """
+    Agente de Thea IA 2.0 encargado de proporcionar ayuda,
+    documentación y guías sobre el uso del sistema.
+    Orquesta el flujo de conversación mediante su FSM interna.
+    """
 
-    def process(self, user_id, message, current_state, current_data):
-        response = "Puedo ayudarte con: " + ", ".join(self.commands)
-        new_state = "initial"
-        new_data = {}
-        return response, new_state, new_data
+    def __init__(self):
+        self.fsm = HelpFSM()
+
+    def can_handle(self, intent: str) -> bool:
+        """Determina si este agente puede manejar el intent proporcionado."""
+        return intent.lower() in [
+            "ayuda", "help", "comandos", "guía", "manual",
+            "instrucciones", "cómo usar", "funciones"
+        ]
+
+    def handle(self, user_id: str, message: str, context: dict) -> dict:
+        """
+        Procesa el mensaje del usuario y actualiza el contexto mediante la FSM.
+        
+        Args:
+            user_id: Identificador único del usuario
+            message: Mensaje de entrada del usuario
+            context: Contexto conversacional actual
+            
+        Returns:
+            dict con status, message, fsm_state y context actualizados
+        """
+        self.fsm.context.update(context)
+        response, state = self.fsm.process_message(message, context)
+        status = "ok" if state not in ["error"] else "error"
+
+        return {
+            "status": status,
+            "message": response,
+            "fsm_state": state,
+            "context": self.fsm.context
+        }
