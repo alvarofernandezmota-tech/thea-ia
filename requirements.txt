@@ -83,5 +83,6 @@ numpy
 spacy
 scikit-learn
 transitions>=0.9
+sqlalchemy>=1.4
 
 
