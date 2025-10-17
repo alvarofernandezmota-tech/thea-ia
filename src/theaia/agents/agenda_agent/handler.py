@@ -1,61 +1,39 @@
 # src/theaia/agents/agenda_agent/handler.py
 
-from datetime import datetime
+from src.theaia.agents.agenda_agent.model.agenda_fsm import AgendaFSM
 
 class AgendaAgent:
     """
-    Agente para gestionar el flujo de agendado de citas:
-    - initial → awaiting_datetime → awaiting_confirmation → completed
+    Agente de Thea IA 2.0 encargado de agendar citas, reuniones o eventos.
+    Orquesta el flujo de conversación mediante su FSM interna.
     """
 
     def __init__(self):
-        pass
+        self.fsm = AgendaFSM()
 
-    def process(self, user_id, message, current_state, current_data):
-        # Paso 1: solicitar fecha y hora
-        if current_state == 'initial':
-            response = "¿Para qué fecha y hora quieres agendar la cita?"
-            new_state = 'awaiting_datetime'
-            new_data = current_data
+    def can_handle(self, intent: str) -> bool:
+        """Determina si este agente puede manejar el intent proporcionado."""
+        return intent.lower() in ["agenda", "cita", "reunión", "evento", "agendar"]
 
-        # Paso 2: procesar fecha y hora
-        elif current_state == 'awaiting_datetime':
-            datetime_str = message.strip()
-            try:
-                datetime.fromisoformat(datetime_str)
-            except Exception:
-                response = "No entendí la fecha. Por favor usa formato YYYY-MM-DD HH:MM"
-                new_state = 'awaiting_datetime'
-                new_data = current_data
-                return response, new_state, new_data
+    def handle(self, user_id: str, message: str, context: dict) -> dict:
+        """
+        Procesa el mensaje del usuario y actualiza el contexto mediante la FSM.
+        
+        Args:
+            user_id: Identificador único del usuario
+            message: Mensaje de entrada del usuario
+            context: Contexto conversacional actual
+            
+        Returns:
+            dict con status, message, fsm_state y context actualizados
+        """
+        self.fsm.context.update(context)
+        response, state = self.fsm.process_message(message, context)
+        status = "ok" if state not in ["error", "cancelled"] else "error"
 
-            new_data = {**current_data, 'appointment_datetime': datetime_str}
-            response = f"Confirmas la cita para {datetime_str}?"
-            new_state = 'awaiting_confirmation'
-
-        # Paso 3: confirmar o cancelar, guardando last_event con uid
-        elif current_state == 'awaiting_confirmation':
-            if message.lower() in ['sí', 'si', 'confirmo', 'confirmar']:
-                fecha = current_data.get('appointment_datetime', 'desconocido')
-                new_data = {
-                    **current_data,
-                    'last_event': {
-                        'uid': user_id,
-                        'type': 'appointment',
-                        'datetime': fecha
-                    }
-                }
-                response = f"Cita confirmada para {fecha}. ¡Listo!"
-                new_state = 'completed'
-            else:
-                response = "Solicitud cancelada. ¿Necesitas otra cosa?"
-                new_state = 'initial'
-                new_data = {}
-
-        # Fallback interno
-        else:
-            response = "No entendí tu petición de citas."
-            new_state = 'initial'
-            new_data = {}
-
-        return response, new_state, new_data
+        return {
+            "status": status,
+            "message": response,
+            "fsm_state": state,
+            "context": self.fsm.context
+        }

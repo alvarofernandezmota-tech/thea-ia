@@ -1,20 +1,39 @@
+# src/theaia/agents/note_agent/handler.py
+
+from src.theaia.agents.note_agent.model.note_fsm import NoteFSM
+
 class NoteAgent:
+    """
+    Agente de Thea IA 2.0 encargado de crear, editar y guardar notas.
+    Orquesta el flujo de conversación mediante su FSM interna.
+    """
+
     def __init__(self):
-        pass
+        self.fsm = NoteFSM()
 
-    def process(self, user_id, message, current_state, current_data):
-        if current_state == 'initial':
-            response = "¿Qué nota quieres guardar?"
-            new_state = 'awaiting_note_text'
-            new_data = current_data
-        elif current_state == 'awaiting_note_text':
-            note_text = message.strip()
-            new_data = {**current_data, 'note_text': note_text}
-            response = f"Nota guardada: '{note_text}'. ¿Quieres añadir otra?"
-            new_state = 'completed'
-        else:
-            response = "No entendí tu petición de nota. Intenta de nuevo."
-            new_state = 'initial'
-            new_data = {}
+    def can_handle(self, intent: str) -> bool:
+        """Determina si este agente puede manejar el intent proporcionado."""
+        return intent.lower() in ["nota", "notas", "apuntar", "anotar", "guardar"]
 
-        return response, new_state, new_data
+    def handle(self, user_id: str, message: str, context: dict) -> dict:
+        """
+        Procesa el mensaje del usuario y actualiza el contexto mediante la FSM.
+        
+        Args:
+            user_id: Identificador único del usuario
+            message: Mensaje de entrada del usuario
+            context: Contexto conversacional actual
+            
+        Returns:
+            dict con status, message, fsm_state y context actualizados
+        """
+        self.fsm.context.update(context)
+        response, state = self.fsm.process_message(message, context)
+        status = "ok" if state not in ["error", "cancelled"] else "error"
+
+        return {
+            "status": status,
+            "message": response,
+            "fsm_state": state,
+            "context": self.fsm.context
+        }
