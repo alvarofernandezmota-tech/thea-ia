@@ -1,82 +1,57 @@
-# src/theaia/core/router.py
+# Archivo: src/theaia/core/router.py
 
-from typing import Tuple, Dict, Any
-from src.theaia.core.fsm.conversation_manager import ConversationManager
+from src.theaia.ml.intent_detector.inference import IntentDetector
 from src.theaia.database.repositories.context_repository import load_context, save_context
-from src.theaia.agents.agenda_agent import AgendaAgent
-from src.theaia.agents.note_agent import NoteAgent
-from src.theaia.agents.event_agent import EventAgent
-from src.theaia.agents.fallback_agent import FallbackAgent
-from src.theaia.agents.help_agent import HelpAgent
-from src.theaia.agents.query_agent import QueryAgent
-from src.theaia.agents.scheduler_agent import SchedulerAgent
-# from src.theaia.agents.reminder_agent import ReminderAgent  # COMENTADO TEMPORALMENTE
-
 
 class CoreRouter:
     def __init__(self):
-        self.agents = {
-            'agenda': AgendaAgent(),
-            'notas': NoteAgent(),
-            'event': EventAgent(),
-            'help': HelpAgent(),
-            'query': QueryAgent(),
-            'scheduler': SchedulerAgent(),
-            # 'recordatorio': ReminderAgent(),      # COMENTADO TEMPORALMENTE
-            # 'notificacion': ReminderAgent(),      # COMENTADO TEMPORALMENTE
-            'fallback': FallbackAgent(),
-        }
-        self.conversation_managers: Dict[str, ConversationManager] = {}
+        self.agents = []
+        self.intent_detector = IntentDetector()
+        print("CoreRouter inicializado.")
 
-    def handle(self, uid: str, message: str, state: str, context: Dict[str, Any]
-              ) -> Tuple[str, str, Dict[str, Any]]:
+    def handle(self, user_id: str, message: str, context: dict) -> dict:
+        if context.get("active_agent"):
+            agent = self._get_agent_by_name(context["active_agent"])
+            if agent:
+                print(f"Delegando a agente activo: {agent.__class__.__name__}")
+                return agent.handle(user_id, message, context)
 
-        # Obtener o crear ConversationManager para este usuario
-        if uid not in self.conversation_managers:
-            self.conversation_managers[uid] = ConversationManager(uid)
-            saved = load_context(uid)
-            if saved:
-                cm = self.conversation_managers[uid]
-                cm.fsm.state = saved.get("fsm_state", "initial")
-                cm.fsm.context = saved.get("context", {})
+        intents = self.intent_detector.detect(message)
+        
+        # --- LÓGICA CORREGIDA ---
+        # 1. Buscar candidatos excluyendo el FallbackAgent
+        candidate_agents = [
+            agent for agent in self.agents
+            if agent.__class__.__name__ != 'FallbackAgent' and any(agent.can_handle(intent) for intent in intents)
+        ]
 
-        cm = self.conversation_managers[uid]
+        if len(candidate_agents) == 1:
+            # 2. Si hay un único agente, delegar a él.
+            agent = candidate_agents[0]
+            print(f"Delegando a agente único: {agent.__class__.__name__}")
+            return agent.handle(user_id, message, context)
+        
+        elif len(candidate_agents) > 1:
+            # 3. Si hay varios, preguntar para desambiguar.
+            print(f"Ambigüedad detectada entre: {[a.__class__.__name__ for a in candidate_agents]}")
+            return {
+                "status": "disambiguation",
+                "message": f"Entendido. ¿Te refieres a {candidate_agents[0].__class__.__name__} o {candidate_agents[1].__class__.__name__}?",
+                "options": [a.__class__.__name__ for a in candidate_agents],
+                "context": context,
+            }
+        
+        else:
+            # 4. Si NO hay candidatos, usar el FallbackAgent.
+            fallback_agent = self._get_agent_by_name("FallbackAgent")
+            if fallback_agent:
+                print("Delegando a FallbackAgent.")
+                return fallback_agent.handle(user_id, message, context)
+            else:
+                return {"status": "error", "message": "Error: FallbackAgent no encontrado.", "context": {}}
 
-        # Detectar intents candidatos
-        intents = self._detect_multiple_intents(message)
-
-        # Procesar con FSM
-        response, new_state, new_context = cm.process_input(message, intents)
-
-        # Persistir estado y contexto
-        save_context(uid, new_state, {
-            "fsm_state": cm.fsm.state,
-            "context": cm.fsm.context,
-            **new_context
-        })
-
-        return response, new_state, new_context
-
-    def _detect_multiple_intents(self, message: str) -> list:
-        """Detecta múltiples intents candidatos usando palabras clave."""
-        msg = message.lower()
-        candidates = []
-
-        if any(w in msg for w in ['cita','agendar','reunión','meeting']):
-            candidates.append('agenda')
-        if any(w in msg for w in ['nota','apuntar','escribir','documentar']):
-            candidates.append('notas')
-        # if any(w in msg for w in ['recordatorio','recordar','avisar','alerta']):
-        #     candidates.append('recordatorio')
-        # if any(w in msg for w in ['notificación','notificar','notificacion']):
-        #     candidates.append('notificacion')
-        if any(w in msg for w in ['evento','calendar']):
-            candidates.append('event')
-        if any(w in msg for w in ['ayuda','help']):
-            candidates.append('help')
-        if any(w in msg for w in ['consulta','pregunta','query']):
-            candidates.append('query')
-        if any(w in msg for w in ['programar','schedule']):
-            candidates.append('scheduler')
-
-        return candidates if candidates else ['fallback']
+    def _get_agent_by_name(self, name: str):
+        for agent in self.agents:
+            if agent.__class__.__name__ == name:
+                return agent
+        return None
