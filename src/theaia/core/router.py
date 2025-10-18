@@ -1,57 +1,85 @@
-# Archivo: src/theaia/core/router.py
+"""
+CoreRouter de Thea IA 2.0.
+Gestiona el flujo de mensajes entre el IntentDetector y los agentes.
+"""
 
 from src.theaia.ml.intent_detector.inference import IntentDetector
 from src.theaia.database.repositories.context_repository import load_context, save_context
 
+
 class CoreRouter:
     def __init__(self):
-        self.agents = []
         self.intent_detector = IntentDetector()
+        self.agents = []  # Los agentes se cargarán dinámicamente
         print("CoreRouter inicializado.")
 
     def handle(self, user_id: str, message: str, context: dict) -> dict:
+        """
+        Procesa un mensaje del usuario y lo delega al agente apropiado.
+
+        Args:
+            user_id: ID del usuario
+            message: Mensaje del usuario
+            context: Contexto de la conversación (puede ser None)
+
+        Returns:
+            dict: Respuesta con status, message y context
+        """
+        # Manejar context=None
+        if context is None:
+            context = {}
+
+        # Cargar contexto previo de DB si existe
+        saved = load_context(user_id)
+        if saved:
+            context.update(saved)
+
+        # Si hay un agente activo en el contexto, delegar directamente
         if context.get("active_agent"):
             agent = self._get_agent_by_name(context["active_agent"])
             if agent:
                 print(f"Delegando a agente activo: {agent.__class__.__name__}")
                 return agent.handle(user_id, message, context)
 
-        intents = self.intent_detector.detect(message)
-        
-        # --- LÓGICA CORREGIDA ---
-        # 1. Buscar candidatos excluyendo el FallbackAgent
-        candidate_agents = [
-            agent for agent in self.agents
-            if agent.__class__.__name__ != 'FallbackAgent' and any(agent.can_handle(intent) for intent in intents)
-        ]
+        # Detectar intenciones con ML
+        try:
+            intents = self.intent_detector.detect(message)
+        except Exception as e:
+            print(f"Error durante la detección de intenciones: {e}")
+            intents = []
 
-        if len(candidate_agents) == 1:
-            # 2. Si hay un único agente, delegar a él.
-            agent = candidate_agents[0]
-            print(f"Delegando a agente único: {agent.__class__.__name__}")
-            return agent.handle(user_id, message, context)
-        
-        elif len(candidate_agents) > 1:
-            # 3. Si hay varios, preguntar para desambiguar.
-            print(f"Ambigüedad detectada entre: {[a.__class__.__name__ for a in candidate_agents]}")
-            return {
-                "status": "disambiguation",
-                "message": f"Entendido. ¿Te refieres a {candidate_agents[0].__class__.__name__} o {candidate_agents[1].__class__.__name__}?",
-                "options": [a.__class__.__name__ for a in candidate_agents],
-                "context": context,
-            }
-        
-        else:
-            # 4. Si NO hay candidatos, usar el FallbackAgent.
-            fallback_agent = self._get_agent_by_name("FallbackAgent")
-            if fallback_agent:
-                print("Delegando a FallbackAgent.")
-                return fallback_agent.handle(user_id, message, context)
-            else:
-                return {"status": "error", "message": "Error: FallbackAgent no encontrado.", "context": {}}
-
-    def _get_agent_by_name(self, name: str):
+        # Buscar agente que pueda manejar la intención
         for agent in self.agents:
-            if agent.__class__.__name__ == name:
+            if (
+                agent.__class__.__name__ != "FallbackAgent"
+                and any(agent.can_handle(intent) for intent in intents)
+            ):
+                print(f"Delegando a agente único: {agent.__class__.__name__}")
+                response = agent.handle(user_id, message, context)
+                save_context(user_id, response.get("context", {}))
+                return response
+
+        # Si no hay agente específico, usar FallbackAgent
+        fallback = self._get_fallback_agent()
+        if fallback:
+            print("Delegando a FallbackAgent.")
+            response = fallback.handle(user_id, message, context)
+            save_context(user_id, response.get("context", {}))
+            return response
+
+        # Si no hay FallbackAgent, retornar error
+        return {"status": "error", "message": "No se pudo procesar la solicitud.", "context": context}
+
+    def _get_agent_by_name(self, agent_name: str):
+        """Busca un agente por nombre de clase."""
+        for agent in self.agents:
+            if agent.__class__.__name__ == agent_name:
+                return agent
+        return None
+
+    def _get_fallback_agent(self):
+        """Obtiene el agente de fallback."""
+        for agent in self.agents:
+            if agent.__class__.__name__ == "FallbackAgent":
                 return agent
         return None
