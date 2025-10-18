@@ -894,3 +894,14 @@ FSM básico: transiciones y triggers	Implementación e integración de pruebas u
 FSM avanzado: errores y timeout	Test unitario de transición de timeout, error y reset FSM	Completado	15/10/2025 21:00 CEST	Unit
 ConversationManager: ciclo completo	Pruebas unitarias e integración ciclo ConversationManager incluido FSM y contexto	Completado	15/10/2025 20:40 CEST	Unit/Integration
 Persistencia de contexto	Test unitario de guardado/carga de contexto robusta en Core	Completado	15/10/2025 21:09 CEST	Unit
+=============================================================================================================================================================================
+sabado 18/10/25
+
+🏆 RESUMEN DEL DÍA 2 (Sábado 18 de Octubre 2025)
+✅ Objetivos cumplidos:
+Objetivo	Estado	Evidencia
+CoreRouter E2E tests	✅	5/5 pasando
+Tests unitarios CoreRouter	✅	3/3 pasando
+Modelo IntentDetector real	✅	Entrenado y funcionando
+Integración Core + ML	✅	Predicciones correctas
+Tests pasando al 100%	✅	3 passed in 1.06s
