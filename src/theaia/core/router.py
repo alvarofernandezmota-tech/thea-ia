@@ -10,7 +10,7 @@ from src.theaia.database.repositories.context_repository import load_context, sa
 class CoreRouter:
     def __init__(self):
         self.intent_detector = IntentDetector()
-        self.agents = []  # Los agentes se cargarán dinámicamente
+        self.agents = []  # Los agentes se cargarán dinámicamente desde tests o factoría
         print("CoreRouter inicializado.")
 
     def handle(self, user_id: str, message: str, context: dict) -> dict:
@@ -25,61 +25,62 @@ class CoreRouter:
         Returns:
             dict: Respuesta con status, message y context
         """
-        # Manejar context=None
+        # 1. Normalizar contexto
         if context is None:
             context = {}
 
-        # Cargar contexto previo de DB si existe
-        saved = load_context(user_id)
-        if saved:
-            context.update(saved)
+        # 2. Cargar contexto previo de DB (si existe)
+        try:
+            saved = load_context(user_id)
+            if saved:
+                context.update(saved)
+        except Exception:
+            pass
 
-        # Si hay un agente activo en el contexto, delegar directamente
+        # 3. Delegación a agente activo en contexto
         if context.get("active_agent"):
             agent = self._get_agent_by_name(context["active_agent"])
             if agent:
                 print(f"Delegando a agente activo: {agent.__class__.__name__}")
                 return agent.handle(user_id, message, context)
 
-        # Detectar intenciones con ML
+        # 4. Detección de intenciones con ML
         try:
             intents = self.intent_detector.detect(message)
         except Exception as e:
             print(f"Error durante la detección de intenciones: {e}")
             intents = []
 
-        # Buscar agente que pueda manejar la intención
+        # 5. Buscar agente que maneje la intención
         for agent in self.agents:
-            if (
-                agent.__class__.__name__ != "FallbackAgent"
-                and any(agent.can_handle(intent) for intent in intents)
-            ):
+            if agent.__class__.__name__ != "FallbackAgent" and any(agent.can_handle(it) for it in intents):
                 print(f"Delegando a agente único: {agent.__class__.__name__}")
                 response = agent.handle(user_id, message, context)
-                save_context(user_id, response.get("context", {}))
+                # 6. Guardar contexto actualizado (si aplica)
+                try:
+                    save_context(user_id, response.get("context", {}))
+                except Exception:
+                    pass
                 return response
 
-        # Si no hay agente específico, usar FallbackAgent
+        # 7. Fallback si no hay agente específico
         fallback = self._get_fallback_agent()
         if fallback:
             print("Delegando a FallbackAgent.")
             response = fallback.handle(user_id, message, context)
-            save_context(user_id, response.get("context", {}))
+            try:
+                save_context(user_id, response.get("context", {}))
+            except Exception:
+                pass
             return response
 
-        # Si no hay FallbackAgent, retornar error
+        # 8. Sin agente ni fallback: error genérico
         return {"status": "error", "message": "No se pudo procesar la solicitud.", "context": context}
 
     def _get_agent_by_name(self, agent_name: str):
         """Busca un agente por nombre de clase."""
-        for agent in self.agents:
-            if agent.__class__.__name__ == agent_name:
-                return agent
-        return None
+        return next((a for a in self.agents if a.__class__.__name__ == agent_name), None)
 
     def _get_fallback_agent(self):
-        """Obtiene el agente de fallback."""
-        for agent in self.agents:
-            if agent.__class__.__name__ == "FallbackAgent":
-                return agent
-        return None
+        """Obtiene la instancia de FallbackAgent."""
+        return next((a for a in self.agents if a.__class__.__name__ == "FallbackAgent"), None)
