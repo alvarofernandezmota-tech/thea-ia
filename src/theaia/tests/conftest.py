@@ -3,7 +3,7 @@ import pytest
 
 class DummyAgent:
     """
-    Un agente simulado que responde con un texto fijo.
+    Un agente simulado que responde con un texto fijo y puede manejar intenciones.
     """
     def __init__(self, response_text):
         self.response_text = response_text
@@ -28,7 +28,19 @@ def replace_agent(router, agent_class, dummy_instance):
     """
     Reemplaza un agente en el router por una instancia simulada.
     """
-    router.agents = [dummy_instance if isinstance(agent, agent_class) else agent for agent in router.agents]
+    if not router.agents:
+        router.agents = []
+    
+    # Reemplaza si existe, o añade si no.
+    found = False
+    for i, agent in enumerate(router.agents):
+        if isinstance(agent, agent_class):
+            router.agents[i] = dummy_instance
+            found = True
+            break
+    if not found:
+        router.agents.append(dummy_instance)
+
 
 @pytest.fixture
 def agent_replacer():

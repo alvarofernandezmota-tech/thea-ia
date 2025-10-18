@@ -23,7 +23,7 @@ class CoreRouter:
             if saved:
                 context.update(saved)
         except Exception:
-            pass  # Ignorar si falla la carga
+            pass
 
         if context.get("active_agent"):
             agent = self._get_agent_by_name(context["active_agent"])
@@ -31,7 +31,12 @@ class CoreRouter:
                 return agent.handle(user_id, message, context)
 
         try:
-            intents = self.intent_detector.detect(message)
+            raw_intents = self.intent_detector.detect(message)
+            # Asegura que los intents sean siempre una lista de strings
+            if hasattr(raw_intents, '__iter__') and not isinstance(raw_intents, str):
+                intents = [str(i) for i in raw_intents]
+            else:
+                intents = [str(raw_intents)]
         except Exception as e:
             intents = []
 
@@ -41,7 +46,7 @@ class CoreRouter:
                 try:
                     save_context(user_id, response.get("context", {}))
                 except Exception:
-                    pass  # Ignorar si falla el guardado
+                    pass
                 return response
 
         fallback = self._get_fallback_agent()
