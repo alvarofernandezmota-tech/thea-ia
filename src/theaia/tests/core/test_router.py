@@ -11,7 +11,7 @@ def test_handle_agenda(agent_replacer, dummy_agent_factory):
     """
     router = CoreRouter()
     dummy = dummy_agent_factory("ok agenda")
-    router.agents = [AgendaAgent()]
+    router.agents.append(AgendaAgent()) # Añade el agente real
     agent_replacer(router, AgendaAgent, dummy)
     
     result = router.handle("user1", "quiero agendar una cita", {})
@@ -24,7 +24,7 @@ def test_handle_notes(agent_replacer, dummy_agent_factory):
     """
     router = CoreRouter()
     dummy = dummy_agent_factory("ok nota")
-    router.agents = [NoteAgent()]
+    router.agents.append(NoteAgent()) # Añade el agente real
     agent_replacer(router, NoteAgent, dummy)
     
     result = router.handle("user2", "crear nota de prueba", {})
@@ -37,9 +37,12 @@ def test_handle_fallback(agent_replacer, dummy_agent_factory):
     """
     router = CoreRouter()
     dummy = dummy_agent_factory("ok fallback")
-    router.agents = [FallbackAgent()]
+    router.agents.append(FallbackAgent()) # Añade el agente real
     agent_replacer(router, FallbackAgent, dummy)
     
     result = router.handle("user3", "mensaje sin sentido", {})
+    # El FallbackAgent siempre se activa al final, por eso la lógica es un poco distinta
     assert result["status"] == "ok"
     assert "ok fallback" in result["message"].lower()
+
+
