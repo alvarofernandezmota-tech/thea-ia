@@ -1,78 +1,87 @@
-# Archivo: src/theaia/ml/intent_detector/inference.py
+"""
+Módulo de inferencia del IntentDetector — Thea IA 2.0 (VERSIÓN FINAL)
+Compatible con modelos guardados como (modelo, vectorizador) en tupla pickle.
+Interfaz pública: detect() / Implementación interna: predict()
+"""
 
-import joblib
 import os
-from typing import List
+import pickle
+
 
 class IntentDetector:
     """
-    Clase para cargar el modelo de detección de intenciones y predecir
-    la intención de un mensaje de texto.
+    Detector de intenciones con soporte completo para modelo + vectorizador.
+    Interfaz pública estable para CoreRouter y otros componentes.
     """
+
     def __init__(self, model_path: str = None):
-        """
-        Inicializa el detector de intenciones.
-        
-        Args:
-            model_path (str, optional): Ruta al archivo del modelo.
-                                        Si no se proporciona, busca en la ruta por defecto.
-        """
+        """Carga el modelo y vectorizador desde archivo pickle."""
         if model_path is None:
-            # Construye la ruta al modelo por defecto basado en la estructura del proyecto
             base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-            model_path = os.path.join(base_dir, 'models', 'model_intent.pkl')
+            model_path = os.path.join(base_dir, "models", "model_intent.pkl")
 
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"El modelo no se encontró en la ruta: {model_path}")
-            
-        try:
-            self.model = joblib.load(model_path)
-            print(f"Modelo de detección de intenciones cargado desde {model_path}")
-        except Exception as e:
-            print(f"Error al cargar el modelo: {e}")
-            self.model = None
 
-    def detect(self, text: str) -> List[str]:
+        with open(model_path, "rb") as f:
+            data = pickle.load(f)
+
+        if isinstance(data, tuple) and len(data) == 2:
+            self.model, self.vectorizer = data
+        else:
+            raise ValueError("El formato del modelo no es compatible. Debe ser una tupla (modelo, vectorizador).")
+
+        print(f"Modelo de detección de intenciones cargado desde {model_path}")
+
+    def predict(self, text: str):
         """
-        Detecta las intenciones en un texto dado.
-        
-        Args:
-            text (str): El mensaje del usuario.
-        
-        Returns:
-            List[str]: Una lista de intenciones predichas. Puede estar vacía si hay un error.
+        Método interno: Predice la intención del texto dado.
+        Retorna una lista con la intención detectada como STRING puro.
         """
-        if self.model is None:
-            print("Error: El modelo de detección de intenciones no está cargado.")
-            return []
-            
         try:
-            # El modelo espera una lista de textos para predecir
-            predictions = self.model.predict([text])
-            # La salida puede ser una lista de listas si hay múltiples etiquetas,
-            # así que la aplanamos si es necesario.
-            intents = predictions[0] if predictions else []
-            if isinstance(intents, str):
-                return [intents] # Si solo devuelve una cadena, la convertimos en lista
-            return list(intents)
+            if not self.model or not self.vectorizer:
+                raise ValueError("Modelo o vectorizador no cargado correctamente.")
+
+            X = self.vectorizer.transform([text])
+            prediction = self.model.predict(X)
+            
+            # Conversión segura: numpy array → string
+            if hasattr(prediction, '__iter__') and len(prediction) > 0:
+                prediction = str(prediction[0])
+            else:
+                prediction = str(prediction)
+            
+            return [prediction]
+
         except Exception as e:
             print(f"Error durante la predicción de la intención: {e}")
             return []
 
-# Ejemplo de uso (opcional, para testing directo del módulo)
-if __name__ == '__main__':
-    # Creamos una instancia del detector, que cargará el modelo por defecto
+    def detect(self, text: str):
+        """
+        Interfaz pública: Detecta la intención del texto.
+        Este método es llamado por CoreRouter y otros componentes.
+        
+        Args:
+            text (str): Mensaje del usuario
+            
+        Returns:
+            list: Lista con la intención detectada (string)
+        """
+        return self.predict(text)
+
+
+# Modo interactivo para pruebas
+if __name__ == "__main__":
     detector = IntentDetector()
     
-    # Probamos con algunos mensajes
-    test_messages = [
-        "quiero agendar una cita para mañana",
-        "crea una nota sobre la reunión",
-        "qué tiempo hace hoy?",
-        "necesito ayuda con la app"
+    ejemplos = [
+        'quiero agendar una cita para mañana',
+        'crea una nota sobre la reunión',
+        'qué tiempo hace hoy?',
+        'necesito ayuda con la app'
     ]
     
-    for msg in test_messages:
-        detected_intents = detector.detect(msg)
-        print(f"Mensaje: '{msg}' -> Intenciones detectadas: {detected_intents}")
-
+    for mensaje in ejemplos:
+        intenciones = detector.detect(mensaje)
+        print(f"Mensaje: '{mensaje}' -> Intenciones detectadas: {intenciones}")
