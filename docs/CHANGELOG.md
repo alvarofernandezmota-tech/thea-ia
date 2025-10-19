@@ -970,3 +970,27 @@ Reporte de cobertura → htmlcov/index.html
 Tag Git: v3.0‑day3
 
 Estado: Día 3 Completado ✔️
+
+
+=================================================================
+==========================================================
+============================================================
+# Changelog for Thea IA
+
+## [2025-10-19] - Versión 3.0
+
+### Características principales implementadas:
+
+- **Arquitectura FSM Robusta:** Implementación de un sistema de Máquina de Estados Finitos (FSM) de nivel profesional para la orquestación general de diálogos, sentando las bases para todas las futuras interacciones complejas.
+
+- **Patrón Orquestador-Especialista:** Desacoplamiento maestro de la lógica de conversación de los agentes. El `ConversationManager` global actúa como orquestador, mientras que módulos especializados como `AgendaConversationManager` manejan flujos de diálogo específicos.
+
+- **Agente de Agenda Multi-Turno:** Creación del `AgendaConversationManager`, un especialista que gestiona de forma autónoma el flujo completo para agendar citas (petición de fecha, hora y confirmación) con su propia FSM interna.
+
+- **Modularidad y Escalabilidad:** Definición de estados atómicos (`AwaitingDateState`, `AwaitingTimeState`) que encapsulan la lógica de cada paso del diálogo, haciendo que el sistema sea fácil de mantener y expandir.
+
+- **Ciclo de Vida de Estado Profesional:** Implementación de un ciclo de vida de estado correcto que asegura que el sistema se marque como `completed` al finalizar una tarea y se resetee a `initial` al recibir una nueva, garantizando la resiliencia y predictibilidad del asistente.
+
+- **Validación con Tests de Integración:** Desarrollo de un test End-to-End (E2E) que valida toda la arquitectura, desde la delegación del orquestador hasta la finalización del flujo del especialista, asegurando que todos los componentes funcionan en perfecta armonía.
+
+- **Depuración de Arquitectura:** Auditoría y depuración exhaustiva de errores críticos a nivel de sistema, incluyendo `ImportError`, `AttributeError`, `TypeError` y sutiles fallos de lógica en la gestión del contexto y estado, fortaleciendo la estabilidad del `core`.

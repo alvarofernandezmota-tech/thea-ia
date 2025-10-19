@@ -1,39 +1,28 @@
 # src/theaia/agents/agenda_agent/handler.py
 
-from src.theaia.agents.agenda_agent.model.agenda_fsm import AgendaFSM
+from src.theaia.agents.base_agent import BaseAgent
+from src.theaia.core.fsm.conversation_manager import ConversationManager
 
-class AgendaAgent:
+class AgendaAgent(BaseAgent):
     """
-    Agente de Thea IA 2.0 encargado de agendar citas, reuniones o eventos.
-    Orquesta el flujo de conversación mediante su FSM interna.
+    Agente para gestionar el agendamiento de eventos utilizando una FSM centralizada.
     """
-
     def __init__(self):
-        self.fsm = AgendaFSM()
+        super().__init__()
+        # Se renombra 'fsm' a 'conversation_manager' para mayor claridad
+        self.conversation_manager = ConversationManager()
 
-    def can_handle(self, intent: str) -> bool:
-        """Determina si este agente puede manejar el intent proporcionado."""
-        return intent.lower() in ["agenda", "cita", "reunión", "evento", "agendar"]
-
-    def handle(self, user_id: str, message: str, context: dict) -> dict:
+    async def handle(self, message: str, context: dict) -> str:
         """
-        Procesa el mensaje del usuario y actualiza el contexto mediante la FSM.
+        Delega el manejo del mensaje al ConversationManager para gestionar el diálogo.
         
         Args:
-            user_id: Identificador único del usuario
-            message: Mensaje de entrada del usuario
-            context: Contexto conversacional actual
-            
-        Returns:
-            dict con status, message, fsm_state y context actualizados
-        """
-        self.fsm.context.update(context)
-        response, state = self.fsm.process_message(message, context)
-        status = "ok" if state not in ["error", "cancelled"] else "error"
+            message (str): El mensaje del usuario.
+            context (dict): El contexto de la conversación.
 
-        return {
-            "status": status,
-            "message": response,
-            "fsm_state": state,
-            "context": self.fsm.context
-        }
+        Returns:
+            str: La respuesta generada por el estado actual de la conversación.
+        """
+        # El ConversationManager se encarga de toda la lógica de estados
+        response = self.conversation_manager.handle_message(message, context)
+        return response

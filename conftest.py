@@ -1,9 +1,15 @@
 import os
 import shutil
+import sys
 import pytest
 
+# Añadido para que pytest encuentre módulos que empiezan por 'src'
+# Esta línea soluciona los errores 'ModuleNotFoundError: No module named 'src''
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'src')))
+
+# --- Tu código original para limpiar el contexto (conservado) ---
+
 # Lista de posibles rutas donde se guarda el contexto.
-# Ajusta o añade según tu implementación.
 POSSIBLE_CONTEXT_PATHS = [
     os.path.join(os.getcwd(), "context_store.db"),
     os.path.join(os.getcwd(), "context_store.sqlite"),
