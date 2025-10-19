@@ -1,73 +1,76 @@
 # src/theaia/tests/integration/test_core_integration.py
-"""
-Tests de integración del Core de Thea IA 2.0.
-Valida la interacción entre CoreRouter, IntentDetector y agentes reales.
-"""
 
 import pytest
-from src.theaia.core.router import CoreRouter
-from src.theaia.agents.agenda_agent.handler import AgendaAgent
-from src.theaia.agents.note_agent.handler import NoteAgent
-from src.theaia.agents.fallback_agent.handler import FallbackAgent
+from unittest.mock import patch
+from src.theaia.core.fsm.conversation_manager import ConversationManager
+from src.theaia.core.fsm.states.global_states import GlobalState
 
-def ensure_agents_loaded(router):
+@pytest.fixture
+def manager() -> ConversationManager:
     """
-    Asegura que el CoreRouter tenga los agentes reales cargados.
+    [translate:Crea una instancia fresca del ConversationManager para cada test.]
     """
-    if not hasattr(router, "agents") or not router.agents:
-        router.agents = [
-            AgendaAgent(),
-            NoteAgent(),
-            FallbackAgent(),
-        ]
+    return ConversationManager("integration_test_user")
 
-def test_router_with_real_intent_detector():
+@patch('src.theaia.core.fsm.conversation_manager.IntentDetector')
+def test_smart_intent_delegation_and_entity_extraction(mock_IntentDetector, manager: ConversationManager):
     """
-    Valida que las intenciones se delegan correctamente.
+    [translate:PRUEBA CRÍTICA: Valida que el ConversationManager no solo delega correctamente,
+    sino que el especialista (`AgendaConversationManager`) es capaz de extraer entidades
+    (como la fecha) desde el primer mensaje del usuario para optimizar el flujo.]
     """
-    router = CoreRouter()
-    ensure_agents_loaded(router)
-    
-    # Test con intención de agenda
-    result = router.handle("user1", "quiero agendar una cita", {})
-    assert result["status"] == "ok"
-    assert isinstance(result["message"], str)  # Solo verifica que haya un mensaje
-    
-    # Test con intención de nota
-    result = router.handle("user2", "crear una nota importante", {})
-    assert result["status"] == "ok"
-    # El NoteAgent pide confirmación, eso es un comportamiento esperado
-    assert "¿confirmo" in result["message"].lower()
+    # 1. Configuración de la Simulación (Mock)
+    mock_instance = mock_IntentDetector.return_value
+    mock_instance.predict.return_value = ['agenda']
 
-def test_multi_turn_conversation():
-    """
-    Valida que el contexto se mantiene entre mensajes.
-    """
-    router = CoreRouter()
-    ensure_agents_loaded(router)
-    context = {}
-    
-    # Turno 1: Iniciar creación de nota
-    result1 = router.handle("user1", "crear una nota", context)
-    context = result1.get("context", {})
-    assert result1["status"] == "ok"
-    assert context.get("active_agent") == "NoteAgent"
-    
-    # Turno 2: Responder "no" a la confirmación
-    result2 = router.handle("user1", "no", context)
-    assert result2["status"] == "ok"
-    # El agente debería cancelar la operación
-    assert "cancelada" in result2["message"].lower()
+    # 2. Ejecución con un mensaje que ya contiene información de fecha
+    message = "[translate:Quiero agendar una reunión para mañana a las 5]"
+    response, state, context = manager.process_input(message)
 
-def test_error_handling_with_none_context():
+    # 3. Verificación del comportamiento INTELIGENTE
+    assert "hora" in response.lower(), "[translate:La respuesta debe pedir la hora, ya que la fecha se extrajo del primer mensaje.]"
+    assert state == GlobalState.AGENT_DELEGATED.value
+    assert context.get('fsm_state') == 'awaiting_time', "[translate:El estado interno del especialista debe ser 'awaiting_time'.]"
+    assert context.get('date') is not None, "[translate:El contexto debe contener la fecha extraída del primer mensaje.]"
+
+def test_simple_intent_delegation(manager: ConversationManager):
     """
-    Valida que el router maneja 'context=None' sin fallar.
+    [translate:Valida el flujo simple donde el usuario no da información inicial,
+    forzando al agente a pedir la fecha.]
     """
-    router = CoreRouter()
-    ensure_agents_loaded(router)
+    message = "[translate:Agendar una cita]"
+    response, state, context = manager.process_input(message, ['agenda'])
+
+    assert "fecha" in response.lower(), "[translate:Con un mensaje simple, la respuesta debe pedir la fecha.]"
+    assert state == GlobalState.AGENT_DELEGATED.value
+    assert context.get('fsm_state') == 'awaiting_date'
+
+# --- [translate:AQUÍ ES DONDE AÑADES EL NUEVO TEST] ---
+def test_context_persistence_between_messages(manager: ConversationManager):
+    """
+    [translate:Valida que el contexto se mantiene y enriquece correctamente
+    a lo largo de una conversación multi-turno.]
+    """
+    # --- [translate:Turno 1: Usuario inicia la conversación de agenda] ---
+    message1 = "[translate:Quiero agendar una reunión]"
+    response1, state1, context1 = manager.process_input(message1, ['agenda'])
+
+    # [translate:Verificaciones del primer turno]
+    assert "fecha" in response1.lower()
+    assert state1 == GlobalState.AGENT_DELEGATED.value
+    assert context1.get('fsm_state') == 'awaiting_date'
     
-    result = router.handle("user2", "texto aleatorio", None)
-    assert result is not None
-    assert result["status"] == "ok"
-    # Debería delegar al FallbackAgent
-    assert "lo siento" in result["message"].lower()
+    # --- [translate:Turno 2: Usuario proporciona la fecha] ---
+    # [translate:Pasamos el 'context1' que nos devolvió el turno anterior.]
+    # [translate:Aquí está la magia de la persistencia de contexto.]
+    message2 = "[translate:mañana]"
+    # [translate:La clave es que no hay un tercer argumento `context` en `process_input`.]
+    # [translate:El contexto se gestiona internamente en la instancia del manager.]
+    response2, state2, context2 = manager.process_input(message2)
+
+    # [translate:Verificaciones del segundo turno]
+    assert "hora" in response2.lower(), "[translate:La respuesta debe pedir la hora después de recibir la fecha.]"
+    assert state2 == GlobalState.AGENT_DELEGATED.value, "[translate:El estado global debe seguir siendo de delegación.]"
+    assert context2.get('fsm_state') == 'awaiting_time', "[translate:El estado interno debe haber avanzado a 'awaiting_time'.]"
+    assert context2.get('date') is not None, "[translate:El contexto debe ahora contener la información de la fecha.]"
+
