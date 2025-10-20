@@ -1,42 +1,27 @@
-# Archivo: src/theaia/agents/note_agent/handler.py
+# src/theaia/agents/note_agent/handler.py
 
-from src.theaia.agents.base_agent import BaseAgent
+from typing import Dict, Any, Tuple
+from src.theaia.agents.note_agent.note_conversation_manager import NoteConversationManager
 
-class NoteAgent(BaseAgent):
-    def get_supported_intents(self) -> list[str]:
-        return ["nota", "apunte"]
+class NoteAgent:
+    """
+    Agente especializado en gestionar notas.
+    Forma parte del ecosistema de agentes de Thea IA 3.0.
+    """
 
-    def handle(self, user_id: str, message: str, context: dict) -> dict:
-        # Estado inicial: El agente acaba de ser activado
-        if not context.get("fsm_state"):
-            context["note_content"] = message
-            context["fsm_state"] = "awaiting_confirmation"
-            context["active_agent"] = self.__class__.__name__
-            return {
-                "status": "ok",
-                "message": f"¿Confirmo que guarde la nota: '{message}'? (responde sí o no)",
-                "context": context,
-            }
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        self.manager = NoteConversationManager(user_id)
 
-        # Estado de confirmación: El agente está esperando un "sí" o "no"
-        elif context.get("fsm_state") == "awaiting_confirmation":
-            user_confirmation = message.lower().strip()
-            if user_confirmation == "sí":
-                # Lógica para guardar la nota (aquí simulada)
-                print(f"Guardando nota para {user_id} con contenido: {context['note_content']}")
-                context["fsm_state"] = "completed"
-                return {
-                    "status": "ok",
-                    "message": "Nota guardada con éxito.",
-                    "context": context,
-                }
-            else:
-                context["fsm_state"] = "cancelled"
-                return {
-                    "status": "ok",
-                    "message": "Operación cancelada.",
-                    "context": context,
-                }
-        
-        # Si el estado no es ninguno de los anteriores, no sabe qué hacer
-        return super().handle(user_id, message, context)
+    def can_handle(self, intent: str) -> bool:
+        """
+        Indica si este agente puede manejar la intención actual.
+        """
+        return intent in ["nota", "notas", "guardar_nota", "recordar_nota"]
+
+    def handle(self, message: str, context: Dict[str, Any]) -> Tuple[str, str, Dict[str, Any]]:
+        """
+        Procesa el mensaje con el FSM interno NoteConversationManager.
+        """
+        response, state, updated_context = self.manager.process_message(message, context)
+        return response, state, updated_context
