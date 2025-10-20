@@ -994,3 +994,74 @@ Estado: Día 3 Completado ✔️
 - **Validación con Tests de Integración:** Desarrollo de un test End-to-End (E2E) que valida toda la arquitectura, desde la delegación del orquestador hasta la finalización del flujo del especialista, asegurando que todos los componentes funcionan en perfecta armonía.
 
 - **Depuración de Arquitectura:** Auditoría y depuración exhaustiva de errores críticos a nivel de sistema, incluyendo `ImportError`, `AttributeError`, `TypeError` y sutiles fallos de lógica en la gestión del contexto y estado, fortaleciendo la estabilidad del `core`.
+
+==========================
+============================================
+=======================================
+========================================
+
+CHANGELOG – Thea IA 3.0 (20/10/2025)
+Día 4 de Desarrollo – Optimizaciones y Configuración en Codespaces
+
+🧩 Contexto General
+El día se centró en lograr una instalación completa y eficiente de Thea IA 3.0 en GitHub Codespaces,
+asegurando compatibilidad plena con Python 3.12, núcleo NLP y rutas de testing automatizadas.
+
+✅ Nuevas características implementadas
+1. Configuración automática de entorno Codespaces
+- Creado archivo .devcontainer/devcontainer.json para definir imagen base y ejecución del post‑create.
+- Incluido script scripts/setup_codespace.sh para automatizar:
+    - instalación de dependencias
+    - limpieza de caché y CUDA
+    - instalación de Torch CPU‑only
+    - ejecución de pytest
+    - generación de requirements.lock
+
+2. Optimización de entorno Docker y dependencias
+- Creado Dockerfile.lite para entornos sin GPU (Codespaces, CI).
+- Eliminadas dependencias de CUDA y reducción de tamaño ≈ 5 GB.
+- Separación por bloques en requirements.txt (NLP / IA / Testing / Async / Infra).
+- Instalación de numpy==1.26.4 como binario precompilado (‑‑only‑binary).
+
+3. Ejecución completa de tests de integración
+- Ejecución exitosa de 9 tests → todos PASSED (100 %).
+- Compatibilidad confirmada entre Torch CPU, FastAPI y AsyncIO modo estricto.
+- Advertencias únicamente informativas por scikit‑learn (1.3.2 vs 1.7.0 modelos cacheados).
+
+4. Sincronización total del repositorio
+- Commits y push correctos a main:
+    Dockerfile.lite, requirements.lock, y scripts/setup_codespace.sh.
+- Integración de los nuevos archivos en la rama principal confirmada desde GitHub.
+
+🧠 Refactor y ajustes internos
+- Limpieza de warnings en src/theaia/core/router.py y módulos de agents (note_agent y agenda_agent).
+- Arreglo de importación de anyio y ajuste de asyncio → modo STRICT.
+- Pruebas de integración con persistencia de contextos (agenda y notas).
+
+📦 Nuevos archivos añadidos al repositorio
+text
+.devcontainer/
+└── devcontainer.json.save
+scripts/
+├── setup_codespace.sh
+├── setup_env.sh
+Dockerfile.lite
+requirements.lock
+src/theaia/agents/agenda_agent/agenda_conversation_manager.py
+src/theaia/agents/note_agent/note_conversation_manager.py
+🔧 Dependencias detectadas para actualización (Día 5)
+Paquete	Versión actual	Versión recomendada	Motivo
+ scikit‑learn	 1.3.2	 1.5.2	 Compatibilidad modelo persistente
+ pytest‑cov	 7.0.0	 7.4.0	 Mayor precisión de coverage
+ uvicorn	 0.24.0	 0.29.0	 Mejor manejo de lifespan y reloader
+ pydantic	 2.5.0	 2.9.2	 Soporte de email/env ampliado
+ pandas	 2.1.4	 2.2.2	 Rendimiento y fixes
+ celery	 5.3.4	 5.4.0	 Programador de jobs async
+📅 Plan para 21 de octubre 2025 (Día 5)
+1. Actualizar dependencias principales y verificar compatibilidad.
+2. Implementar CI/CD con GitHub Actions (.github/workflows/build.yml).
+3. Actualizar documentos: README.md, CHANGELOG, docs/architecture_overview.md, y CONTRIBUTING.md.
+4. Crear documento DEVELOPMENT_GUIDE.md.
+5. Agregar script run_dev.sh para iniciar API FastAPI local.
+6. Redactar documentación de entorno de desarrollo y configuración rápida.
+
