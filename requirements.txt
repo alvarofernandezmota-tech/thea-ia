@@ -1,38 +1,38 @@
 # ==============================================
-# THEA IA 2.0 - DEPENDENCIAS PRINCIPALES
+# THEA IA 3.0 — DEPENDENCIAS PRINCIPALES
 # ==============================================
 
-# Framework web y API
+# Framework web / API
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 pydantic[email]==2.5.0
 pydantic-settings==2.0.3
 
-# Base de datos y ORM
-sqlalchemy==2.0.23
+# Base de datos / ORM
+SQLAlchemy==2.0.44
 alembic==1.12.1
 psycopg2-binary==2.9.9
 asyncpg==0.29.0
 
-# Redis (caché y sesiones)
+# Cache y sesiones (Redis)
 redis==5.0.1
 aioredis==2.0.1
 
-# Bot Telegram
+# Bot Telegram / HTTP
 aiogram==3.2.0
 aiohttp==3.9.1
 
-# Máquina de estados
-transitions==0.9.0
+# FSM (Finite State Machine)
+transitions==0.9.3
 
-# Machine Learning / NLP
+# IA / Machine Learning / NLP
 spacy==3.7.2
 scikit-learn==1.3.2
 nltk==3.8.1
-numpy==1.24.4
+numpy==1.26.4
 pandas==2.1.4
 
-# Procesamiento fechas y tiempo
+# Procesamiento de fechas y tiempo
 python-dateutil==2.8.2
 pytz==2023.3
 arrow==1.3.0
@@ -44,11 +44,13 @@ prometheus-client==0.19.0
 # Validación y utilidades
 validators==0.22.0
 python-multipart==0.0.6
-python-dotenv==1.0.0
+python-dotenv==1.0.1
+orjson==3.9.10
 
 # Async utilities
 asyncio-mqtt==0.16.1
 aiofiles==23.2.1
+anyio>=3.7.1,<4.0.0   # Rango compatible con FastAPI 0.104.1
 
 # Seguridad
 cryptography==41.0.7
@@ -58,31 +60,37 @@ python-jose[cryptography]==3.3.0
 # HTTP client
 httpx==0.25.2
 
-# Configuración
+# CLI y configuración
 click==8.1.7
 rich==13.7.0
 
-# Jobs y scheduler
+# Jobs & Scheduler
 celery==5.3.4
-redis==5.0.1
 
-# Serialización
-orjson==3.9.10
+# -------------------------------
+# TESTING / DEV TOOLS
+# -------------------------------
+pytest>=8.4.2
+pytest-cov>=5.0.0
+pytest-asyncio>=1.2.0
 
-fastapi
-uvicorn[standard]
-aiogram
-python-dotenv
-psycopg2-binary
-redis
-pytest
-pytest-cov
-SQLAlchemy==2.0.23
-psycopg2-binary==2.9.9
-numpy
-spacy
-scikit-learn
-transitions>=0.9
-sqlalchemy>=1.4
+# -------------------------------
+# OPCIONALES (IA Avanzada)
+# -------------------------------
+torch>=2.3.0
+transformers>=4.44.0
+pytorch-lightning>=2.3.0
 
+# -------------------------------
+# BUILD / COMPILATION TOOLS
+# -------------------------------
+setuptools>=80.9.0
+wheel>=0.45.1
+build>=1.3.0
 
+# -------------------------------
+# OPCIONALES (IA Avanzada)
+# -------------------------------
+# torch>=2.3.0
+# transformers>=4.44.0
+# pytorch-lightning>=2.3.0

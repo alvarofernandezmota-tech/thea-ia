@@ -1,72 +1,73 @@
 # ==============================================
-# THEA IA 2.0 - DOCKERFILE
+# THEA IA 3.0 — DOCKERFILE OFICIAL
 # ==============================================
 
-# Usar imagen Python oficial optimizada
-FROM python:3.11-slim
+# Imagen base: Python 3.12 slim (optimizada para producción)
+FROM python:3.12-slim
 
-# Metadatos de la imagen
-LABEL maintainer="Alvaro Fernandez Mota <alvarofernandezmota@gmail.com>"
-LABEL version="2.0.0"
-LABEL description="Thea IA - Agente conversacional inteligente"
+# Metadatos
+LABEL maintainer="Álvaro Fernández Mota <alvarofernandezmota@gmail.com>"
+LABEL version="3.0.0"
+LABEL description="Thea IA 3.0 — Agente conversacional inteligente con FSM y persistencia avanzada"
 
 # Variables de entorno
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    POETRY_VENV_IN_PROJECT=1
+    PIP_NO_CACHE_DIR=1 \
+    THEA_ENV=production
 
-# Instalar dependencias del sistema
-RUN apt-get update && apt-get install -y \
+# Instala dependencias del sistema necesarias
+RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
     git \
     libpq-dev \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Crear usuario no-root para seguridad
+# Crea usuario seguro sin privilegios root
 RUN groupadd -r theaia && useradd -r -g theaia theaia
 
-# Establecer directorio de trabajo
+# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar archivos de dependencias
-COPY requirements.txt requirements-dev.txt ./
+# Copiar dependencias y setup script
+COPY requirements.txt ./requirements.txt
+COPY scripts/setup_env.sh ./scripts/setup_env.sh
 
-# Instalar dependencias Python
-RUN pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+# Asignar permisos
+RUN chmod +x ./scripts/setup_env.sh
 
-# Descargar modelo de spaCy
+# Actualizar pip y herramientas build
+RUN python -m pip install --upgrade pip setuptools wheel build
+
+# Instalar NumPy binario para evitar compilación
+RUN pip install numpy==1.26.4 --only-binary=:all:
+
+# Instalar todas las dependencias de Python
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Descargar modelo básico de spaCy (español)
 RUN python -m spacy download es_core_news_sm
 
-# Crear directorios necesarios
-RUN mkdir -p /app/logs /app/models /app/uploads && \
-    chown -R theaia:theaia /app
+# Crear carpetas de logs, modelos, etc.
+RUN mkdir -p /app/logs /app/models /app/uploads \
+    && chown -R theaia:theaia /app
 
-# Copiar código fuente
+# Copiar código fuente (usando propiedad del usuario no root)
 COPY --chown=theaia:theaia ./src /app/src
-COPY --chown=theaia:theaia ./alembic /app/alembic
-COPY --chown=theaia:theaia ./alembic.ini /app/
 COPY --chown=theaia:theaia ./scripts /app/scripts
 
-# Hacer scripts ejecutables
-RUN chmod +x /app/scripts/*.sh
-
-# Cambiar a usuario no-root
+# Cambiar al usuario no-root
 USER theaia
 
-# Exponer puerto
+# Exponer puerto principal
 EXPOSE 8000
 
-# Healthcheck
+# Healthcheck opcional
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD curl -f http://localhost:8000/health || exit 1
+  CMD curl -f http://localhost:8000/health || exit 1
 
-# Punto de entrada
-ENTRYPOINT ["/app/scripts/entrypoint.sh"]
-
-# Comando por defecto
-CMD ["uvicorn", "theaia.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Entrypoint y comando por defecto
+ENTRYPOINT ["bash", "scripts/setup_env.sh"]
+CMD ["uvicorn", "src.theaia.main:app", "--host", "0.0.0.0", "--port", "8000"]
