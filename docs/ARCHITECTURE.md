@@ -1,213 +1,171 @@
-# Arquitectura General – Thea IA 2.0
+# 🧠 Arquitectura General – Thea IA 3.0
 
-Este documento describe la arquitectura, flujos y componentes principales del sistema Thea IA 2.0.
-
----
-
-## 🌐 Visión de alto nivel
-
-Thea IA 2.0 está basada en una arquitectura **modular**, **desacoplada** y **escalable**. Cada agente implementa su propia lógica, y la orquestación central (FSM/Router) coordina los estados y rutas, permitiendo una integración sencilla de nuevos módulos y adaptadores.
+Este documento describe la arquitectura, componentes, flujos y buenas prácticas del sistema **Thea IA 3.0**, versión estable y modular lista para despliegue productivo.
 
 ---
 
-## 🏗️ Componentes principales
+## 🌐 Visión General
 
-- **Agentes (src/theaia/agents/):** FSM y lógica para agenda, notas, consultas, ayuda y fallback.  
-- **Adaptadores (src/theaia/adapters/):** Conectores para Telegram, webhooks y API REST.  
-- **Core/Router (src/theaia/core/):** Orquestador central, máquina de estados finitos y gestor de contexto.  
-- **ML/NLP (src/theaia/ml/):** Modelos y pipelines para detección de intenciones y extracción de entidades.  
-- **Database/Repositories (src/theaia/database/):** Modelos ORM SQLAlchemy y repositorios de acceso a datos.  
-- **Servicios (src/theaia/services/):** Lógica de negocio para eventos, notas, usuarios y programación de recordatorios.  
-- **API REST (src/theaia/api/):** Endpoints FastAPI para interacción externa y monitoreo.  
-- **Utilidades (src/theaia/utils/):** Validadores, formateadores y excepciones personalizadas.  
-- **Pruebas (src/theaia/tests/):** Estructura para tests unitarios, integración y E2E.  
-- **Automatización (scripts/):** Scripts para setup, despliegue, migraciones, linting, backups y ejecución de tests.
+Thea IA 3.0 está diseñada como una plataforma **asíncrona**, **modular** y **persistente**, combinando una **máquina de estados finitos (FSM)** con **agentes inteligentes independientes** que dialogan mediante un **CoreRouter asíncrono** y un **ContextManager persistente**.
+
+Su arquitectura permite comunicación fluida entre NLP, FSM y base de datos sin bloqueos, favoreciendo escalabilidad y carga concurrente en múltiples adaptadores (Telegram, API, Web, etc.).
 
 ---
 
-## 🔄 Flujo típico de interacción
+## 🧩 Capas Principales
 
-1. El usuario envía un mensaje (Telegram, API u otro canal).  
-2. El adaptador recibe la petición y la envía al Core/Router.  
-3. El sistema detecta la intención, estado y entidades usando ML/NLP.  
-4. El Router/FSM decide qué agente activar y define la respuesta.  
-5. El agente procesa contexto y datos; si es necesario, interactúa con la base de datos.  
-6. Se devuelve la respuesta formateada al canal original y se actualizan logs y contexto.
+| Capa | Descripción |
+|------|--------------|
+| **Core Router (FSM Engine)** | Núcleo de orquestación de estados y mensajes. Dirige intenciones y transiciones entre agentes. |
+| **Context Manager** | Sistema de memoria activa que mantiene el histórico de conversación y estado por usuario (usando SQLite o PostgreSQL). |
+| **Agentes** | Cada agente representa una lógica autónoma (FSM propia): agenda, notas, hábitos, contexto, evento, etc. |
+| **NLP / ML Pipeline** | Modelos spaCy + scikit‑learn para detección de intención y extracción de entidades. |
+| **Database Layer** | SQLAlchemy 2 async + Alembic para ORM, migraciones y persistencia de datos. |
+| **API REST (FastAPI)** | Endpoints para interacción externa, observabilidad (`/health`, `/metrics`) y webhooks. |
+| **Scripts & Automation** | Configuración de entorno, pruebas y deploy automatizado en Codespaces / Actions. |
+| **Tests** | Pruebas unitarias (Agents/Core) e integración FSM disponibles en `src/theaia/tests/`. |
 
 ---
 
-## 🧬 Diagrama simplificado
+## 🔄 Flujo General de Interacción
 
-Usuario → Adaptador → Core/Router/FSM → Agente → DB/ML/NLP → Respuesta → Canal
+1. **El usuario** envía un mensaje (vía Telegram o REST).  
+2. **El Adaptador** transforma y envía la petición al **CoreRouter**.  
+3. **NLP/ML** procesa la intención y extrae entidades.  
+4. **FSM Engine** determina qué agente debe responder.  
+5. **El Agente activo** ejecuta acciones (lógica, DB, memoria).  
+6. **ContextManager** actualiza estado y persistencia del usuario.  
+7. **El Adaptador** devuelve una respuesta estructurada al canal original.  
+
+---
+
+## 🧭 Diagrama de Arquitectura (Mermaid)
+
+graph TD
+A[Usuario o Canal externo] --> B[Adaptador / Endpoint API]
+B --> C[CoreRouter / FSM Engine]
+C --> D[ContextManager]
+C --> E[NLP / ML Pipeline]
+E --> C
+C --> F[Agente activo]
+F --> G[(Base de Datos)]
+G --> F
+F --> D
+D --> B
+B --> A
 
 text
 
 ---
 
-## 🚀 Ejemplo de flujo: creación de evento
+## 🚀 Ejemplo de Flujo – Creación de Evento
 
-1. **Usuario:** “Agendar cita médica mañana a las 12”  
-2. **Telegram Adapter** → Core/Router  
-3. **FSM** detecta intent `create_event`, extrae fecha/hora y entidad  
-4. **Agenda Agent** crea el evento en la base de datos  
-5. **Respuesta:** “Cita médica agendada para mañana a las 12”  
-
----
-
-## 🧱 Diseño modular y escalabilidad
-
-- **Cada módulo es independiente:** agregar un nuevo agente solo requiere implementar su FSM y registrarlo en el Router.  
-- **Modelos intercambiables:** se pueden sustituir o ampliar los pipelines ML/NLP sin afectar otros componentes.  
-- **Adaptadores legibles:** añadir nuevos canales (Slack, WhatsApp, SMS) con mínima configuración.  
-- **Scripts de automatización:** facilitan despliegue y mantenimiento en CI/CD y entornos de producción.
+| Paso | Descripción |
+|------|--------------|
+| **1** | El usuario envía “Reunión con María mañana a las 11”. |
+| **2** | Adaptador envía texto al CoreRouter. |
+| **3** | NLP detecta intent `create_event` y extrae fecha / contacto. |
+| **4** | FSM activa el `event_agent`. |
+| **5** | El agente crea la entrada en la base de datos vía ORM. |
+| **6** | ContextManager actualiza estado del usuario y respuesta. |
+| **7** | El sistema devuelve: “Reunión con María programada para mañana a las 11.” |
 
 ---
 
-## 🔍 Buenas prácticas arquitectónicas
+## 🧱 Diseño Modular y Extensible
 
-- **Separation of Concerns:** lógica de negocio, datos y presentación desacoplados.  
-- **Documentación constante:** interfaces, variables y flujos documentados en código y en `docs/`.  
-- **Health checks y métricas:** endpoints `/health` y `/metrics` para monitoreo continuo.  
-- **Logging estructurado:** trazabilidad de transiciones FSM y acciones de agentes.  
-- **Versionado de migraciones:** Alembic para gestionar cambios en la base de datos.
+- **Agentes independientes:** añadir uno nuevo solo requiere registrarlo en `registry.py`.  
+- **Asincronía total:** `asyncpg` y `aiosqlite` para operaciones no bloqueantes.  
+- **Plug‑ins de canales:** Telegram, Web, REST → pueden añadirse adaptadores personalizados.  
+- **Configuración de entorno única:** `scripts/setup_env.sh` configura todas las dependencias.  
+- **CI/CD integrado:** tests y linting automatizados con GitHub Actions.  
 
-## 📂 Estructura de Carpetas y Archivos
+---
+
+## 🧬 Estructura Completa del Proyecto
 
 theaia/
-├── README.md
-├── .env.example
-├── .gitignore
-├── pyproject.toml
-├── requirements.txt
-├── requirements-dev.txt
-├── docker-compose.yml
-├── Dockerfile
-├── Makefile
-├── src/
-│ └── theaia/
-│ ├── main.py
-│ ├── config/
-│ │ ├── settings.py
-│ │ └── logging_config.py
+├── scripts/
+│ ├── setup_env.sh
+│ ├── deploy.sh
+│ ├── migrate.sh
+│ └── lint.sh
+├── src/theaia/
+│ ├── api/
+│ │ ├── main.py
+│ │ ├── health.py
+│ │ └── metrics.py
 │ ├── core/
-│ │ ├── state_machine.py
-│ │ ├── callbacks.py
-│ │ ├── context_manager.py
 │ │ ├── router.py
-│ │ └── bot_factory.py
-│ ├── adapters/
-│ │ ├── telegram_adapter.py
-│ │ └── webhook_handler.py
-│ ├── services/
-│ │ ├── event_service.py
-│ │ ├── note_service.py
-│ │ ├── user_service.py
-│ │ └── scheduler_service.py
-│ ├── models/
-│ │ ├── user.py
-│ │ ├── event.py
-│ │ ├── note.py
-│ │ └── context.py
-│ ├── database/
-│ │ ├── connection.py
-│ │ └── repositories/
-│ │ ├── base.py
-│ │ ├── user_repository.py
-│ │ ├── event_repository.py
-│ │ └── note_repository.py
+│ │ ├── context_manager.py
+│ │ ├── database.py
+│ │ ├── fsm/
+│ │ │ └── state_machine.py
+│ │ └── event_bus.py
+│ ├── agents/
+│ │ ├── base_agent.py
+│ │ ├── agenda_agent.py
+│ │ ├── note_agent.py
+│ │ ├── event_agent.py
+│ │ ├── habit_agent.py
+│ │ ├── context_agent.py
+│ │ └── registry.py
 │ ├── ml/
 │ │ ├── intent_detector/
 │ │ └── ner_extractor/
-│ ├── agents/
-│ │ ├── base_agent.py
-│ │ ├── registry.py
-│ │ └── event_agent/…
+│ ├── database/
+│ │ ├── connection.py
+│ │ └── repositories/
 │ ├── utils/
 │ │ ├── validators.py
 │ │ ├── formatters.py
 │ │ └── exceptions.py
-│ └── api/
-│ ├── health.py
-│ └── metrics.py
-├── src/theaia/tests/
-│ ├── agents/
-│ ├── core/
-│ ├── database/
-│ ├── services/
-│ ├── ml/
-│ ├── utils/
-│ ├── fixtures/
-│ ├── e2e/
+│ └── tests/
 │ ├── unit/
-│ └── integration/
-├── scripts/
-│ ├── setup.sh
-│ ├── deploy.sh
-│ ├── migrate.sh
-│ ├── lint.sh
-│ ├── backup.sh
-│ ├── entrypoint.sh
-│ ├── test_runner.sh
-│ └── README.md
-├── docs/
-│ ├── ARCHITECTURE.md
-│ ├── DEPLOYMENT.md
-│ ├── API.md
-│ ├── adr/
-│ ├── diagrams/
-│ └── retros/
-├── alembic/
-│ ├── alembic.ini
-│ ├── env.py
-│ └── versions/
-├── .github/
-│ └── workflows/
-├── monitoring/
-│ ├── grafana/
-│ ├── prometheus/
-│ └── alerts/
-└── deployment/
-├── k8s/
-├── helm/
-└── terraform/
+│ ├── integration/
+│ └── e2e/
+└── docs/
+├── README.md
+├── architecture.md
+├── api_reference.md
+└── deployment.md
 
 text
 
 ---
 
-## Apéndice: Auditoría Fase 1 (13/10/2025)
+## 🔍 Buenas Prácticas Arquitectónicas
 
-Durante la Fase 1 se validaron y completaron los siguientes módulos y carpetas:
-
-- **src/theaia/utils/**  
-  - `README.md` (documentación de utilidades)  
-  - `TESTING.md` (guía de testing de utilidades)  
-- **scripts/**  
-  - Scripts de automatización:  
-    - `setup.sh`, `deploy.sh`, `migrate.sh`, `lint.sh`, `backup.sh`, `entrypoint.sh`, `test_runner.sh`  
-  - `README.md` (documentación de uso)  
-- **src/theaia/tests/**  
-  - Estructura de carpetas para tests:  
-    - `agents/`, `core/`, `database/`, `services/`, `ml/`, `utils/`, `fixtures/`, `e2e/`, `unit/`, `integration/`  
-  - `README.md` (guía global de testing)  
+- **Separación de responsabilidades:** Core, Agentes y Persistencia desacoplados.  
+- **Documentación constante:** todos los módulos con docstrings y README.  
+- **Logs estructurados:** registro FSM → Prometheus.  
+- **Monitorización:** endpoints de salud y métricas activas.  
+- **Migraciones versionadas:** Alembic gestiona todos los esquemas.
 
 ---
 
-Con este esquema, el documento mostrará de manera clara y completa la organización actual de Thea IA 2.0 antes de la auditoría.
+## 📊 Stack Tecnológico
 
-## Apéndice: Auditoría Fase 1 (13/10/2025)
+| Capa | Tecnología |
+|------|-------------|
+| **API / Framework** | FastAPI 0.104 + Uvicorn 0.24 |
+| **FSM Engine** | Transitions 0.9.3 (extendido con callbacks asíncronos) |
+| **ORM / DB** | SQLAlchemy 2 async + Alembic 1.12 / PostgreSQL + SQLite |
+| **NLP / ML** | spaCy 3.7 + scikit‑learn 1.3 |
+| **Mensajería / Asincronía** | asyncio / aiohttp / asyncpg |
+| **Testing** | pytest 8.4 + pytest‑asyncio + coverage |
+| **Infraestructura** | Docker / GitHub Actions / Codespaces / Prometheus + Grafana |
 
-Durante la Fase 1 se validaron y completaron los siguientes módulos y carpetas:
+---
 
-- **src/theaia/utils/**  
-  - `README.md` (documentación de utilidades)  
-  - `TESTING.md` (guía de testing de utilidades)  
-- **scripts/**  
-  - Scripts de automatización:  
-    - `setup.sh`, `deploy.sh`, `migrate.sh`, `lint.sh`, `backup.sh`, `entrypoint.sh`, `test_runner.sh`  
-  - `README.md` (documentación de uso)  
-- **src/theaia/tests/**  
-  - Estructura de carpetas para tests:  
-    - `agents/`, `core/`, `database/`, `services/`, `ml/`, `utils/`, `fixtures/`, `e2e/`, `unit/`, `integration/`  
-  - `README.md` (guía global de testing)  
+## ✅ Estado Actual
 
+- FSM v2 operativa y estable  
+- Migraciones funcionales (Alembic / SQLite)  
+- Agentes registrados (Agenda, Notas, Contexto, Eventos, Hábitos)  
+- CI/CD en configuración con Actions  
+- Documentación y scripts validados en Codespaces  
+
+---
+
+**Thea IA 3.0 — Arquitectura modular, inteligente y lista para escalar. © 2025 Álvaro Fernández Mota**

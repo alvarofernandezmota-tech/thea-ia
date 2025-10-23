@@ -1,0 +1,45 @@
+# ==============================================
+# THEA IA 3.0 — Railway Ignore File
+# ==============================================
+
+# Virtual environments
+.venv/
+env/
+venv/
+__pycache__/
+
+# Cache y compilados
+*.pyc
+*.pyo
+*.log
+.cache/
+.coverage
+
+# Directorios locales
+logs/
+tmp/
+uploads/
+dist/
+build/
+
+# Datos sensibles
+.env
+.env.*
+*.sqlite3
+local.db
+
+# Carpeta de tests (no necesaria en despliegue)
+src/theaia/tests/
+
+# Archivos de desarrollo
+README.md
+.git/
+.gitignore
+docs/
+
+# CPU heavy files
+*.tar.gz
+*.zip
+*.png
+*.jpg
+*.jpeg
