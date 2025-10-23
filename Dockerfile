@@ -1,23 +1,20 @@
 # ==============================================
-# THEA IA 3.0 — DOCKERFILE OFICIAL
+# THEA IA 3.0 — DOCKERFILE ENTERPRISE EDITION
 # ==============================================
 
-# Imagen base: Python 3.12 slim (optimizada para producción)
-FROM python:3.12-slim
+# --------- Etapa 1: Build de Dependencias ---------
+FROM python:3.12-slim AS builder
 
-# Metadatos
-LABEL maintainer="Álvaro Fernández Mota <alvarofernandezmota@gmail.com>"
-LABEL version="3.0.0"
-LABEL description="Thea IA 3.0 — Agente conversacional inteligente con FSM y persistencia avanzada"
+LABEL maintainer="Álvaro Fernández Mota <alvarofernandezmota@gmail.com>"
+LABEL version="3.0.1"
+LABEL description="Thea IA 3.0 — Plataforma modular de IA con FastAPI, FSM y Docs integrados"
 
 # Variables de entorno
 ENV PYTHONUNBUFFERED=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PIP_DISABLE_PIP_VERSION_CHECK=1 \
     PIP_NO_CACHE_DIR=1 \
-    THEA_ENV=production
+    PATH="/home/theaia/.local/bin:$PATH"
 
-# Instala dependencias del sistema necesarias
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     curl \
@@ -25,49 +22,83 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq-dev \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Crea usuario seguro sin privilegios root
-RUN groupadd -r theaia && useradd -r -g theaia theaia
+# Crear usuario seguro
+RUN useradd -m -r -s /bin/bash theaia
 
-# Directorio de trabajo dentro del contenedor
 WORKDIR /app
 
-# Copiar dependencias y setup script
-COPY requirements.txt ./requirements.txt
-COPY scripts/setup_env.sh ./scripts/setup_env.sh
+# Copiar requerimientos
+COPY requirements.txt .
 
-# Asignar permisos
-RUN chmod +x ./scripts/setup_env.sh
+# Actualizar pip & herramientas
+RUN pip install --upgrade pip setuptools wheel build
 
-# Actualizar pip y herramientas build
-RUN python -m pip install --upgrade pip setuptools wheel build
-
-# Instalar NumPy binario para evitar compilación
-RUN pip install numpy==1.26.4 --only-binary=:all:
-
-# Instalar todas las dependencias de Python
+# Instalar dependencias Python en entorno temporal
+RUN pip install --prefix=/install -r requirements.txt
+RUN pip install --prefix=/install numpy==1.26.4 mkdocs mkdocs-material
+# Instalar dependencias de Python (debe contener la versión fija de spaCy + pydantic)
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Descargar modelo básico de spaCy (español)
+# Descargar modelo spaCy (ahora sí funcionará)
 RUN python -m spacy download es_core_news_sm
 
-# Crear carpetas de logs, modelos, etc.
-RUN mkdir -p /app/logs /app/models /app/uploads \
-    && chown -R theaia:theaia /app
+# --------- Etapa 2: Runtime (API + Docs) ---------
+FROM python:3.12-slim
 
-# Copiar código fuente (usando propiedad del usuario no root)
-COPY --chown=theaia:theaia ./src /app/src
-COPY --chown=theaia:theaia ./scripts /app/scripts
+# Variables de runtime
+ENV PATH="/home/theaia/.local/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1 \
+    THEA_ENV=production \
+    APP_NAME="thea-ia" \
+    APP_VERSION="3.0.1"
 
-# Cambiar al usuario no-root
+# Crear usuario sin privilegios
+RUN useradd -m -r -s /bin/bash theaia
+
+# Copiar dependencias desde builder
+COPY --from=builder /install /usr/local
+
+# Directorio de trabajo
+WORKDIR /app
+
+# Copiar scripts, código fuente y documentación
+COPY --chown=theaia:theaia ./src ./src
+COPY --chown=theaia:theaia ./scripts ./scripts
+COPY --chown=theaia:theaia ./docs ./docs
+COPY --chown=theaia:theaia mkdocs.yml .
+
+# Crear directorios adicionales
+RUN mkdir -p /app/logs /app/models /app/uploads /app/site && \
+    chown -R theaia:theaia /app
+
+# Descargar modelo nlp base (idioma español)
+RUN python -m spacy download es_core_news_sm
+
+# Permitir ejecución del script principal
+RUN chmod +x ./scripts/setup_env.sh
+
 USER theaia
 
-# Exponer puerto principal
-EXPOSE 8000
+# Exponer puertos
+EXPOSE 8000 8001
 
-# Healthcheck opcional
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD curl -f http://localhost:8000/health || exit 1
+# Healthcheck API
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+  CMD curl -fsS http://localhost:8000/health || exit 1
 
-# Entrypoint y comando por defecto
-ENTRYPOINT ["bash", "scripts/setup_env.sh"]
-CMD ["uvicorn", "src.theaia.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# --------- Targets de build ---------
+# Target API (predeterminado)
+CMD ["uvicorn", "src.theaia.api.main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# --------- Target de Documentación (mkdocs) ---------
+# Para servir el portal docs.theaia.com:
+# docker build -t thea-docs --target=docs .
+# docker run -p 8001:8001 thea-docs
+
+FROM python:3.12-slim AS docs
+COPY --from=builder /install /usr/local
+COPY mkdocs.yml .
+COPY docs ./docs
+EXPOSE 8001
+CMD ["mkdocs", "serve", "-a", "0.0.0.0:8001"]
