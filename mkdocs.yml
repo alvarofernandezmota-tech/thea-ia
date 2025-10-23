@@ -1,0 +1,125 @@
+# ==============================================
+# THEA IA 3.0 — CONFIGURACIÓN DOCUMENTACIÓN ENTERPRISE
+# ==============================================
+
+site_name: "Thea IA 3.0 Enterprise Docs"
+site_url: "https://docs.theaia.com"
+site_author: "Thea IA Systems S.L."
+repo_url: "https://github.com/alvarofernandezmota-tech/thea-ia"
+
+# ===========================
+# Tema visual corporativo
+# ===========================
+theme:
+  name: "material"
+  custom_dir: "docs/overrides"
+  palette:
+    # Paleta corporativa Thea IA
+    primary: "indigo"
+    accent: "blue"
+  logo: "docs/assets/theaia_logo.png"
+  favicon: "docs/assets/favicon.ico"
+  font:
+    text: "Roboto"
+    code: "Fira Mono"
+  features:
+    - navigation.tabs
+    - navigation.expand
+    - navigation.sections
+    - content.action.edit
+    - content.code.copy
+    - content.code.annotate
+    - content.code.select
+    - navigation.instant
+    - navigation.footer
+    - search.suggest
+    - navigation.tracking
+
+# ===========================
+# Archivos adicionales de estilo y js
+# ===========================
+extra_css:
+  - "docs/assets/extra.css"
+
+extra_javascript:
+  - "docs/assets/confetti.js"
+
+# ===========================
+# Navegación principal completa
+# ===========================
+nav:
+  - "Inicio": docs/index.md
+  - "Arquitectura General": docs/architecture.md
+  - "Referencia API": docs/api_reference.md
+  - "Monitorización Empresarial": docs/monitoring_enterprise.md
+  - "Despliegue Cloud": docs/deployment_enterprise.md
+  - "Seguridad y Cumplimiento": docs/security_enterprise.md
+  - "DevOps Interno": docs/devops_readme.md
+  - "Cumplimiento Legal (SaaS)": docs/legal_compliance.md
+  - "Roadmap 2026-2028": docs/roadmap_enterprise.md
+  - "Directorio de Equipo": docs/team_directory.md
+  - "Onboarding y Formación": docs/training_onboarding.md
+  - "Índice General": docs/SUMMARY.md
+
+# ===========================
+# Plugins empresariales
+# ===========================
+plugins:
+  - search
+  - git-revision-date-localized:
+      enable_creation_date: true
+  - minify:
+      minify_html: true
+  - awesome-pages
+  - macros
+
+# ===========================
+# Configuraciones adicionales / SEO
+# ===========================
+extra:
+  version: "3.0.0"
+  description: "Portal documental oficial de Thea IA 3.0 Enterprise Edition — Arquitectura, API, despliegue, seguridad y soporte corporativo."
+  keywords:
+    - Thea IA
+    - Enterprise
+    - AI Systems
+    - Docs
+    - FSM
+    - Conversational AI
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/alvarofernandezmota-tech/thea-ia
+      name: GitHub
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/company/thea-ia
+      name: LinkedIn
+  legal_footer: >
+    © 2025 Thea IA Systems S.L. · Madrid, España · Todos los derechos reservados.  
+    Información sujeta a confidencialidad corporativa y cumplimiento GDPR/SOC2.
+
+# ===========================
+# Markdown Extensions
+# ===========================
+markdown_extensions:
+  - toc:
+      permalink: "#"
+  - admonition
+  - codehilite
+  - footnotes
+  - tables
+  - attr_list
+  - def_list
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.mark
+  - pymdownx.tasklist
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+
+# ===========================
+# Build Options
+# ===========================
+strict: false
+use_directory_urls: true
