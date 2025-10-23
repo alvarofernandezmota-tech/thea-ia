@@ -1,55 +1,85 @@
-import os
-import asyncio
-from dotenv import load_dotenv
-from fastapi import FastAPI, Request, HTTPException
-from aiogram import Bot, Dispatcher
-from aiogram.fsm.storage.memory import MemoryStorage
-from aiogram.types import Update
-from theaia.adapters.telegram_adapter import register_handlers
-import logging
+# ============================================================
+# THEA IA 3.0 — MAIN API BÁSICA (Integrada con JSON Database)
+# ============================================================
 
-# 1. Carga .env y logging
-load_dotenv()
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from fastapi import FastAPI
+from src.theaia.database.json_storage import JsonDatabaseManager
+from src.theaia.database.config import DATABASE_PATH
 
-TELEGRAM_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-USE_POLLING    = os.getenv("TELEGRAM_USE_POLLING", "false").lower() == "true"
-API_HOST       = os.getenv("API_HOST", "0.0.0.0")
-API_PORT       = int(os.getenv("API_PORT", 8000))
-WEBHOOK_URL    = os.getenv("TELEGRAM_WEBHOOK_URL", "")
-WEBHOOK_PATH   = WEBHOOK_URL.replace("https://", "").replace("http://", "")
-WEBHOOK_SECRET = os.getenv("TELEGRAM_WEBHOOK_SECRET")
 
-# 2. Instancia bot y dispatcher
-bot = Bot(token=TELEGRAM_TOKEN)
-storage = MemoryStorage()
-dp = Dispatcher(storage=storage)
-register_handlers(dp)
+# ============================================================
+# 1️⃣ Inicializar la base de datos JSON
+# ============================================================
+# Crea una instancia de gestor JSON con la ruta definida en config.py
+db = JsonDatabaseManager(DATABASE_PATH)
 
-# 3. Crea FastAPI
-app = FastAPI()
 
-@app.on_event("startup")
-async def on_startup():
-    if USE_POLLING:
-        logger.info("Starting Telegram long polling…")
-        asyncio.create_task(dp.start_polling(bot, skip_updates=True))
-    else:
-        await bot.set_webhook(WEBHOOK_URL, secret_token=WEBHOOK_SECRET)
+# ============================================================
+# 2️⃣ Inicializar la aplicación FastAPI
+# ============================================================
 
-@app.on_event("shutdown")
-async def on_shutdown():
-    await bot.session.close()
+app = FastAPI(
+    title="Thea IA API",
+    description="Thea IA 3.0 — API básica con almacenamiento JSON",
+    version="3.0.1",
+)
+
+
+# ============================================================
+# 3️⃣ RUTAS DE VERIFICACIÓN Y OPERACIONES BÁSICAS
+# ============================================================
 
 @app.get("/health")
-async def health():
-    return {"status": "ok"}
+def health():
+    """
+    Endpoint para comprobar que la API está viva.
+    """
+    return {"status": "Thea IA API running successfully"}
 
-@app.post(f"/{WEBHOOK_PATH}")
-async def telegram_webhook(request: Request):
-    if WEBHOOK_SECRET and request.headers.get("X-Telegram-Bot-Api-Secret-Token") != WEBHOOK_SECRET:
-        raise HTTPException(403, "Forbidden")
-    update = Update(**await request.json())
-    await dp.process_update(update)
-    return {"ok": True}
+
+@app.get("/notas")
+def get_notas():
+    """
+    Devuelve todas las notas guardadas en la base JSON.
+    """
+    notas = db.get_all("notas")
+    return {"total": len(notas), "data": notas}
+
+
+@app.post("/notas/{nota_id}")
+def create_nota(nota_id: str, titulo: str, contenido: str):
+    """
+    Crea una nueva nota (o sobrescribe la existente) en la base JSON.
+    """
+    nota = {"titulo": titulo, "contenido": contenido}
+    db.insert("notas", nota_id, nota)
+    return {"message": f"Nota {nota_id} guardada correctamente", "data": nota}
+
+
+@app.get("/notas/{nota_id}")
+def get_nota(nota_id: str):
+    """
+    Recupera una nota específica por su ID.
+    """
+    nota = db.get("notas", nota_id)
+    if not nota:
+        return {"error": f"No se encontró la nota {nota_id}"}
+    return nota
+
+
+@app.delete("/notas/{nota_id}")
+def delete_nota(nota_id: str):
+    """
+    Elimina una nota por su ID.
+    """
+    if db.delete("notas", nota_id):
+        return {"message": f"Nota {nota_id} eliminada correctamente"}
+    return {"error": f"No existe la nota {nota_id}"}
+
+
+# ============================================================
+# ✅ Fin del archivo
+# ============================================================
+
+# Todas las partes de Telegram han sido eliminadas.
+# Este código es completamente funcional con FastAPI + JSON DB.

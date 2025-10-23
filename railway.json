@@ -1,0 +1,61 @@
+{
+  "$schema": "https://railway.app/railway.schema.json",
+  "name": "thea-ia-enterprise",
+  "envVariables": {
+    "THEA_ENV": "production",
+    "API_PORT": "8000",
+    "CORS_ALLOWED_ORIGINS": "https://app.theaia.com,https://admin.theaia.com",
+    "LOG_LEVEL": "INFO",
+    "SPACY_MODEL": "es_core_news_sm",
+    "JWT_ALGORITHM": "HS256",
+    "JWT_EXPIRE_HOURS": "24",
+    "SECRET_KEY": "@@RAILWAY_SECRET_KEY@@",
+    "DATABASE_URL": "postgresql+asyncpg://thea_user:thea_password@theaia-db.internal:5432/theaia_db",
+    "REDIS_HOST": "theaia-redis.internal",
+    "REDIS_PORT": "6379",
+    "METRICS_ENABLED": "true",
+    "ENABLE_ALERTS": "true",
+    "PROMETHEUS_ENDPOINT": "/metrics",
+    "GRAFANA_DASHBOARD_URL": "https://grafana.theaia.com",
+    "SENTRY_DSN": "@@RAILWAY_SENTRY_DSN@@"
+  },
+  "build": {
+    "builder": "DOCKERFILE",
+    "dockerfilePath": "Dockerfile",
+    "buildCommand": "echo 'Building Thea IA 3.0 Enterprise...'"
+  },
+  "deploy": {
+    "startCommand": "uvicorn src.theaia.api.main:app --host 0.0.0.0 --port 8000",
+    "restartPolicyType": "ON_FAILURE",
+    "restartPolicyMaxRetries": 3,
+    "healthcheckPath": "/health",
+    "sleepApplication": false
+  },
+  "services": [
+    {
+      "name": "thea-ia",
+      "autoDeploy": true,
+      "port": 8000,
+      "domain": "api.theaia.com"
+    },
+    {
+      "name": "thea-ia-db",
+      "type": "postgresql",
+      "version": "16",
+      "brewAddons": true
+    },
+    {
+      "name": "thea-ia-redis",
+      "type": "redis",
+      "version": "7.2"
+    },
+    {
+      "name": "thea-ia-docs",
+      "port": 8001,
+      "autoDeploy": true,
+      "buildCommand": "mkdocs build --clean",
+      "startCommand": "mkdocs serve -a 0.0.0.0:8001",
+      "domain": "docs.theaia.com"
+    }
+  ]
+}
