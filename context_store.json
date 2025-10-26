@@ -1,1 +1,51 @@
-{}
+{
+  "test_user_fsm": {
+    "state": "awaiting_text",
+    "data": {
+      "active_agent": "FallbackAgent",
+      "delegated_intent": "nota",
+      "delegated_agent_name": "FallbackAgent",
+      "original_message": "quiero crear una nota",
+      "fsm_state": "awaiting_text"
+    }
+  },
+  "test_disambiguation": {
+    "state": "awaiting_text",
+    "data": {
+      "active_agent": "FallbackAgent",
+      "delegated_intent": "nota",
+      "delegated_agent_name": "FallbackAgent",
+      "original_message": "recordar algo importante",
+      "fsm_state": "awaiting_text"
+    }
+  },
+  "test_context": {
+    "state": "awaiting_date",
+    "data": {
+      "active_agent": "FallbackAgent",
+      "delegated_intent": "agendar_cita",
+      "delegated_agent_name": "FallbackAgent",
+      "original_message": "quiero agendar algo",
+      "fsm_state": "awaiting_date"
+    }
+  },
+  "user_testswitch_001": {
+    "state": "awaiting_date",
+    "data": {
+      "active_agent": "FallbackAgent",
+      "delegated_intent": "agendar_cita",
+      "delegated_agent_name": "FallbackAgent",
+      "original_message": "quiero agendar una reunión",
+      "fsm_state": "awaiting_date"
+    }
+  },
+  "user1": {
+    "state": "initial",
+    "data": {
+      "active_agent": "HelpAgent",
+      "delegated_intent": "help",
+      "delegated_agent_name": "HelpAgent",
+      "original_message": "palabra sin sentido"
+    }
+  }
+}

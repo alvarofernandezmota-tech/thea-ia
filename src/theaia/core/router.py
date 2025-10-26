@@ -1,5 +1,5 @@
 """
-CoreRouter de Thea IA 3.0 — Integración completa FSM + Agentes (Agenda + Notas + Fallback)
+CoreRouter de Thea IA 3.0 — Integración completa FSM + Agentes (Agenda + Notas + Fallback)
 Gestiona FSM, delega a agentes especializados y mantiene persistencia de contexto por usuario.
 """
 
@@ -28,7 +28,7 @@ class CoreRouter:
             "recordar_nota": NoteAgent,
         }
 
-        print("CoreRouter inicializado con FSM y agentes integrados (Agenda + Notas).")
+        print("CoreRouter inicializado con FSM y agentes integrados (Agenda + Notas).")
 
     # --- Conversation Manager ------------------------------------------------
     def _get_or_create_conversation_manager(self, user_id: str) -> ConversationManager:
@@ -38,8 +38,22 @@ class CoreRouter:
         return self.conversation_managers[user_id]
 
     # --- Main Handler --------------------------------------------------------
-    def handle(self, user_id: str, message: str, context: Dict[str, Any] | None) -> Dict[str, Any]:
+    def handle(self, user_id: str, message: str, state: str = "initial", context: dict = None, metadata: dict = None):
 
+        """
+        Maneja un mensaje del usuario detectando intenciones y delegando a agentes.
+        
+        Args:
+            user_id: ID único del usuario
+            message: Texto del mensaje
+            state: Estado actual del FSM
+            context: Contexto acumulado de la conversación
+            metadata: Información adicional (opcional)
+        
+        Returns:
+            tuple: (response, new_state, new_context)
+        """
+        
         context = context or {}
         conv_manager = self._get_or_create_conversation_manager(user_id)
 
@@ -48,7 +62,7 @@ class CoreRouter:
             raw = self.intent_detector.detect(message)
             intents = [str(i) for i in raw] if isinstance(raw, (list, tuple)) else [str(raw)]
         except Exception as e:
-            print(f"[Error IntentDetector] {e}")
+            print(f"[Error IntentDetector] {e}")
             intents = []
 
         # 2. Procesamiento FSM
@@ -60,7 +74,7 @@ class CoreRouter:
             # Cambio dinámico de intención
             current_intent = updated_context.get("delegated_intent")
             if intents and intents[0] not in [current_intent]:
-                print(f"[Cambio de intención detectado: {intents[0]}]")
+                print(f"[Cambio de intención detectado: {intents[0]}]")
                 updated_context["fsm_state"] = "initial"
                 updated_context["delegated_intent"] = intents[0]
                 new_state = "delegated"
@@ -73,11 +87,11 @@ class CoreRouter:
                     agent = agent_cls(user_id)
                     response_text, new_state, updated_context = agent.handle(message, updated_context)
                 except Exception as e:
-                    print(f"[Error Agente {delegated_intent}] {e}")
-                    response_text = "No se pudo ejecutar la tarea del agente."
+                    print(f"[Error Agente {delegated_intent}] {e}")
+                    response_text = "[translate:No se pudo ejecutar la tarea del agente.]"
                     new_state = "error"
 
-            # 4. Guardar contexto (corregido)
+            # 4. Guardar contexto
             try:
                 save_context(user_id=user_id, data=updated_context)
             except TypeError:
@@ -85,16 +99,21 @@ class CoreRouter:
                 try:
                     save_context(user_id, updated_context)
                 except Exception as e:
-                    print(f"[Advertencia Contexto] {e}")
+                    print(f"[Advertencia Contexto] {e}")
 
-            # 5. Respuesta
-            return {
-                "status": "ok",
-                "message": response_text,
-                "context": updated_context,
-                "state": new_state,
-            }
+            # 5. Respuesta (TUPLA, no dict)
+            return response_text, new_state, updated_context
 
         except Exception as e:
-            print(f"[Error ConversationManager] {e}")
-            return {"status": "error", "message": "Error interno.", "context": context}
+            print(f"[Error ConversationManager] {e}")
+            return "[translate:Error interno.]", "error", context
+    
+    # --- Método auxiliar requerido por los tests ---
+    def _detect_multiple_intents(self, message: str):
+        """Detecta múltiples intenciones en el mensaje."""
+        try:
+            raw = self.intent_detector.detect(message)
+            return [str(i) for i in raw] if isinstance(raw, (list, tuple)) else [str(raw)]
+        except Exception as e:
+            print(f"[Error IntentDetector] {e}")
+            return []
