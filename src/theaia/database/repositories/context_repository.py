@@ -1,5 +1,5 @@
 """
-Repositorio de Contextos - Thea IA 3.0
+Repositorio de Contextos - Thea IA 3.0
 -------------------------------------
 
 Módulo responsable de almacenar y recuperar el contexto conversacional de cada usuario.
@@ -63,24 +63,23 @@ def _write_store(store: Dict[str, Any]):
 # -----------------------------------------------------------------------------
 #                     FUNCIONES PÚBLICAS DE ACCESO
 # -----------------------------------------------------------------------------
-def load_context(uid: str) -> Dict[str, Any] | None:
+def load_context(user_id: str) -> Dict[str, Any] | None:
     """
     Recupera el contexto de un usuario específico.
     Si no existe, devuelve None.
     """
     store = _read_store()
-    return store.get(uid)
+    return store.get(user_id)
 
 
-def save_context(uid: str, state: str, data: dict):
+def save_context(user_id: str, data: dict):
     """
     Guarda o actualiza el contexto completo de un usuario.
-
+    
     Parámetros:
-        uid: str   -> identificador único del usuario (user_id).
-        state: str -> estado actual de la FSM ('awaiting_date', 'completed', etc.).
-        data: dict -> diccionario completo del contexto.
-
+        user_id: str -> identificador único del usuario.
+        data: dict   -> diccionario completo del contexto (debe incluir 'fsm_state' internamente).
+    
     Ejemplo almacenado:
     {
         "u123": {
@@ -95,27 +94,31 @@ def save_context(uid: str, state: str, data: dict):
     """
     if not isinstance(data, dict):
         raise ValueError("El parámetro 'data' debe ser un diccionario válido.")
-
+    
     store = _read_store()
-    store[uid] = {"state": state, "data": data}
+    
+    # Extraer el estado desde 'data' si existe, o usar un estado por defecto
+    state = data.get("fsm_state", "initial")
+    
+    store[user_id] = {"state": state, "data": data}
     _write_store(store)
 
 # -----------------------------------------------------------------------------
 #                     UTILIDAD DE LIMPIEZA (OPCIONAL)
 # -----------------------------------------------------------------------------
-def clear_context(uid: str | None = None):
+def clear_context(user_id: str | None = None):
     """
-    Si se proporciona un uid, borra solo ese contexto.
+    Si se proporciona un user_id, borra solo ese contexto.
     Si no, limpia todos los contextos almacenados.
     """
-    if uid:
+    if user_id:
         store = _read_store()
-        if uid in store:
-            store.pop(uid)
+        if user_id in store:
+            store.pop(user_id)
             _write_store(store)
-            print(f"[Thea IA] Contexto del usuario '{uid}' eliminado correctamente.")
+            print(f"[Thea IA] Contexto del usuario '{user_id}' eliminado correctamente.")
         else:
-            print(f"[Thea IA] No existe contexto para el usuario '{uid}'.")
+            print(f"[Thea IA] No existe contexto para el usuario '{user_id}'.")
     else:
         _write_store({})
-        print("[Thea IA] Todos los contextos fueron eliminados con éxito.")
+        print("[Thea IA] Todos los contextos fueron eliminados con éxito.")
