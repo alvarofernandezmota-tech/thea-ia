@@ -1,28 +1,15 @@
-# src/theaia/agents/agenda_agent/handler.py
-
 from src.theaia.agents.base_agent import BaseAgent
-from src.theaia.core.fsm.conversation_manager import ConversationManager
+from src.theaia.agents.agenda_agent.agenda_conversation_manager import AgendaConversationManager
 
 class AgendaAgent(BaseAgent):
-    """
-    Agente para gestionar el agendamiento de eventos utilizando una FSM centralizada.
-    """
-    def __init__(self):
+    def __init__(self, user_id):
         super().__init__()
-        # Se renombra 'fsm' a 'conversation_manager' para mayor claridad
-        self.conversation_manager = ConversationManager()
+        self.user_id = user_id
+        self.conversation_manager = AgendaConversationManager(user_id)
 
-    async def handle(self, message: str, context: dict) -> str:
-        """
-        Delega el manejo del mensaje al ConversationManager para gestionar el diálogo.
-        
-        Args:
-            message (str): El mensaje del usuario.
-            context (dict): El contexto de la conversación.
+    def get_supported_intents(self):
+        return ["agenda", "cita", "reunión", "evento", "agendar"]
 
-        Returns:
-            str: La respuesta generada por el estado actual de la conversación.
-        """
-        # El ConversationManager se encarga de toda la lógica de estados
-        response = self.conversation_manager.handle_message(message, context)
-        return response
+    def handle(self, user_id, message, context):
+        response, new_state, new_context = self.conversation_manager.handle_message(user_id, message, context)
+        return response, new_state, new_context

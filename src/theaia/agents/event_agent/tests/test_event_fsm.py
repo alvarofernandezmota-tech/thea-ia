@@ -1,78 +1,34 @@
-# src/theaia/agents/event_agent/tests/test_event_fsm.py
-
 import pytest
-from src.theaia.agents.event_agent.model.event_fsm import EventFSM
+from src.theaia.agents.event_agent.event_conversation_manager import EventConversationManager
 
 @pytest.fixture
 def fsm():
-    return EventFSM()
+    return EventConversationManager("test_user")
 
 def test_initial_state(fsm):
-    """Test que el estado inicial es awaiting_name."""
-    assert fsm.state == "awaiting_name"
+    response, next_state, ctx = fsm.handle_message("test_user", "init", {})
+    assert next_state == "awaiting_event_title"
+    assert "evento" in response.lower()
 
-def test_transition_to_awaiting_date(fsm):
-    """Test transición desde awaiting_name a awaiting_date."""
-    response, state = fsm.process_message("Cumpleaños de María", {})
-    assert "¿Cuándo es" in response
-    assert state == "awaiting_date"
-    assert fsm.context["event_name"] == "Cumpleaños de María"
+def test_title_to_date_and_complete(fsm):
+    ctx = {}
+    # Primer mensaje: inicio, esperamos preguntar título
+    response, state, ctx = fsm.handle_message("test_user", "init", ctx)
+    assert state == "awaiting_event_title"
+    assert "evento" in response.lower()
+    # Segundo mensaje: introducimos título, esperamos preguntar fecha
+    response, state, ctx = fsm.handle_message("test_user", "Evento X", ctx)
+    assert state == "awaiting_event_date"
+    assert "fecha" in response.lower()
+    # Tercer mensaje: introducimos fecha, evento agendado
+    response, state, ctx = fsm.handle_message("test_user", "25 de diciembre", ctx)
+    assert state == "completed"
+    assert "agendado" in response.lower()
+    assert ctx["event_title"] == "Evento X"
+    assert ctx["event_date"] == "25 de diciembre"
 
-def test_transition_to_awaiting_recurrence(fsm):
-    """Test transición desde awaiting_date a awaiting_recurrence."""
-    fsm.context["event_name"] = "Aniversario"
-    fsm.state = "awaiting_date"
-    
-    response, state = fsm.process_message("15 de mayo", {})
-    assert "se repite cada año" in response
-    assert state == "awaiting_recurrence"
-    assert fsm.context["event_date"] == "15 de mayo"
-
-def test_transition_to_confirmation_recurrent(fsm):
-    """Test transición a confirmation con evento recurrente."""
-    fsm.context["event_name"] = "Cumpleaños"
-    fsm.context["event_date"] = "10 de junio"
-    fsm.state = "awaiting_recurrence"
-    
-    response, state = fsm.process_message("sí", {})
-    assert "Confirmo el evento" in response
-    assert "anualmente" in response
-    assert state == "confirmation"
-    assert fsm.context["is_recurrent"] is True
-
-def test_transition_to_confirmation_non_recurrent(fsm):
-    """Test transición a confirmation con evento no recurrente."""
-    fsm.context["event_name"] = "Conferencia"
-    fsm.context["event_date"] = "20 de octubre"
-    fsm.state = "awaiting_recurrence"
-    
-    response, state = fsm.process_message("no", {})
-    assert "Confirmo el evento" in response
-    assert "una sola vez" in response
-    assert state == "confirmation"
-    assert fsm.context["is_recurrent"] is False
-
-def test_schedule_confirmation_yes(fsm):
-    """Test confirmación positiva de evento."""
-    fsm.state = "confirmation"
-    fsm.context["event_name"] = "Graduación"
-    
-    response, state = fsm.process_message("sí", {})
-    assert "programado correctamente" in response
-    assert state == "scheduled"
-
-def test_event_cancelled(fsm):
-    """Test cancelación de evento."""
-    fsm.state = "confirmation"
-    
-    response, state = fsm.process_message("no", {})
-    assert "cancelado" in response
-    assert state == "cancelled"
-
-def test_error_state(fsm):
-    """Test que estados inválidos llevan a error."""
-    fsm.state = "unknown_state"
-    
-    response, state = fsm.process_message("test", {})
-    assert "error" in response.lower()
-    assert state == "error"
+def test_invalid_state(fsm):
+    ctx = {"fsm_state": "unknown"}
+    response, state, ctx = fsm.handle_message("test_user", "Test", ctx)
+    assert state == "completed"
+    assert "finalizado" in response.lower()
