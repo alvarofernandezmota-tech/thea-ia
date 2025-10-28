@@ -1,0 +1,90 @@
+text,intent
+quiero agendar reunión el viernes,agenda
+añade cita el 3 de marzo a las 17:00,agenda
+agendar cita con el doctor mañana,agenda
+programa una reunión para el lunes que viene,agenda
+crea un evento el próximo martes,agenda
+reservame tiempo el día 15,agenda
+necesito agendar algo para pasado mañana,agenda
+ponme una cita para el jueves por la tarde,agenda
+planifica una reunión de equipo,agenda
+bloquea mi calendario el miércoles,agenda
+agenda algo importante para la próxima semana,agenda
+quiero programar una llamada,agenda
+haz una cita el fin de semana,agenda
+sepárame tiempo el próximo mes,agenda
+crea una nota llamada compras,notas
+apunta: leer El Quijote,notas
+guarda esto en una nota,notas
+añade a mis notas que debo llamar a María,notas
+anota esto para más tarde,notas
+crea una lista de tareas pendientes,notas
+guárdame esta información,notas
+toma nota de esto,notas
+necesito anotar algo importante,notas
+hazme una nota con mis ideas,notas
+apunta en mis notas este recordatorio,notas
+quiero guardar esta dirección,notas
+anota mi contraseña nueva,notas
+guarda este número de teléfono,notas
+crea una nota urgente,notas
+recuerda lavar el coche mañana por la tarde,recordatorio
+ponme un recordatorio cada lunes,recordatorio
+recuérdame comprar pan,recordatorio
+avísame cuando sean las 5,recordatorio
+no olvides recordarme el pago de la luz,recordatorio
+programa una alarma para las 7 AM,recordatorio
+recuérdame llamar a Juan mañana,recordatorio
+ponme un recordatorio de la reunión,recordatorio
+avísame antes de la cita,recordatorio
+recuérdame revisar el correo,recordatorio
+no dejes que olvide la medicación,recordatorio
+ponme una alerta para el cumpleaños de Ana,recordatorio
+recuérdame sacar la basura,recordatorio
+avísame para salir a tiempo,recordatorio
+recordatorio de renovar el seguro,recordatorio
+qué temperatura hará mañana,consulta
+qué día es hoy,consulta
+cuál es la capital de Francia,consulta
+cómo está el tiempo en Madrid,consulta
+dime la hora actual,consulta
+cuánto es 25 más 17,consulta
+qué significa esta palabra,consulta
+busca información sobre Python,consulta
+cuál es el tipo de cambio euro dólar,consulta
+dime las noticias de hoy,consulta
+quién ganó el mundial 2018,consulta
+cuántos habitantes tiene España,consulta
+qué distancia hay hasta Barcelona,consulta
+explícame qué es blockchain,consulta
+cuál es mi saldo,consulta
+en qué me puedes ayudar,ayuda
+muéstrame tu ayuda,ayuda
+qué funciones tienes,ayuda
+cómo puedo usarte,ayuda
+explícame cómo funcionas,ayuda
+qué puedes hacer por mí,ayuda
+ayúdame no entiendo,ayuda
+necesito ayuda con esto,ayuda
+guíame para usar la app,ayuda
+cuáles son tus comandos,ayuda
+qué servicios ofreces,ayuda
+cómo creo una nota,ayuda
+enséñame a agendar,ayuda
+qué es esto,ayuda
+no sé qué hacer,ayuda
+hola,fallback
+adiós,fallback
+gracias,fallback
+ok,fallback
+no entiendo,fallback
+qwerty,fallback
+asdfgh,fallback
+123456,fallback
+test,fallback
+prueba,fallback
+nada,fallback
+zzz,fallback
+mmm,fallback
+ehhh,fallback
+blabla,fallback

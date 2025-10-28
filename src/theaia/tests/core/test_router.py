@@ -1,48 +1,28 @@
-# src/theaia/tests/core/test_router.py
-import pytest
-from src.theaia.core.router import CoreRouter
-from src.theaia.agents.agenda_agent.handler import AgendaAgent
-from src.theaia.agents.note_agent.handler import NoteAgent
-from src.theaia.agents.fallback_agent.handler import FallbackAgent
+from src.theaia.core.router import TheaRouter
 
-def test_handle_agenda(agent_replacer, dummy_agent_factory):
-    """
-    Verifica que CoreRouter delega correctamente al AgendaAgent.
-    """
-    router = CoreRouter()
-    dummy = dummy_agent_factory("ok agenda")
-    router.agents.append(AgendaAgent()) # Añade el agente real
-    agent_replacer(router, AgendaAgent, dummy)
-    
-    result = router.handle("user1", "quiero agendar una cita", {})
-    assert result["status"] == "ok"
-    assert "ok agenda" in result["message"].lower()
+def test_pipeline_routing_and_fallback():
+    router = TheaRouter()
+    uid = "user_orquestacion"
 
-def test_handle_notes(agent_replacer, dummy_agent_factory):
-    """
-    Verifica que CoreRouter delega correctamente al NoteAgent.
-    """
-    router = CoreRouter()
-    dummy = dummy_agent_factory("ok nota")
-    router.agents.append(NoteAgent()) # Añade el agente real
-    agent_replacer(router, NoteAgent, dummy)
-    
-    result = router.handle("user2", "crear nota de prueba", {})
-    assert result["status"] == "ok"
-    assert "ok nota" in result["message"].lower()
+    # Test de intent NOTA
+    resp = router.handle(uid, "Escribe una nota: llamar a Juan")
+    assert resp["status"] == "ok"
+    assert resp["state"] != "error"
+    assert "nota" in resp["context"].get("last_intent", "")
 
-def test_handle_fallback(agent_replacer, dummy_agent_factory):
-    """
-    Verifica que CoreRouter usa el FallbackAgent cuando no reconoce la intención.
-    """
-    router = CoreRouter()
-    dummy = dummy_agent_factory("ok fallback")
-    router.agents.append(FallbackAgent()) # Añade el agente real
-    agent_replacer(router, FallbackAgent, dummy)
-    
-    result = router.handle("user3", "mensaje sin sentido", {})
-    # El FallbackAgent siempre se activa al final, por eso la lógica es un poco distinta
-    assert result["status"] == "ok"
-    assert "ok fallback" in result["message"].lower()
+    # Test de intent AYUDA
+    resp = router.handle(uid, "Necesito ayuda con el sistema")
+    assert resp["context"]["last_intent"] == "ayuda"
 
+    # Test de fallback real (mensaje sin sentido)
+    resp = router.handle(uid, "asldkjqwopzmxnv")
+    assert resp["context"]["last_intent"] == "fallback"
+    assert "No he entendido" in resp["message"] or resp["status"] == "ok"
 
+    # Test de error interno en agente
+    def fake_handle(*a, **kwa): raise Exception("Forzado!")
+    router.agent_registry["nota"] = type("FakeBadAgent", (), {"__init__": lambda self, uid: None, "handle": fake_handle})
+    resp = router.handle(uid, "Escribe una nota de error")
+    assert resp["status"] == "error"
+
+    print("TEST INTEGRACIÓN ORQUESTADA > todo correctísimo")

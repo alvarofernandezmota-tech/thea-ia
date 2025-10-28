@@ -1,138 +1,86 @@
-"""
-CoreRouter de Thea IA 3.0 — Integración completa FSM + Agentes (Agenda + Notas + Fallback)
-Gestiona FSM, delega a agentes especializados y mantiene persistencia de contexto por usuario.
-"""
+# src/theaia/core/router.py
 
-from typing import Dict, Any
+from src.theaia.core.session_manager import SessionManager
 from src.theaia.ml.intent_detector.inference import IntentDetector
-from src.theaia.database.repositories.context_repository import load_context, save_context
-from src.theaia.core.fsm import ConversationManager
-from src.theaia.agents.agenda_agent.agenda_conversation_manager import AgendaConversationManager
 from src.theaia.agents.note_agent.handler import NoteAgent
+from src.theaia.agents.help_agent import HelpAgent
+from src.theaia.agents.event_agent.handler import EventAgent
+from src.theaia.agents.fallback_agent import FallbackAgent
+from src.theaia.agents.query_agent.handler import QueryAgent
+from src.theaia.agents.reminder_agent.handler import ReminderAgent
+from src.theaia.agents.schedule_agent.handler import ScheduleAgent
 
+# Opcional: añade AgendaAgent, OcioAgent, SaludAgent cuando estén listos
 
-class CoreRouter:
+class TheaRouter:
     def __init__(self):
+        self.session_manager = SessionManager()
         self.intent_detector = IntentDetector()
-        self.conversation_managers: Dict[str, ConversationManager] = {}
-
-        # Registro de agentes y alias
+        self.fallback_agent = FallbackAgent("global")
         self.agent_registry = {
-            "agenda": AgendaConversationManager,
-            "agendar": AgendaConversationManager,
-            "agendar_cita": AgendaConversationManager,
-            "cita": AgendaConversationManager,
-            "notas": NoteAgent,
             "nota": NoteAgent,
-            "crear_nota": NoteAgent,
-            "recordar_nota": NoteAgent,
+            "ayuda": HelpAgent,
+            "evento": EventAgent,
+            "consulta": QueryAgent,
+            "recordatorio": ReminderAgent,
+            "horario": ScheduleAgent,
+            # Añade aquí más agentes
         }
 
-        print("CoreRouter inicializado con FSM y agentes integrados (Agenda + Notas).")
-
-    # --- Conversation Manager ------------------------------------------------
-    def _get_or_create_conversation_manager(self, user_id: str) -> ConversationManager:
-        if user_id not in self.conversation_managers:
-            self.conversation_managers[user_id] = ConversationManager(user_id)
-            print(f"Nuevo ConversationManager creado para {user_id}")
-        return self.conversation_managers[user_id]
-
-    # --- Main Handler --------------------------------------------------------
-    def handle(
-        self,
-        user_id: str,
-        message: str,
-        state: str = "initial",
-        context: dict = None,
-        metadata: dict = None,
-    ):
-        """
-        Maneja un mensaje del usuario detectando intenciones y delegando a agentes.
-
-        Args:
-            user_id: ID único del usuario
-            message: Texto del mensaje
-            state: Estado actual del FSM
-            context: Contexto acumulado de la conversación
-            metadata: Información adicional (opcional)
-        """
-        context = context or {}
-        conv_manager = self._get_or_create_conversation_manager(user_id)
-
-        # 1. Detección de intención
+    def handle(self, user_id: str, message: str):
+        # 1. Detección de intent BLINDADA
         try:
             raw = self.intent_detector.detect(message)
-            intents = [str(i) for i in raw] if isinstance(raw, (list, tuple)) else [str(raw)]
+            # Normalización defensiva
+            if isinstance(raw, (list, tuple)):
+                intents = [str(i).strip().lower() for i in raw if str(i).strip()]
+            else:
+                intents = [str(raw).strip().lower()] if str(raw).strip() else []
         except Exception as e:
-            print(f"[Error IntentDetector] {e}")
+            print(f"[IntentDetector ERROR]: {e}")
             intents = []
 
-        # 2. Procesamiento FSM principal
+        # 2. Si hay intent claro, lo usamos; si no, fallback directo
+        if intents and intents[0] in self.agent_registry:
+            current_intent = intents[0]
+            AgentClass = self.agent_registry[current_intent]
+            agent = AgentClass(user_id)
+        elif intents and intents[0] == "ayuda":
+            current_intent = "ayuda"
+            agent = self.agent_registry["ayuda"](user_id)
+        else:
+            # Sin intent claro o vacío: fallback
+            current_intent = "fallback"
+            agent = self.fallback_agent
+
+        # 3. Recupera contexto y FSM robustamente
+        context = self.session_manager.get_context(user_id)
+        fsm_state = context.get("fsm_state")
+
+        # 4. Ejecuta handler seguro (try/except por agente)
         try:
-            response_text, new_state, updated_context = conv_manager.process_input(
-                message=message, candidate_intents=intents
+            response, new_state, updated_context = agent.handle(user_id, message, context)
+        except Exception as e:
+            print(f"[ERROR agent {current_intent}]: {e}")
+            response, new_state, updated_context = (
+                "Ha habido un error inesperado, ¿puedes repetir tu petición?",
+                "error",
+                context
             )
+            current_intent = "fallback"
 
-            # Cambio dinámico de intención detectado
-            current_intent = updated_context.get("delegated_intent")
-            if intents and intents[0] not in [current_intent]:
-                print(f"[Cambio de intención detectado: {intents[0]}]")
-                updated_context["fsm_state"] = "initial"
-                updated_context["delegated_intent"] = intents[0]
-                new_state = "delegated"
+        # 5. Actualiza FSM y contexto de usuario blindado
+        updated_context["fsm_state"] = new_state
+        updated_context["last_intent"] = current_intent
+        self.session_manager.update_context(user_id, updated_context)
 
-            # 3. Delegación a agente especializado
-            delegated_intent = updated_context.get("delegated_intent")
-            if delegated_intent in self.agent_registry:
-                agent_cls = self.agent_registry[delegated_intent]
-                try:
-                    agent = agent_cls(user_id)
-                    result = agent.handle(user_id, message, updated_context)
-                    # Los agentes tipo NoteAgent devuelven diccionario
-                    if isinstance(result, dict):
-                        response_text = result.get("message", response_text)
-                        new_state = result.get("fsm_state", new_state)
-                        updated_context = result.get("context", updated_context)
-                    else:
-                        response_text, new_state, updated_context = result
-                except Exception as e:
-                    print(f"[Error Agente {delegated_intent}] {e}")
-                    response_text = "No se pudo ejecutar la tarea del agente."
-                    new_state = "error"
+        # 6. Devuelve respuesta estándar
+        return {
+            "status": "ok" if new_state != "error" else "error",
+            "message": response,
+            "state": new_state,
+            "context": updated_context,
+        }
 
-            # 4. Guardar contexto actualizado correctamente
-            try:
-                save_context(user_id, new_state, updated_context)
-            except Exception as e:
-                print(f"[Advertencia Contexto] {e}")
-
-            # 5. Responder con compatibilidad híbrida para tests antiguos y nuevos
-            result = {
-                "status": "ok",
-                "message": response_text,
-                "state": new_state,
-                "context": updated_context,
-            }
-
-            # Return híbrido: soporta dict y tupla antigua
-            return result, response_text, new_state, updated_context
-
-        except Exception as e:
-            print(f"[Error ConversationManager] {e}")
-            result = {
-                "status": "error",
-                "message": "Error interno.",
-                "state": "error",
-                "context": context,
-            }
-            return result, result["message"], result["state"], result["context"]
-
-    # --- Método auxiliar requerido por los tests ---
-    def _detect_multiple_intents(self, message: str):
-        """Detecta múltiples intenciones en el mensaje."""
-        try:
-            raw = self.intent_detector.detect(message)
-            return [str(i) for i in raw] if isinstance(raw, (list, tuple)) else [str(raw)]
-        except Exception as e:
-            print(f"[Error IntentDetector] {e}")
-            return []
+    def reset_session(self, user_id: str):
+        self.session_manager.reset_context(user_id)
