@@ -1,126 +1,162 @@
 # ==============================================
-# THEA IA 2.0 - GIT IGNORE
+# THEA IA 2.0 - GIT IGNORE [v0.14.0]
 # ==============================================
 
-# Archivos Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-share/python-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-MANIFEST
+###############################################
+# PYTHON: Ignora archivos y carpetas generados #
+###############################################
 
-# Virtual environments
-.env
-.venv
-env/
-venv/
+__pycache__/          # Caché automática de Python para acelerar la ejecución
+*.py[cod]             # Compilados Python (pyc/pyo/pyd)
+*$py.class            # Bytecode generado por Jython
+*.so                  # Shared Objects para extensiones nativas
+
+#########################################
+# ENTORNOS VIRTUALES Y DEPENDENCIAS     #
+#########################################
+
+.env                   # Variables de entorno (crítico: secretos privados, tokens, claves)
+.venv                  # Entorno virtual Python específico del proyecto
+env/                   # Carpeta de entorno virtual estándar
+venv/                  # Carpeta de entorno virtual alternativa
 ENV/
-env.bak/
-venv.bak/
-.virtualenv/
+env.bak/               # Backup de entornos
+venv.bak/              # Backup de entornos
+.virtualenv/           # Carpeta virtual adicional
 
-# IDEs y editores
-.vscode/
-.idea/
-*.swp
+##########################################
+# IDEs y archivos editor (multiusuario)  #
+##########################################
+
+.vscode/               # Configuración y metadatos de Visual Studio Code
+.idea/                 # Configuración JetBrains (PyCharm, etc)
+*.swp                  # Archivos de swap temporales
 *.swo
 *~
 .project
 .pydevproject
 
-# Jupyter Notebook
-.ipynb_checkpoints
+##########################################
+# Jupyter Notebooks                      #
+##########################################
 
-# Base de datos
-*.db
-*.sqlite3
-*.sql
+.ipynb_checkpoints     # Checkpoints temporales de Jupyter
 
-# Logs
-logs/
-*.log
-*.log.*
+##########################################
+# BASES DE DATOS LOCALES                 #
+##########################################
 
-# Archivos temporales
-.tmp/
+*.db                   # SQLite y otros DB locales
+*.sqlite3              # SQLite3
+*.sql                  # Dumps y archivos de base de datos
+
+##########################################
+# LOGS Y ARCHIVOS TEMPORALES             #
+##########################################
+
+logs/                  # Carpeta de logs de ejecución
+*.log                  # Logs individuales
+*.log.*                # Logs rotados
+.tmp/                  # Archivos temporales
 tmp/
 *.tmp
 *.temp
-.cache/
-.pytest_cache/
+.cache/                # Caché generada
+.pytest_cache/         # Caché de pytest
 
-# Archivos sensibles
-.env
-.env.local
-.env.production
-.env.staging
-*.key
-*.pem
-*.p12
-credentials/
-secrets/
+##########################################
+# ARCHIVOS SENSIBLES (SEGURIDAD)         #
+##########################################
 
-# Modelos ML entrenados
-models/*.pkl
-models/*.joblib
-models/*.h5
-models/*.pb
-models/cache/
+.env                   # Variables de entorno privatizadas
+.env.local             # Entorno local
+.env.production        # Entorno de producción
+.env.staging           # Entorno staging
+*.key                  # Credenciales (llaves privadas)
+*.pem                  # Certificados
+*.p12                  # Certificados de clave pública
+credentials/           # Carpeta de credenciales
+secrets/               # Carpeta de secretos personales
 
-# Docker
-.dockerignore
-docker-compose.override.yml
+##########################################
+# MODELOS ML Y ARCHIVOS ENTRENADOS       #
+##########################################
 
-# Cobertura tests
-.coverage
-.coverage.*
-coverage.xml
-*.cover
-.hypothesis/
-htmlcov/
+models/*.pkl           # Modelos serializados scikit-learn
+models/*.joblib        # Modelos serializados joblib
+models/*.h5            # Modelos Keras/TensorFlow
+models/*.pb            # Modelos protobuf ML
+models/cache/          # Caché y metadatos de inferencia
 
-# Archivos sistema
-.DS_Store
+##########################################
+# DOCKER Y CONTENERIZACIÓN               #
+##########################################
+
+.dockerignore          # Configuración docker ignored
+docker-compose.override.yml # Config personalizada docker-compose
+
+##########################################
+# COVERAGE Y TESTING AUTOMATIZADO        #
+##########################################
+
+.coverage              # Salida de coverage (automática)
+.coverage.*            # Coverage múltiples
+coverage.xml           # Coverage XML report
+*.cover                # Coverage genérico
+.hypothesis/           # Carpeta hypothesis testing
+htmlcov/               # Cobertura en HTML
+
+##########################################
+# ARCHIVOS DE SISTEMA AUTOGENERADOS      #
+##########################################
+
+.DS_Store              # MacOS
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
-ehthumbs.db
+ehthumbs.db            # Windows thumbs
 Thumbs.db
 
-# Alembic
-alembic/versions/*.py
-!alembic/versions/__init__.py
-!alembic/versions/001_initial.py
+##########################################
+# ALEMBIC MIGRATIONS (BD EVOLUTIVA)      #
+##########################################
 
-# Archivos media subidos
+alembic/versions/*.py              # Migraciones generadas automáticamente
+!alembic/versions/__init__.py      # NO ignorar init
+!alembic/versions/001_initial.py   # NO ignorar migración base
+
+##########################################
+# MEDIA Y ARCHIVOS SUBIDOS POR USUARIOS  #
+##########################################
+
 uploads/
 media/
 static/files/
 
-# Monitoring y métricas
+##########################################
+# MONITORIZACIÓN Y METRICAS              #
+##########################################
+
 prometheus/data/
 grafana/data/
 monitoring/logs/
 
-# Backup archivos
+##########################################
+# BACKUPS Y ARCHIVOS DE RESPALDO         #
+##########################################
+
 *.bak
 *.backup
 *.old
+
+##########################################
+# CARPETA DE ARCHIVOS TEMPORALES DEL PROYECTO #
+##########################################
+
+.archive/                # Carpeta de archivos temporales, dumps y diagnósticos de THEA IA
+
+##########################################
+# NOTA: Revisa siempre antes de subir, los archivos ignorados aquí nunca serán compartidos por seguridad y buenas prácticas.
+#       Mantener este archivo actualizado garantiza que el ecosistema THEA IA funciona ordenado, seguro y sin fugas de información.
+##########################################
