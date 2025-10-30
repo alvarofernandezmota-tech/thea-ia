@@ -2,7 +2,12 @@
 
 🤖 **Agente conversacional inteligente** con máquina de estados finitos (FSM) y procesamiento de lenguaje natural (NLP) para gestión automatizada de eventos, notas y recordatorios.
 
----
+---## Estado de Thea IA Core – v2.1.0 (28/10/2025)
+- Núcleo robusto con 8 agentes orquestados y fallback seguro.
+- FSM y handlers completamente testados y validados.
+- Intentos con ML+reglas, normalización y logging.
+- Listo para integración de adaptadores externos.
+
 
 ## 🎯 Visión del proyecto
 
