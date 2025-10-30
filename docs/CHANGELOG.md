@@ -1293,3 +1293,29 @@ Versión del Proyecto: Thea IA 3.0.2
 Branch Activo: main
 Último Commit: Integración CoreManager + FSM + Agentes Piloto
 
+## Changelog – 2025-10-28
+
+[Core] Orquestación completa y blindaje híbrido del pipeline de intents/agentes para Thea IA:
+
+Refactor del IntentDetector, añadiendo normalización de intents (singular/plural y mapping ML → intents oficiales).
+
+Logging exhaustivo de decisiones (ML vs keywords) para debugging y mejora continua.
+
+Fall-back semántico ultra-robusto aplicado en todos los flujos.
+
+Ahora el pipeline responde de forma fiable aunque el modelo ML falle o produzca variantes imprevistas.
+
+Test de orquestación e integración (test_router.py) pasa con cobertura de notas, ayuda y fallback.
+
+El router reconoce correctamente intents en singular, plural y variantes, evitando caídas por intents desconocidos.
+
+Core validado como estable, listo para escalar a nuevas features y canales externos.
+
+✓ Núcleo de Thea IA 2.0 orquestado y listo para integración con adaptadores, frontend y despliegue interno.
+
+### 2.1.0 – 2025-10-28
+
+- Blindaje y orquestación de todos los agentes principales.
+- IntentDetector híbrido: ML + fallback, con normalización y logging.
+- Todos los tests FSM y unitarios pasados para los 8 agentes.
+- Core validado, checklist Fase 2 muy avanzado.
