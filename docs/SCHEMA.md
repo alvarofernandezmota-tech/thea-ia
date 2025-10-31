@@ -78,3 +78,29 @@
 - ⏳ docs/modules/core/README.md, ROADMAP.md, CHANGELOG.md
 - ⏳ docs/modules/agents/, adapters/, ml/, tests/ (mismo patrón)
 - ⏳ docs/architecture/, guides/, security/, audit/ (secciones temáticas)
+
+# 📊 SCHEMA.md — Estado Global THEA IA
+
+**Versión:** v0.14.0  
+**Última actualización:** 2025-10-31 03:55 CET  
+**Sesión actual:** 31
+
+## 🎯 Estado por Hito
+
+| Hito | Fase | Estado | Inicio | Fin Est. | Progreso |
+|------|------|--------|--------|----------|----------|
+| **H01** | 1 | ✅ COMPLETO | 2025-10-08 | 2025-10-31 | 100% |
+| **H02** | 1 | ⏳ EN PROGRESO | 2025-11-01 | 2025-11-10 | 0% |
+| **H03** | 1 | ⏳ PLANIFICADO | 2025-11-11 | 2025-11-15 | 0% |
+
+## 📚 Documentación
+
+- ✅ **Completada:** 12 archivos nuevos en `docs/`
+- ✅ **Archive:** Histórico preparado
+- ⏳ **Próximo:** .gitignore + .env.example
+
+## 💾 Base Datos
+
+- ✅ Modelos: 8 definidos
+- ⏳ Migraciones: Pendiente H04
+- ⏳ Índices: Pendiente H04
