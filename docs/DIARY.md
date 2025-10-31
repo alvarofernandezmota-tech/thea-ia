@@ -1,191 +1,179 @@
-# 📔 DIARIO DE DESARROLLO — THEA IA
+📔 DIARIO DE DESARROLLO — THEA IA
+Proyecto: THEA IA
+Diario de: Álvaro Fernández Mota (CEO)
+Período: 2025-10-08 ~ 2025-10-31
 
-**Proyecto:** THEA IA  
-**Diario de:** Álvaro Fernández Mota (CEO)  
-**Período:** 2025-10-08 ~ Presente
+Este es el diario oficial de desarrollo. Cada sesión se registra con fecha, hora, actividades y entregables.
+Días no registrados en el changelog se marcan como descanso.
 
----
+Días trabajados vs. días totales
+Total días	Días con trabajo	Días de descanso
+24	15	9
+📅 2025-10-08 (Martes)
+⏱️ Sesión: 15:47 ~ 17:06 (1h 19min)
+📋 Actividades
+Análisis y arquitectura: revisión, diseño modular, FSM, roadmap y documentación inicial.
 
-> Este es el diario oficial de desarrollo. Cada sesión de trabajo se registra con fecha, hora, actividades y entregables.
+🎯 Entregables
+✅ Arquitectura modular, roadmap, README profesional
 
----
+📅 2025-10-09 (Miércoles)
+⏱️ Sesión: 22:00 ~ 23:30 (1h 30min)
+📋 Actividades
+Componentes FSM, avances de detector/agentes, planificación
 
-## 📅 2025-10-08 (Martes)
+🎯 Entregables
+✅ Detector y extractor conectados
 
-### ⏱️ Sesión: 15:47 ~ 17:06 (1h 19min)
+📅 2025-10-10 (Jueves)
+⏱️ Sesión: (Datos del changelog antiguo)
+📋 Actividades
+Organización estructura, diseño agentes, commits/documentación
 
-#### 📋 Actividades
+🎯 Entregables
+✅ Estructura, diseño y cobertura initial tests
 
-**15:47 - 16:15** | Análisis y arquitectura
-- Revisión estructura proyecto actual
-- Investigación modularización (Adapters → Core → Services → Repos)
-- Diseño arquitectura FSM multi-agente
+📅 2025-10-11 (Viernes)
+⏱️ Sesión: 15:40 ~ 20:00 (5h 20min)
+📋 Actividades
+Auditoría modular/documental y profesionalización de carpetas
 
-**16:15 - 17:06** | Documentación y roadmap
-- README.md profesional completado (3500+ palabras)
-- Roadmap 10 fases definido
-- Estructura carpetas (43 archivos)
+🎯 Entregables
+✅ Auditoría por carpetas y checklist
 
-#### 🎯 Entregables
-- ✅ Arquitectura modular definida
-- ✅ Roadmap 10 fases completo
-- ✅ README profesional
-- ✅ Documentación base
+📅 2025-10-12 (Sábado)
+Descanso
 
-#### 📊 Estado
-- Fase 0: ✅ Completada (100%)
+📅 2025-10-13 (Domingo)
+⏱️ Sesión: (Datos del changelog antiguo)
+📋 Actividades
+Cierre de bloques, auditoría scripts/tests, README
 
----
+🎯 Entregables
+✅ Fase 1 cerrada, auditoría scripts
 
-## 📅 2025-10-14 (Lunes)
+📅 2025-10-14 (Lunes)
+⏱️ Sesión: ?? (Duración desconocida)
+📋 Actividades
+Modularización agentes, router, handlers
 
-### ⏱️ Sesión: ?? (Duración desconocida)
+🎯 Entregables
+🔄 Agentes/core/handlers completados
 
-#### 📋 Actividades
+📅 2025-10-15 (Martes)
+⏱️ Sesión: (Datos changelog testeos/fsm)
+📋 Actividades
+FSM implementado, milestone desarrollo y documentación
 
-- Modularización agentes (cancel, modify, notification, query, scheduling)
-- Registro dinámico agentes en Core
-- Integración router.py y handlers
+🎯 Entregables
+✅ FSM funcional
 
-#### 🎯 Entregables
-- 🔄 Agentes modularizados
-- 🔄 Router integrado
-- 🔄 Handlers conectados
+📅 2025-10-16 (Miércoles)
+Descanso
 
-#### 📊 Estado
-- Fase 1: 🔄 En curso (15%)
+📅 2025-10-17 (Jueves)
+Descanso
 
----
+📅 2025-10-18 (Viernes)
+⏱️ Sesión: ?? (Duración desconocida)
+📋 Actividades
+Integración y cobertura, integración agentes y auditoría
 
-## 📅 2025-10-20 (Domingo)
+🎯 Entregables
+✅ Core/agents/documentación integración
 
-### ⏱️ Sesión: ?? (Duración desconocida)
+📅 2025-10-19 (Sábado)
+⏱️ Sesión: (Datos roadmap release)
+📋 Actividades
+Release 3.0, optimización Codespaces
 
-#### 📋 Actividades
+🎯 Entregables
+✅ Nueva versión y mejoras
 
-- Intent detector y entity extractor conectados
-- ML/NLP integrado
-- Roadmap extendido a 11 fases (validación, MLOps)
+📅 2025-10-20 (Domingo)
+⏱️ Sesión: ?? (Duración desconocida)
+📋 Actividades
+ML/NLP integración, roadmap extendido (validación/MLOps)
 
-#### 🎯 Entregables
-- 🔄 ML/NLP modular
-- 🔄 Roadmap extendido
-- 🔄 Extracción entidades
+🎯 Entregables
+🔄 ML/NLP modular, roadmap extendido
 
-#### 📊 Estado
-- Fase 1: 🔄 En curso (20%)
+📅 2025-10-21 al 2025-10-25
+Descanso
 
----
+📅 2025-10-26 (Domingo)
+⏱️ Sesión: (Datos changelog integración/auditoría)
+📋 Actividades
+Auditoría, checklist CORE, métricas tests
 
-## 📅 2025-10-30 (Miércoles)
+🎯 Entregables
+✅ Auditoría, checklist, integración
 
-### ⏱️ Sesión: ?? (Duración desconocida)
+📅 2025-10-27 (Lunes)
+Descanso
 
-#### 📋 Actividades
+📅 2025-10-28 (Martes)
+⏱️ Sesión: (Datos changelog integración)
+📋 Actividades
+Integración de features y registro de cambios
 
-- Finalización handlers y FSM
-- Adapter Telegram base
-- Integración transversal
+🎯 Entregables
+✅ Features integrados
 
-#### 🎯 Entregables
-- 🔄 FSM funcional
-- 🔄 Adapter Telegram inicio
-- 🔄 Handlers finales
+📅 2025-10-29 (Miércoles)
+⏱️ Sesión: (Datos changelog tests/logs)
+📋 Actividades
+Ejecución de testflows E2E y logs automáticos
 
-#### 📊 Estado
-- Fase 1: 🔄 En curso (25%)
+🎯 Entregables
+✅ Flow E2E, logs documentados
 
----
+📅 2025-10-30 (Jueves)
+⏱️ Sesión: 22:30 ~ 01:00 (aprox.)
+📋 Actividades
+Revisión final de roadmap y estructura de raíz.
 
-## 📅 2025-10-31 (Jueves)
+Preparación de archivos DIARY.md y SCHEMA.md.
 
-### ⏱️ Sesión: 00:14 ~ 01:23 (1h 9min)
+Auditoría y agrupación de toda la documentación (README, ROADMAP, CONTRIBUTING, SECURITY, .env.example).
 
-**Hito completado:** H01 — Organización y compatibilidad de tests, core y ecosistema ✅
+Decisión de migrar el changelog antiguo a los nuevos archivos.
 
-#### 📋 Actividades
+Planificación de cómo se debe dividir la información por días trabajados y días de descanso.
 
-**00:14 - 00:35** | README.md raíz
-- Filosofía y ecosistema THEA IA
-- 17 hitos principales estructurados
-- Carpetas clave documentadas
-- Auditoría y onboarding
+Secuenciación del proceso de consolidación del diario frente a los hitos del proyecto.
 
-**00:35 - 00:45** | ROADMAP.md raíz
-- 17 hitos grandes (H01-H17) con deadlines
-- 4 fases orquestadas (2025-10-31 ~ 2026-06-01)
-- H01 marcado como ✅ COMPLETADO
-- Fase 2 activa (multi-agente y adaptadores)
+🎯 Entregables
+Estructura definitiva del diario.
 
-**00:45 - 01:05** | CONTRIBUTING.md
-- Git Flow profesional (feature, bugfix, hotfix, refactor)
-- Checklist de PR (20+ items)
-- Responsables por equipo
-- Testing ≥80% coverage obligatorio
+Preparación para cierre y commit global.
 
-**01:05 - 01:08** | SECURITY.md
-- Protocolo vulnerabilidades (security@theaia.com)
-- Gestión de secretos y encriptación AES-256
-- RBAC y JWT implementado
-- Auditoría de incidentes por severidad
+Consolidación esquema + diario.
 
-**01:08 - 01:13** | .env.example completo
-- 20 secciones de configuración
-- Variables por módulo y entorno
-- Comentarios de seguridad
-- Especificación por hito (H01-H20)
+📊 Estado
+Todas las decisiones previas y su explicación quedaron listas como roadmap para la sesión del 31.
 
-**01:13 - 01:23** | Consolidación y cierre
-- CHANGELOG actualizado con sesión
-- ROADMAP actualizado con fases
-- README con "Documentación viva"
-- Preparado para commit
+📅 2025-10-31 (Viernes)
+⏱️ Sesión: 00:14 ~ 02:00
+📋 Actividades
+Ejecución y commit de todos los archivos reorganizados: README, ROADMAP, SCHEMA.md, DIARY.md, CONTRIBUTING, SECURITY, .env.example.
 
-#### 🎯 Entregables
-- ✅ README.md raíz profesional
-- ✅ ROADMAP.md con 17 hitos + 4 fases
-- ✅ CHANGELOG.md versionado (v0.13.0 → v0.14.0)
-- ✅ CONTRIBUTING.md checklist colaborativo
-- ✅ SECURITY.md protocolo integral
-- ✅ .env.example 20 secciones documentadas
+Revisión completa del histórico de trabajo y changelogs antiguos.
 
-#### 📊 Estado
-- Fase 1: ✅ Completada (100%)
-- Fase 2: 🔄 Iniciada (0%)
-- H01: ✅ COMPLETADO
-- Documentación raíz: ✅ Profesional
+Reagrupación de días registrados versus días de descanso en el diario nuevo.
 
----
+Verificación de la sincronización de todos los archivos en GitHub, resolución de dudas, errores, y dudas de comando git.
 
-## 📈 Progreso acumulado
+Consolidación y cierre con auditoría final.
 
-2025-10-08 │ Fase 0 │ 100% ✅ │ Análisis y arquitectura
-2025-10-14 │ Fase 1 │ 20% 🔄 │ Modularización agentes
-2025-10-20 │ Fase 1 │ 20% 🔄 │ ML/NLP integración
-2025-10-30 │ Fase 1 │ 25% 🔄 │ Handlers finales
-2025-10-31 │ Fase 1 │ 100% ✅ │ Documentación profesional raíz
+Preparación del diario definitivo con estructura de fechas, sesiones y resumen de días totales.
 
-text
+🎯 Entregables
+Commit final y push con todo el historial profesional limpio.
 
----
+Diario consolidado y SCHEMA profesional en docs/.
 
-## 🎖️ Próximas sesiones
+📊 Estado
+Release completa de la documentación profesional.
 
-**Sesión 2 (Est. 2025-11-01 ~ 2025-11-10)**
-- [ ] README/ROADMAP/CHANGELOG por carpeta (core, agents, adapters, tests, ml)
-- [ ] Hito H02: Adapter Telegram & Web
-- [ ] Validar tests e2e
-
-**Sesión 3 (Est. 2025-11-11 ~ 2025-11-20)**
-- [ ] Documentación extendida en `/docs`
-- [ ] Hito H03: FSM avanzado & manager universal
-- [ ] Auditoría seguridad inicial
-
-**Sesión 4+ (Est. 2025-11-21 ~ 2026-06-01)**
-- [ ] Hitos H04-H17 según roadmap
-- [ ] Deploy y release a producción
-
----
-
-**Última actualización:** 2025-10-31 01:23 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+Auditoría iterativa y roadmap próximo organizado.
