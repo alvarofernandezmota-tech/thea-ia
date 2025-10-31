@@ -1,46 +1,3 @@
-# SCHEMA — THEA IA v2.0 (Arquitectura & Orquestación)
-
-**Proyecto:** THEA IA  
-**Versión:** 2.0 / v0.14.0  
-**Actualizado:** 2025-10-31 01:23 CET  
-**Responsable:** Álvaro Fernández Mota (CEO)
-
----
-
-## 🎯 Estado global del proyecto
-
-| Métrica | Estado | % |
-|---------|--------|-----|
-| **Fase completada** | 1/4 ✅ | 25% |
-| **Documentación raíz** | 100% ✅ | Profesional |
-| **Hito H01** | ✅ COMPLETADO | Org & Tests |
-| **Infraestructura** | Fase 1 ✅ | Core FSM OK |
-| **Multi-agente** | Fase 2 🔄 | En desarrollo |
-
----
-
-## 🏗️ Estructura THEA IA
-
-### Raíz — Documentación profesional
-├── README.md # Filosofía, 17 hitos, auditoría
-├── ROADMAP.md # Plan 17 hitos + 4 fases
-├── CHANGELOG.md # Versionado v0.14.0
-├── CONTRIBUTING.md # Normas PR, Git Flow, tests ≥80%
-├── SECURITY.md # Protocolo vulnerabilidades, encriptación AES-256
-└── .env.example # 20 secciones, variables por módulo/entorno
-
-text
-
-### Carpetas — README/ROADMAP/CHANGELOG local (próxima sesión)
-src/theaia/
-├── core/ # FSM, router, managers, contexto
-├── agents/ # Agenda, notas, eventos, query, etc
-├── adapters/ # Telegram, WhatsApp, Web, API REST
-├── ml/ # Intent detector, entity extractor, spacy
-├── tests/ # Unit, integration, e2e, FSM tests
-└── docs/ # Arquitectura, onboarding, audit checklist
-
-text
 
 ---
 
@@ -70,20 +27,20 @@ text
 
 ## 4️⃣ Fases orquestadas
 
-### Fase 1: Core y FSM (Completada ✅)
+### Fase 1: Core y FSM ✅ (Completada)
 - Estructura, tests, documentación raíz
 - H01 completado
 
-### Fase 2: Multi-agente y adaptadores (En curso 🔄)
+### Fase 2: Multi-agente y adaptadores 🔄 (En curso)
 - H02-H07: Adapters, agents, ML, E2E tests
 - Deadline: 2025-12-15
 
-### Fase 3: Infra, observabilidad, seguridad (Próxima ⏳)
-- H08-H14: Multi-empresa, Docker/K8s, observabilidad, hardening, onboarding
+### Fase 3: Infra, observabilidad, seguridad ⏳ (Próxima)
+- H08-H14: Multi-empresa, Docker/K8s, observabilidad
 - Deadline: 2026-04-01
 
-### Fase 4: Escalabilidad y release (Futura ⏳)
-- H15-H17: Performance, plugins, auditoría final, go-live
+### Fase 4: Escalabilidad y release ⏳ (Futura)
+- H15-H17: Performance, plugins, auditoría final
 - Deadline: 2026-06-01
 
 ---
@@ -93,20 +50,31 @@ text
 ### Raíz (2025-10-31)
 - ✅ README.md
 - ✅ ROADMAP.md
-- ✅ CHANGELOG.md
 - ✅ CONTRIBUTING.md
 - ✅ SECURITY.md
 - ✅ .env.example
+- ✅ docs/SCHEMA.md
+- ✅ docs/index.md
 
-### Por carpeta (Próx sesión)
-- ⏳ src/theaia/core/ — README, ROADMAP, CHANGELOG
-- ⏳ src/theaia/agents/ — README, ROADMAP, CHANGELOG
-- ⏳ src/theaia/adapters/ — README, ROADMAP, CHANGELOG
-- ⏳ src/theaia/ml/ — README, ROADMAP, CHANGELOG
-- ⏳ src/theaia/tests/ — README, ROADMAP, CHANGELOG
-- ⏳ docs/ — architecture.md, agents.md, adapters.md, tests.md, onboarding.md, audit_checklist.md
+### Próximas entregas
+- ⏳ docs/diary/DIARY.md
+- ⏳ docs/roadmap/master.md
+- ⏳ docs/roadmap/milestones/H01.md, H02.md...
+- ⏳ docs/modules/core/, agents/, adapters/, ml/, tests/
 
 ---
 
-**Última actualización:** 2025-10-31 01:23 CET  
+**Última actualización:** 2025-10-31 02:33 CET  
 **Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+
+---
+
+## 📂 Próximas entregas en docs/
+
+- ⏳ docs/index.md (navegación central)
+- ⏳ docs/diary/DIARY.md (diario de sesiones)
+- ⏳ docs/roadmap/master.md (roadmap maestro)
+- ⏳ docs/roadmap/milestones/H01.md - H17.md
+- ⏳ docs/modules/core/README.md, ROADMAP.md, CHANGELOG.md
+- ⏳ docs/modules/agents/, adapters/, ml/, tests/ (mismo patrón)
+- ⏳ docs/architecture/, guides/, security/, audit/ (secciones temáticas)
