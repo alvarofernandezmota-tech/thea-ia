@@ -1,94 +1,78 @@
-# 🧠 Thea IA 3.0 Enterprise Edition
+# 📚 Documentación Central — THEA IA
 
-Bienvenido a la documentación oficial de **Thea IA 3.0**, la plataforma de inteligencia artificial empresarial creada por **Thea IA Systems S.L.**  
-Diseñada para entornos corporativos que requieren seguridad, automatización y gestión inteligente de contextos conversacionales.
-
----
-
-## 🌐 Visión General
-
-**Thea IA 3.0 Enterprise** es un ecosistema modular basado en:
-- Arquitectura asíncrona con **FSM Engine v2**.  
-- Agentes independientes para gestión de agenda, notas, y hábitos.  
-- Núcleo **CoreRouter** orquestado por **FastAPI + SQLAlchemy async**.  
-- Persistencia segura de contexto y memoria long term.  
+> **Propósito:**  
+> Esta guía describe y estructura toda la documentación técnica, de hitos y auditoría del ecosistema THEA IA.  
+> Aquí podrás navegar rápidamente por diario, roadmap, arquitectura, seguridad, módulos y checklist de auditoría del proyecto.
 
 ---
 
-## 🚀 Componentes Principales
+## 🚩 Navegación rápida
 
-| Módulo | Descripción |
-|---------|--------------|
-| **Core Router / FSM** | Motor de estados finito para agentes contextuales. |
-| **Agentes inteligentes** | Agenda, Notas, Eventos y Contexto. |
-| **Persistencia Contextual** | SQLite / PostgreSQL con migraciones Alembic. |
-| **API REST & Webhooks** | Endpoints según estándar OpenAPI 3.1. |
-| **Monitorización Avanzada** | Prometheus + Grafana + Loki. |
-| **Seguridad GDPR / SOC 2** | Cifrado TLS 1.3 y gestión AES‑256. |
-
----
-
-## 📘 Documentos Principales
-
-1. [Arquitectura General](architecture.md)  
-2. [Referencia API REST](api_reference.md)  
-3. [Monitorización Empresarial](monitoring_enterprise.md)  
-4. [Despliegue y CI/CD](deployment_enterprise.md)  
-5. [Seguridad Corporativa](security_enterprise.md)  
-6. [Guía DevOps](devops_readme.md)  
-7. [Cumplimiento Legal](legal_compliance.md)  
-8. [Roadmap Tecnológico](roadmap_enterprise.md)  
-9. [Directorio de Equipo](team_directory.md)  
-10. [Onboarding Técnico](training_onboarding.md)  
+- [Diario de sesiones](./diary/DIARY.md)
+- [Roadmap maestro](./roadmap/master.md)
+- [Hitos y milestones](./roadmap/milestones/)
+- [Arquitectura](./architecture/overview.md)
+- [Guías y procedimientos](./guides/)
+- [Seguridad y controles](./security/overview.md)
+- [Checklist de auditoría](./audit/checklist.md)
+- [Documentación por módulo](./modules/)
 
 ---
 
-## 💼 Datos de la Compañía
+## 🏗️ Estructura de la documentación
 
-**Thea IA Systems S.L.**  
-N.I.F. B‑728 XXXX  
-Sede Central: Madrid, España  
-Teléfono: +34 676 XXX XXX  
-Correo: [contact@theaia.com](mailto:contact@theaia.com)
+- **Diario:**  
+  Registro minucioso de cada sesión de trabajo, días de descanso y hitos tocados.  
+  Trazabilidad temporal diaria y entrega real por persona y equipo.
+
+- **Roadmap:**  
+  Seguimiento detallado y medible de todos los hitos clave, criterios de done, micro-recompensas y % real de avance del proyecto.
+
+- **Milestones:**  
+  Archivos por hito (‘milestone’) — objetivos claros, responsable, métricas por bloque/hito y entregables.
+
+- **Arquitectura:**  
+  Diagramas, decisiones arquitectónicas, dependencias y explicación de cada componente/core.
+
+- **Guías y procedimientos:**  
+  Onboarding, contribución, uso rápido por módulo y runbooks para operación y resolución de incidencias.
+
+- **Seguridad:**  
+  Políticas, controles de seguridad y auditorías vivas y audibles del proyecto THEA IA.
+
+- **Docs modulares:**  
+  Cada carpeta de código (core, agents, adapters, ml, tests) tiene su propio trío: README, ROADMAP y CHANGELOG, siguiendo el formato THEA IA.
+
+- **Checklist y evidencias:**  
+  Auditoría documental y técnica actualizada, con enlaces a PRs, artefactos y comprobaciones del ecosistema.
 
 ---
 
-## 🔒 Licencia y Derechos
+## 💡 Convenciones THEA IA
 
-© 2025 Thea IA Systems S.L. Todos los derechos reservados.  
-Reproducción o distribución no autorizada prohibida bajo leyes internacionales de propiedad intelectual.
+- **Formato homogéneo por carpeta y módulo:**  
+  Cada área puede replicar esta estructura y sus plantillas — profesional, auditable y operativa.
+  
+- **Documentación viva:**  
+  Todo cambio relevante, sesión de trabajo o micro-tarea queda registrado y vinculado a los artefactos y hitos del roadmap maestro.
+
+- **Auditoría real:**  
+  La documentación es “fuente de verdad” y cumple requisitos profesionales y regulatorios end-to-end.
 
 ---
 
-## ⚙️ Acceso Rápido
+## 🔄 Actualización y mantenimiento
 
-# Iniciar servidor de desarrollo de documentación
-mkdocs serve
+- Cada actualización/documento relevante en docs **debe reflejarse** en el roadmap maestro y diario central.
+- Se recomienda usar scripts y jobs automáticos para agregar avance y sincronizar roadmap, changelog y diario de sesiones.
 
-text
+---
 
-Visualiza el portal: [http://localhost:8000](http://localhost:8000) → sección centralizada de documentos Thea IA Enterprise.
-Estructura final esperada
-text
-/workspaces/thea-ia/
-│
-├── mkdocs.yml
-├── docs/
-│   ├── index.md              ← Página principal del portal
-│   ├── architecture.md
-│   ├── api_reference.md
-│   ├── monitoring_enterprise.md
-│   ├── deployment_enterprise.md
-│   ├── security_enterprise.md
-│   ├── devops_readme.md
-│   ├── legal_compliance.md
-│   ├── roadmap_enterprise.md
-│   ├── team_directory.md
-│   ├── training_onboarding.md
-│   └── SUMMARY.md
-Una vez agregues index.md, bastará con ejecutar:
+**Última actualización:** 2025-10-31  
+**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
 
-bash
-pip install mkdocs-material
-mkdocs serve
-para abrir el portal corporativo “Thea IA Docs” localmente antes de publicarlo en docs.theaia.com.
+---
+
+> **Comentario:**  
+> Este archivo centraliza toda la navegación, explicación y filosofía documental.  
+> Sigue este formato para cada subcarpeta del código y la documentación, manteniendo el estándar THEA IA.
