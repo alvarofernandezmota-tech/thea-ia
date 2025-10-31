@@ -470,3 +470,103 @@ Ready para buscar trabajo 💼
 
 
 
+# SECURITY & PRIVACY POLICY — THEA IA
+
+**Proyecto:** THEA IA  
+**Versión:** v0.14.0  
+**Responsable:** Álvaro Fernández Mota (CEO)  
+**Última actualización:** 2025-10-31 05:41 CET
+
+---
+
+## 🔒 Estado y Acceso
+
+- Este repositorio permanece **privado** (GitHub Pro) durante la fase de desarrollo y auditoría.
+- Acceso solo por invitación, con validación por correo Gmail y onboarding personalizado.
+- Todo el código y documentación pública usa valores ficticios y archivos `.env.example`, nunca claves ni datos de producción.
+
+---
+
+## 🛡️ Auditoría y Colaboración
+
+- Auditorías colaborativas vía Drive privado y acceso Gmail verificado.
+- El historial documental, código y tests son versionados y trazables.
+- Portfolio y demo solo accesibles tras invitación y validación profesional.
+
+---
+
+## ✔️ Buenas prácticas y cumplimiento
+
+- Sin secretos, credenciales ni datos productivos en el código ni en los archivos de documentación.
+- Cumplimiento GDPR, logs y cadena de custodia de datos personales.
+- Cualquier incidente de seguridad debe reportarse a: [tu correo Gmail]
+
+**Contactar para auditoría o colaboración solo a través de email profesional.**
+
+
+## SESIÓN 32 — Auditoría, Organización y Plan Estratégico
+
+**Fecha:** 31/10/2025 — 05:00-06:27 CET  
+**Responsable:** Álvaro Fernández Mota (CEO)  
+**Horas trabajadas:** 1h 27min  
+**Estado:** ✅ COMPLETADA
+
+### 🎯 Objetivos cumplidos:
+
+**Bloque 1: Organización y estructura**
+- Estructura completa de carpetas docs/ subida a GitHub
+- ROADMAP maestro actualizado con 17 hitos (H01-H17)
+- README adaptado al ecosistema THEA IA
+- SECURITY.md creado con políticas de privacidad y auditoría
+- Milestones H01, H02 y H03_17 creados
+
+**Bloque 2: Sincronización GitHub**
+- Push exitoso de toda la estructura documentación
+- Repositorio privado GitHub Pro activo y sincronizado
+- Verificación de seguridad GitHub habilitada (Secret scanning)
+
+**Bloque 3: Planificación estratégica**
+- Análisis profundo del estado actual del proyecto
+- Plan completo de auditoría sesiones 33-36 definido
+- Creación de PLAN-AUDITORIA.md con roadmap detallado
+- Identificación de archivos críticos pendientes
+- Checklist completo para cada sesión futura
+
+### 📋 Próximos pasos (Sesión 33):
+
+**Archivos críticos a crear:**
+- `.gitignore` completo
+- `.env.example` con 50+ variables documentadas
+- README raíz del proyecto
+- Actualización CONTRIBUTING.md
+- Validación CHANGELOG.md
+
+**Configuración GitHub Security:**
+- Activar Private vulnerability reporting
+- Activar Dependabot alerts
+- Setup CodeQL code scanning
+- Configurar branch protection para main
+
+**Portfolio:**
+- Comprimir proyecto y subir a Google Drive
+- Añadir enlace en README
+- Actualizar currículum
+
+### 📊 Estado del proyecto:
+
+**Fase 1 (H01):** ████████████████████ 100% ✅  
+**Auditoría base:** ████████████░░░░░░░░ 60%  
+**Fase 2 (H02-H07):** ░░░░░░░░░░░░░░░░░░░░ 0%
+
+### 📂 Documentación creada:
+
+- `docs/roadmap/PLAN-AUDITORIA.md` — Plan completo sesiones 33-36
+- Actualización de ROADMAP maestro con bloque auditoría
+- Actualización de SECURITY.md con políticas
+- Actualización de README de docs/
+
+### 🔗 Referencias:
+
+- Plan de auditoría completo: [PLAN-AUDITORIA.md](../roadmap/PLAN-AUDITORIA.md)
+- Roadmap maestro: [master.md](../roadmap/master.md)
+- Milestone H02: [H02.md](../roadmap/milestones/H02.md)
