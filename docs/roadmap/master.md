@@ -311,7 +311,22 @@ Fase 4 │ ░░░░░░░░░░░░░░░░░░░░ │ 0%
 
 text
 
----
+---🛡️ Seguridad, Auditoría y Portfolio (Sesión 33)
+ Crear .gitignore en raíz para excluir .venv, cachés, datos sensibles
+
+ Crear .env.example con más de 50 variables ficticias y documentadas
+
+ Push completo de docs/ y archivos relevantes al repositorio privado (GitHub Pro)
+
+ Añadir bloque de seguridad/acceso en README y SECURITY.md
+
+ Subir zip del proyecto a Google Drive privado y enlazarlo para auditoría (portfolio)
+
+ Actualizar el currículum para mostrar solo acceso auditado y demo, nunca datos reales
+
+ Milestone H02: iniciar Telegram Bot (aiogram)
+
+
 
 ## 🔗 Enlaces relacionados
 
@@ -321,6 +336,15 @@ text
 - [Carpeta de milestones](./milestones/)
 
 ---
+## 🛡️ Seguridad, Auditoría y Portfolio (Sesión 33)
 
-**Última actualización:** 2025-10-31 02:35 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+**📋 Plan completo:** Ver [PLAN-AUDITORIA.md](./PLAN-AUDITORIA.md)
+
+- [ ] Crear `.gitignore` en raíz
+- [ ] Crear `.env.example` con +50 variables
+...
+
+## Última actualización: 2025-10-31 06:36 CET
+## Responsable: Álvaro Fernández Mota (CEO THEA IA)
+
+
