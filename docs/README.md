@@ -1,219 +1,143 @@
-# Thea IA 2.0
+Thea IA 3.0 — Documentación Técnica y Auditoría
+Última actualización: 2025-11-03
+Autor principal: Álvaro Fernández Mota
 
-🤖 **Agente conversacional inteligente** con máquina de estados finitos (FSM) y procesamiento de lenguaje natural (NLP) para gestión automatizada de eventos, notas y recordatorios.
+Índice
+Visión y contexto del proyecto
 
----## Estado de Thea IA Core – v2.1.0 (28/10/2025)
-- Núcleo robusto con 8 agentes orquestados y fallback seguro.
-- FSM y handlers completamente testados y validados.
-- Intentos con ML+reglas, normalización y logging.
-- Listo para integración de adaptadores externos.
+Características funcionales y arquitectura
 
+Detalle de módulos y estructura de carpetas
 
-## 🎯 Visión del proyecto
+Instalación avanzada y despliegue
 
-Thea IA es un asistente personal conversacional diseñado para transformar la gestión de eventos y tareas a través de inteligencia artificial. Combina FSM avanzada, NLP y arquitectura modular para ofrecer una experiencia de usuario natural e intuitiva.
-Sección 2: Características y estructura abreviada
+FSM y orquestación multiagente
+
+Stack tecnológico y dependencias críticas
+
+Testing, QA y cobertura
+
+Seguridad, privacidad y compliance
+
+Planificación, auditoría y roadmap
+
+Política de contribución y documentación interna
+
+Licencia, contacto y créditos
+
+1. Visión y contexto
+Thea IA es una plataforma conversacional modular pensada para equipos/business, que integra IA, FSM, NLP y multiagente, con núcleo auditable y extensible para automatización de tareas, eventos y workflows empresariales y personales.
+
+2. Características y arquitectura
+FSM inteligente, desambiguación y agentes orquestados.
+
+Detección de intenciones ML + reglas; NLP (spaCy, custom).
+
+Integraciones: Telegram, webhooks, API REST, WhatsApp.
+
+Métricas y logging exhaustivo—monitorización Prometheus y Grafana.
+
+Persistencia y migración industrial: PostgreSQL, Alembic, Redis.
+
+Containerización, CI/CD, DevOps y compliance integrados.
+
+3. Estructura general del proyecto
 text
-### Características principales
-- 🧠 **FSM inteligente** para gestión de estados conversacionales  
-- 🔗 **Adaptadores multi-plataforma** (Telegram, webhooks, API REST)  
-- 📊 **ML/NLP** para detección de intenciones y extracción de entidades  
-- 🗄️ **Persistencia robusta** con PostgreSQL y migraciones Alembic  
-- 🐳 **Containerización** completa con Docker y orquestación  
-- 🔍 **Monitoreo** integrado con métricas y alertas  
-- ⚡ **API escalable** con FastAPI y endpoints profesionales
-
----
-
-## 📂 Estructura del proyecto
-
 theaia/
-├── README.md
-├── .env.example
-├── .gitignore
-├── pyproject.toml
-├── requirements.txt
-├── requirements-dev.txt
-├── docker-compose.yml
-├── Dockerfile
-├── Makefile
-├── src/
-│ └── theaia/
-│ ├── main.py
-│ ├── config/
-│ ├── core/
-│ ├── adapters/
-│ ├── services/
-│ ├── models/
-│ ├── database/
-│ ├── ml/
-│ ├── agents/
-│ ├── utils/
-│ └── api/
-├── src/theaia/tests/
-├── scripts/
-├── docs/
-└── deployment/
-Sección 3: Instalación rápida
-text
----
-### FSM – Orquestación y Desambiguación
+├── src/theaia/core/          # Núcleo FSM, state machine, context manager
+├── src/theaia/agents/        # Agentes verticales multi-fase
+├── src/theaia/adapters/      # Soporte multicanal y webhooks
+├── src/theaia/ml/            # Modelos y pipelines NLP/ML
+├── src/theaia/tests/         # Unittest, integración, e2e (README y TESTING.md)
+├── scripts/                  # Automatización y pipelines
+├── docs/                     # Esta documentación extendida y cross-linking
+├── .env.example              # Config auditada y comentada
+├── SECURITY.md               # Política seguridad avanzada
+├── ROADMAP.md                # Hitos y despliegue actual
+├── CHANGELOG.md              # Cambios y referencias cruzadas
+├── onboarding.md             # Guía para incorporaciones nuevas
+└── ...
+4. Instalación & despliegue avanzado
+Requerido: Python 3.11+, Postgres 14+, Redis, Docker, Git.
 
-En la versión **2.1.0** se ha incorporado el submódulo **core/fsm** que aporta:
+Setup recomendado:
 
-- **Desambiguación Inteligente** entre nota, cita y recordatorio  
-- **Orquestación Global** de flujos conversacionales  
-- **Gestión de estados finitos** (FSM) con timeouts y reintentos  
-- **Delegación a agentes** de forma centralizada  
+make setup para entorno virtual
 
-Componentes clave en `src/theaia/core/fsm/`:
+Edición de .env según ejemplo
 
-- **conversation_manager.py**: `ConversationManager`, corazón del FSM global.  
-- **state_machine.py**: Clase base (`BaseStateMachine`) y `ConversationStateMachine`.  
-- **states/global_states.py**: Enumeración `GlobalState`, validación y descripciones.  
-- **states/disambiguation_state.py**: Lógica de desambiguación y plantillas.  
-- **states/agent_states.py**: Mapeo de intents a `AgentType` y estados iniciales.  
-- **transitions.py**: Reglas de transición, condiciones y callbacks de logging.  
+docker-compose up -d y make migrate para BBDD
 
-## ⚡ Instalación rápida
+Uso recomendado de Makefile para flujos frecuentes
 
-### Prerrequisitos
-- Python 3.11+
-- PostgreSQL 14+
-- Docker & Docker Compose
-- Git
+5. FSM & Orquestación Multiagente
+[docs/fsm.md]: Fundamentos y API de la máquina de estados, gestión de sesiones, timeouts y fallback handler.
 
-### Configuración desarrollo
-1. **Clonar repositorio:**  
-git clone https://github.com/alvarofernandezmota-tech/thea-ia.git
-cd thea-ia
+Submódulos documentados: conversation_manager.py, state_machine.py, maps de intents y agentes.
 
-text
-2. **Configurar entorno:**  
-make setup
-cp .env.example .env
+6. Stack y dependencias técnicas
+Backend/Core: Python 3.11+, FastAPI, SQLAlchemy, Alembic, Transitions
 
-Editar .env con tus configuraciones
-text
-3. **Levantar servicios:**  
-docker-compose up -d
-make migrate
+ML/NLP: spaCy, scikit-learn, Transformers
 
-text
-4. **Ejecutar aplicación:**  
-make run
+Integraciones: aiogram, aiohttp, WebSockets
 
-text
-undefined
-Sección 4: Comandos útiles
-text
----
+Infraestructura: Docker, Kubernetes (amaduración), Prometheus/Grafana para monitoreo, Terraform
 
-### Comandos útiles
-- `make test`       : Ejecutar tests  
-- `make lint`       : Linting y formato de código  
-- `make format`     : Formatear código con Black  
-- `make migrate`    : Ejecutar migraciones de BD  
-- `make logs`       : Ver logs de la aplicación  
-- `make clean`      : Limpiar archivos temporales  
-Sección 5: Guía de contribución
-text
----
+7. Testing, QA y cobertura
+Unittest, integración y e2e: pytest, coverage, casos en src/theaia/tests/
 
-## 🤝 Guía de contribución
+Scripts de automatización: make test, make lint, make format
 
-### Flujo de trabajo
-1. **Fork del repositorio** y crea tu rama:  
-git checkout -b feature/descripcion-cambio
+Guía de testing: [docs/tests.md], [docs/test_strategies.md]
 
-text
-2. **Sigue convenciones:**  
-- Commits: Conventional Commits  
-- Código: PEP8 + Black  
-- Tests: Cobertura mínima 80%  
-3. **Antes del PR:**  
-make test && make lint
+8. Seguridad, privacidad y compliance
+Gestión exhaustiva de .env, compliance con GDPR y mejores prácticas DevSecOps
 
-text
-4. **Crea PR** con descripción clara y referencia issues.
+Checks de hardening y control de acceso en [SECURITY.md], [docs/audit_checklist.md]
 
-### Normas de código
-- **Tipado:** Usar type hints en funciones públicas  
-- **Docstrings:** Documentar clases y métodos complejos  
-- **Testing:** Incluir tests para nueva funcionalidad  
-- **Logging:** Usar niveles adecuados  
-Sección 6: Stack tecnológico
-text
----
+Proceso de auditoría avanzada: backups, logging seguro, protocolo de incidentes
 
-## 🛠️ Stack tecnológico
+Política de repositorio privado en fases críticas
 
-### Backend & Core
-- Python 3.11+, FastAPI, Transitions, SQLAlchemy, Alembic, Pydantic
+9. Planificación, auditoría y roadmap
+Documentos clave:
 
-### Base de datos & Caché
-- PostgreSQL 14+, Redis
+Plan Auditoría Completo
 
-### ML/NLP & IA
-- spaCy, scikit-learn, Transformers (opcional)
+ROADMAP.md
 
-### Integración & Comunicación
-- aiogram, aiohttp, WebSockets
+CHANGELOG.md
 
-### DevOps & Infraestructura
-- Docker, Kubernetes, GitHub Actions, Prometheus, Grafana, Terraform
-Sección 7: Testing & Calidad
-text
----
+DIARY.md
 
-## 🧪 Testing & Calidad
+Sesiones, responsables y avance por milestone referenciado
 
-- **Ejecutar tests unitarios:**  
-pytest -v src/theaia/tests/unit
+10. Contribución y documentación
+Política detallada: [docs/contributing.md]
 
-text
-- **Ejecutar tests E2E:**  
-pytest -v src/theaia/tests/e2e
+Checklist y convenciones: PR, test mínimo, cobertura y aprobación técnica/auditora
 
-text
-- **Generar reporte de cobertura:**  
-pytest --cov=src/theaia --cov-report=html
+README, roadmap y changelog obligatorio/local en cada módulo
 
-text
-undefined
-Sección 8: Estado Auditoría – Fase 1
-text
----
+11. Licencia y contacto
+Licencia MIT, uso e integración libre con atribución
 
-## 📋 Estado Auditoría – Fase 1 (13/10/2025 16:05 CEST)
+Contacto principal: Álvaro Fernández Mota (alvarofernandezmota-tech)
 
-- **src/theaia/utils/**: Documentación (`README.md`) y guía de testing (`TESTING.md`) añadidas  
-- **scripts/**: Scripts de automatización (`setup.sh`, `deploy.sh`, `migrate.sh`, `lint.sh`, `backup.sh`, `entrypoint.sh`, `test_runner.sh`) y `README.md` completado  
-- **src/theaia/tests/**: Estructura de 10 subcarpetas creada y `README.md` global  
-Sección 9: Licencia y Contacto
-text
----
+REF cross-linking (guías especializadas)
+[fsm.md]: FSM y lógica conversacional avanzada
 
-## 📄 Licencia
+[agents.md]: Detalle de agentes y estados
 
-Este proyecto está bajo la licencia MIT. Puedes copiar, modificar y usar libremente el código respetando las condiciones.
+[ml.md]: Modelos, pipelines y métricas
 
----
+[adapters.md]: Integraciones multicanal y API hooks
 
-## 📬 Contacto
+[tests.md]: Estrategias y cobertura
 
-- **Autor principal**: Alvaro Fernandez Mota ([alvarofernandezmota-tech](https://github.com/alvarofernandezmota-tech))
+[onboarding.md]: Proceso alta equipo nuevo
 
-## 🔐 Seguridad, Privacidad y Auditoría
+[audit_checklist.md]: Auditoría ciberseguridad y revisión
 
-- Este repositorio permanece **privado** (GitHub Pro) durante la fase de desarrollo y auditoría.
-- Solo se muestran valores ficticios y archivos `.env.example`, nunca claves ni datos reales.
-- Las auditorías y revisiones colaborativas son gestionadas mediante invitación Gmail y acceso Drive privado.
-- Todo el historial, los tests y la documentación están auditados y versionados para portfolio, entrevistas y validación profesional futura.
-- Si deseas auditar, colaborar o revisar el proyecto como recruiter/empresa, solicita acceso por correo verificado.
-
-## 📋 Planificación
-
-- [Plan de Auditoría Completa](./roadmap/PLAN-AUDITORIA.md)
-- [Roadmap Maestro](./roadmap/master.md)
-- [Diario de Sesiones](./diary/DIARY.md)
+[security.md]: Política y respuesta incidentes
