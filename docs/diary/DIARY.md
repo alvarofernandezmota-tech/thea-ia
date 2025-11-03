@@ -570,3 +570,32 @@ Ready para buscar trabajo 💼
 - Plan de auditoría completo: [PLAN-AUDITORIA.md](../roadmap/PLAN-AUDITORIA.md)
 - Roadmap maestro: [master.md](../roadmap/master.md)
 - Milestone H02: [H02.md](../roadmap/milestones/H02.md)
+
+
+
+SESIÓN 33 — Auditoría, Escalado y Estandarización Crítica
+Fecha: 03/11/2025 — 16:50-17:35 CET
+Responsable: Álvaro Fernández Mota (CEO)
+Horas trabajadas: (en progreso, se cerrará con los bloques completados)
+Estado: completado
+
+Objetivo
+Dejar el ecosistema THEA IA listo para auditoría, escalabilidad y cumplimiento, completando todos los archivos críticos (.gitignore, .env.example, README) y dejando traza documental de procesos y decisiones.
+
+Hitos alcanzados hoy
+.gitignore actualizado y comentado para entorno IA, Python, seguridad y DevOps.
+Versión validada a las 16:57 CET, cubriendo modelos, logs y backups.
+
+03/11/2025 — 17:05 CET: .env.example revisado, estructurado y adaptado a ecosistema enterprise 3.0.
+Estado: ⏩ Bloque completado—listo para auditar y ampliar por módulos futuros.
+
+03/11/2025 — 17:28 CET: README del módulo FSM (src/theaia/core/fsm/README.md) actualizado, ampliado y auditado con checklist, arquitectura, ejemplos, responsables y referencias cruzadas.
+Estado: ⏩ Bloque FSM completo—apto para auditoría y referencia en documentación global.
+
+Próximo bloque: En proceso la elaboración y actualización de los documentos principales en /docs/ (índice, arquitectura, checklist de auditoría, seguridad, onboarding, etc.) antes de proceder carpeta a carpeta.
+## Hito — Cierre de documentación architecture (THEA IA)
+- Fecha: 2025-11-03 18:08 CET
+- Responsable: Álvaro Fernández Mota (CEO)
+- Estado: ✅ Completado
+- Detalle: Estructura architecture/ finalizada y revisada. Incluidos architecture.md, diagrams.md, overview.md, decisions.md (ADRs) y referencias históricas/legacy.
+

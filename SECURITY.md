@@ -340,8 +340,41 @@ text
 - **Emergencia:** [número de crisis 24/7 si aplica]
 
 ---
+# SECURITY & PRIVACY POLICY — THEA IA
+
+**Proyecto:** THEA IA  
+**Versión:** v0.14.0  
+**Responsable:** Álvaro Fernández Mota (CEO)  
+**Última actualización:** 2025-10-31 05:41 CET
+
+---
+
+## 🔒 Estado y Acceso
+
+- Este repositorio permanece **privado** (GitHub Pro) durante la fase de desarrollo y auditoría.
+- Acceso solo por invitación, con validación por correo Gmail y onboarding personalizado.
+- Todo el código y documentación pública usa valores ficticios y archivos `.env.example`, nunca claves ni datos de producción.
+
+---
+
+## 🛡️ Auditoría y Colaboración
+
+- Auditorías colaborativas vía Drive privado y acceso Gmail verificado.
+- El historial documental, código y tests son versionados y trazables.
+- Portfolio y demo solo accesibles tras invitación y validación profesional.
+
+---
+
+## ✔️ Buenas prácticas y cumplimiento
+
+- Sin secretos, credenciales ni datos productivos en el código ni en los archivos de documentación.
+- Cumplimiento GDPR, logs y cadena de custodia de datos personales.
+- Cualquier incidente de seguridad debe reportarse a: [tu correo Gmail]
+
+**Contactar para auditoría o colaboración solo a través de email profesional.**
+
 
 **Seguridad es responsabilidad de todos.  
 Contribuye a mantener THEA IA seguro, auditado y transparente.**
 
-> Última actualización: 2025-10-31 · Álvaro Fernández Mota (CEO THEA IA)
+> Última actualización: 2025-10-31 a las 5:43 · Álvaro Fernández Mota (CEO THEA IA)
