@@ -104,3 +104,12 @@
 - ✅ Modelos: 8 definidos
 - ⏳ Migraciones: Pendiente H04
 - ⏳ Índices: Pendiente H04
+
+### Planificación y auditoría
+- `docs/roadmap/PLAN-AUDITORIA.md` — Plan estratégico sesiones 33-36
+- `docs/roadmap/master.md` — Roadmap maestro con 17 hitos
+- `docs/diary/DIARY.md` — Registro cronológico de sesiones
+
+
+**Última actualización:** 2025-10-31 02:33 CET  
+**Responsable:** Álvaro Fernández Mota (CEO THEA IA)

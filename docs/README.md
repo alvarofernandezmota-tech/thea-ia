@@ -204,4 +204,16 @@ Este proyecto está bajo la licencia MIT. Puedes copiar, modificar y usar librem
 
 - **Autor principal**: Alvaro Fernandez Mota ([alvarofernandezmota-tech](https://github.com/alvarofernandezmota-tech))
 
+## 🔐 Seguridad, Privacidad y Auditoría
 
+- Este repositorio permanece **privado** (GitHub Pro) durante la fase de desarrollo y auditoría.
+- Solo se muestran valores ficticios y archivos `.env.example`, nunca claves ni datos reales.
+- Las auditorías y revisiones colaborativas son gestionadas mediante invitación Gmail y acceso Drive privado.
+- Todo el historial, los tests y la documentación están auditados y versionados para portfolio, entrevistas y validación profesional futura.
+- Si deseas auditar, colaborar o revisar el proyecto como recruiter/empresa, solicita acceso por correo verificado.
+
+## 📋 Planificación
+
+- [Plan de Auditoría Completa](./roadmap/PLAN-AUDITORIA.md)
+- [Roadmap Maestro](./roadmap/master.md)
+- [Diario de Sesiones](./diary/DIARY.md)
