@@ -1,44 +1,344 @@
-📐 Diagramas de Arquitectura – Thea IA 3.0
-Este documento recopila los diagramas técnicos y visuales de todos los flujos clave del ecosistema THEA IA, con leyendas claras y enlaces cruzados a los módulos y documentos relevantes.
+📐 Diagramas de Arquitectura — THEA IA
+Versión: v0.14.0
+Última actualización: 2025-11-08 17:40 CET (Sesión 36)
+Responsable: Architecture Team / Álvaro Fernández Mota (CEO)
+Estado: ✅ Activo
 
-Índice
+📋 Propósito
+Recopilación de diagramas técnicos y visuales de todos los flujos clave del ecosistema THEA IA, con leyendas claras y enlaces cruzados a documentos relevantes.
+
+Audiencia:
+
+Arquitectos visualizando flujos
+
+Developers entendiendo interacciones
+
+Onboarding nuevos team members
+
+📑 Índice de diagramas
 Diagrama general de arquitectura
 
 Flujo conversacional (FSM)
 
-Orquestación multiagente
+Orquestación multi-agente
 
-Interacción adaptadores/entradas
+Integración de adapters
 
 Estructura de persistencia
 
-Otros (añadir subsecciones según evolución)
-
-Referencias y enlaces
+Escalabilidad y deployment
 
 1. Diagrama general de arquitectura
-(Mermaid, PlantUML o imagen incrustada del flujo principal, con breve explicación y referencias al architecture.md).
+text
+┌──────────────────────────────────────────────────────────────┐
+│                    THEA IA Ecosystem v0.14.0                 │
+├──────────────────────────────────────────────────────────────┤
+│
+│  ENTRADA (Adapters)
+│  ├─ Telegram Bot
+│  ├─ REST API
+│  ├─ Web Client
+│  └─ WhatsApp (futuro)
+│
+│  ↓
+│
+│  CoreRouter (Normalización)
+│  ├─ Validación entrada
+│  ├─ Rate limiting
+│  └─ Auth/RBAC
+│
+│  ↓
+│
+│  FSM Engine v2 (Orquestación)
+│  ├─ State machine (pre/post callbacks)
+│  ├─ Context manager
+│  └─ Intent classification
+│
+│  ↓
+│
+│  ML/NLP Pipeline
+│  ├─ Intent Detector (spaCy)
+│  └─ Entity Extractor
+│
+│  ↓
+│
+│  Agent Selector (BotFactory)
+│  ├─ Router → Agenda Agent
+│  ├─ Router → Notes Agent
+│  ├─ Router → Events Agent
+│  ├─ Router → Query Agent
+│  └─ Router → Fallback Agent
+│
+│  ↓
+│
+│  Persistencia
+│  ├─ PostgreSQL (prod)
+│  ├─ JSON Fallback (local)
+│  └─ Redis Cache
+│
+│  ↓
+│
+│  Observabilidad (H11)
+│  ├─ Prometheus (métricas)
+│  ├─ Grafana (dashboards)
+│  ├─ Loki (logs)
+│  └─ Jaeger (tracing)
+│
+│  ↓
+│
+│  SALIDA (Adapters)
+│  ├─ Respuesta a Telegram
+│  ├─ JSON a REST API
+│  ├─ Actualizar Web Client
+│  └─ Mensaje WhatsApp
+│
+└──────────────────────────────────────────────────────────────┘
+Referencias:
 
-2. Flujo FSM — Conversacional
-(Diagrama del ciclo de conversación: usuario, FSM, intent/ML, agente, base de datos, respuesta).
+Architecture Overview
 
-3. Orquestación multiagente
-(Diagrama describiendo cómo interactúan y se delegan agentes — ejemplo: event_agent → calendar_agent → context_agent).
+ADRs
 
-4. Flujos de integración y adaptadores
-(Visualiza cómo REST, Telegram, Web... conectan con el router central).
+2. Flujo conversacional (FSM)
+text
+┌─────────────────────────────────────┐
+│  Usuario envía mensaje (Telegram)   │
+└────────────┬────────────────────────┘
+             ↓
+    ┌────────────────────┐
+    │ Adapter (normalize)│
+    │ input → JSON       │
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────┐
+    │ FSM.pre_callbacks()│
+    │ (validación, auth)│
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────────────────┐
+    │ Intent Detector + Entity Ex.   │
+    │ (spaCy: intent + entities)     │
+    └────────┬───────────────────────┘
+             ↓
+    ┌────────────────────┐
+    │ Agent Selector     │
+    │ (¿Agenda? Notes?)  │
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────┐
+    │ Agent Handler      │
+    │ (ejecuta lógica)   │
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────┐
+    │ Database           │
+    │ (persist contexto) │
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────┐
+    │ FSM.post_callbacks()
+    │ (notificaciones)   │
+    └────────┬───────────┘
+             ↓
+    ┌────────────────────┐
+    │ Adapter (format)   │
+    │ JSON → Telegram    │
+    └────────┬───────────┘
+             ↓
+┌─────────────────────────────────────┐
+│  Usuario recibe respuesta           │
+└─────────────────────────────────────┘
+Latencia esperada: <500ms
+Estados FSM: ready → processing → persisting → responding
+Callbacks: pre_transition, post_transition, on_error
 
-5. Estructura de persistencia y DB
-(Si tienes modelos entidades-DDBB complejos, secciona aquí con diagrama ER básico).
+3. Orquestación multi-agente
+text
+┌──────────────────────────┐
+│ FSM Engine (Orquestador) │
+└────────────┬─────────────┘
+             ↓
+   ┌─────────────────────┐
+   │ BotFactory (Registry)│
+   │ agent_type → Agent  │
+   └────────┬────────────┘
+            ↓
+   ┌────────────────────────────────────────┐
+   │ Intent: "crear evento mañana"         │
+   │ → Agente: EventAgent                  │
+   └────────┬─────────────────────────────┘
+            ↓
+   ┌────────────────────────────────────────┐
+   │ EventAgent.process()                  │
+   │ ├─ Extraer fecha (NLP)                │
+   │ ├─ Consultar Calendar API             │
+   │ ├─ Crear evento                       │
+   │ └─ Persistir en DB                    │
+   └────────┬─────────────────────────────┘
+            ↓
+   ┌────────────────────────────────────────┐
+   │ Contexto guardado:                    │
+   │ {user, event_id, timestamp, ...}      │
+   └────────┬─────────────────────────────┘
+            ↓
+   ┌────────────────────────────────────────┐
+   │ Callback: Notificar usuario           │
+   │ ├─ Telegram: "Evento creado ✓"       │
+   │ └─ Email: "Reunión mañana"            │
+   └────────────────────────────────────────┘
+Agentes disponibles:
 
-6. Otros diagramas críticos
-(Incluye cualquier zoom técnico adicional relevante: escalado, failover, flujos de monitoring).
+AgendaAgent (eventos calendarios)
 
-7. Referencias
-architecture.md
+NotesAgent (notas y tags)
 
-fsm.md
+EventAgent (procesamiento eventos)
 
-agents.md
+QueryAgent (búsqueda)
 
-Documentos legacy en archive/ (vincular si hay diagramas históricos).
+FallbackAgent (comandos desconocidos)
+
+4. Integración de adapters
+text
+┌────────────────────┐     ┌────────────────────┐
+│  Telegram Adapter  │     │  REST API Adapter  │
+│  (Bot API)         │     │  (FastAPI)         │
+└────────┬───────────┘     └────────┬───────────┘
+         ↓                          ↓
+┌────────────────────┐     ┌────────────────────┐
+│ normalize_input()  │     │ normalize_input()  │
+│ raw → standard     │     │ payload → standard │
+└────────┬───────────┘     └────────┬───────────┘
+         └────────────┬─────────────┘
+                      ↓
+            ┌─────────────────────┐
+            │   CoreRouter        │
+            │ (FSM Engine)        │
+            └────────┬────────────┘
+                     ↓
+        ┌────────────────────────┐
+        │ format_output()        │
+        │ response → channel fmt │
+        └────────┬───────────────┘
+                 ↓
+        ┌────────────────────┐     ┌────────────────────┐
+        │ Telegram enviar    │     │ REST responder     │
+        │ (message.reply())  │     │ (JSON response)    │
+        └────────────────────┘     └────────────────────┘
+Adapters soportados:
+
+Telegram (webhook + polling)
+
+REST API (HTTP)
+
+Slack (events API)
+
+Discord (gateway)
+
+WhatsApp (futuro)
+
+5. Estructura de persistencia
+text
+┌──────────────────────────────────────┐
+│ Application Layer                    │
+│ (FSM, Agents, Context)              │
+└────────────────┬─────────────────────┘
+                 ↓
+        ┌────────────────┐
+        │ Repository     │
+        │ Pattern        │
+        │ (abstraction)  │
+        └────────┬───────┘
+                 ↓
+    ┌────────────────────────┐
+    │ Adapter Pattern        │
+    │ ├─ PostgreSQL Impl     │
+    │ └─ JSON Impl (fallback)│
+    └────────┬───────────────┘
+             ↓
+    ┌───────────────────────────────────┐
+    │ PostgreSQL (Producción)           │
+    │ ├─ Users (id, name, email)        │
+    │ ├─ Sessions (user_id, context)    │
+    │ ├─ Events (user_id, event_data)   │
+    │ ├─ Notes (user_id, note_content)  │
+    │ └─ Audit Log (all operations)     │
+    │                                   │
+    │ + Redis Cache (session context)   │
+    │ + JSON Fallback (local dev)       │
+    └───────────────────────────────────┘
+Modelos principales:
+
+User (autenticación, preferencias)
+
+Session (contexto conversacional)
+
+Event (eventos calendarios)
+
+Note (notas con tags)
+
+AuditLog (compliance)
+
+6. Escalabilidad y deployment
+text
+┌──────────────────────────────────────┐
+│  Cloud Provider (AWS/GCP/Azure)      │
+├──────────────────────────────────────┤
+│
+│  CDN / Load Balancer
+│  └─ Distribución geográfica
+│
+│  ↓
+│
+│  Kubernetes Cluster (H09)
+│  ├─ Service Mesh (Istio)
+│  ├─ API Gateway (Kong)
+│  └─ Pod Autoscaler (HPA)
+│
+│  ├─ Deployment: FSM API (3-20 replicas)
+│  ├─ StatefulSet: PostgreSQL (HA)
+│  ├─ DaemonSet: Prometheus/Loki (logging)
+│  └─ Ingress: HTTP routing
+│
+│  ↓
+│
+│  Storage
+│  ├─ PostgreSQL RDS (managed)
+│  ├─ Redis Cluster (cache)
+│  └─ S3/GCS (backups + artifacts)
+│
+└──────────────────────────────────────┘
+Scaling policies:
+
+CPU: target 70%
+
+Memory: target 80%
+
+Throughput: 1000+ req/s
+
+📌 Meta-información
+Campo	Valor
+Archivo	docs/architecture/diagrams.md
+Versión	v0.14.0
+Última revisión	2025-11-08 17:40 CET (Sesión 36)
+Responsable	Architecture Team / CEO
+Estado	✅ Activo
+🔗 Enlaces relacionados
+Overview — Visión general
+
+Decisiones — ADRs
+
+Deployment — CI/CD
+
+Scalability — Escalado
+
+Adapters — Sistema adapters
+
+Agents — Sistema multi-agente
+
+🛡️ Auditoría y cumplimiento
+Parte del Hito 36.1 (docs/architecture/)
+
+Diagramas ASCII para reproducibilidad
+
+Validado en sesión 36
