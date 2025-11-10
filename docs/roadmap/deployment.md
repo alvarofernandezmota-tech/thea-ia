@@ -1,292 +1,210 @@
-# 🚀 Deployment — THEA IA
+🗺️ Roadmap Overview — THEA IA
+Versión: v0.14.0
+Última actualización: 2025-11-09 19:33 CET (Sesión 37)
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Estado: ✅ Activo
 
-**Versión:** v0.14.0  
-**Última actualización:** 2025-10-31 03:23 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+📋 Propósito
+Visión estratégica complementaria del roadmap THEA IA. Para detalles operativos y tracking real, ver:
 
----
+Roadmap Maestro — Plan operativo H01-H17 (tracking de sesiones)
 
-## 📍 Ambientes
+Milestones — Detalle por hito (H01, H02, etc.)
 
-| Ambiente | Hosting | DB | Observabilidad |
-|----------|---------|-----|---|
-| **Local** | Localhost | JSON local | Logs console |
-| **Staging** | Railway/Heroku | PostgreSQL | Basic |
-| **Production** | AWS/GCP + K8s (H09) | PostgreSQL + backup | Prometheus + Grafana + Loki |
+🎯 Visión & Misión
+Visión
+"Democratizar la IA conversacional enterprise para todas las empresas, permitiendo automatizar conversaciones complejas con seguridad, escalabilidad y observabilidad de nivel mundial."
 
----
+Misión
+Proveer una plataforma open-source de agentes conversacionales que:
 
-## 🏗️ Production Deployment (H09+)
+Entienden contexto y mantienen estado conversacional
 
-### Prerequisitos (H09 — K8s)
+Escalan horizontalmente sin intervención manual
 
-- Kubernetes cluster (AWS EKS / GCP GKE)
-- Docker registry (ECR / Artifact Registry)
-- PostgreSQL managed (RDS / Cloud SQL)
-- GitHub Actions para CI/CD
+Cumplen estándares enterprise (GDPR, SOC 2, CCPA)
 
----
+Son extensibles, customizables y audibles
 
-## 🐳 Step 1: Build & Push Docker Image
-
-### Build Dockerfile optimizado
-Build
-docker build -t your-registry/thea-ia:v0.14.0
--f Dockerfile
---build-arg ENVIRONMENT=production
-.
-
-Push
-docker push your-registry/thea-ia:v0.14.0
-
+🏗️ Arquitectura Evolutiva (4 Fases)
 text
+Fase 1: Core & FSM (H01)
+  └─ FSM básico, tests, documentación raíz
+  └─ Status: ✅ COMPLETADA (2025-10-31)
+
+Fase 2: Multi-agentes & Adapters (H02-H07)
+  └─ Telegram, Web, multi-agentes, ML pipelines
+  └─ Status: 🔄 EN CURSO (0%)
+  └─ Deadline: 2025-12-15
+
+Fase 3: Infra, Observabilidad & Seguridad (H08-H14)
+  └─ Multi-tenancy, K8s, Prometheus, RBAC, hardening
+  └─ Status: ⏳ PRÓXIMA (0%)
+  └─ Deadline: 2026-04-01
+
+Fase 4: Escalabilidad & Release (H15-H17)
+  └─ Performance, plugins, go-live
+  └─ Status: ⏳ FUTURA (0%)
+  └─ Deadline: 2026-06-01
+📅 17 Hitos (H01-H17)
+Para detalles operativos y fechas exactas, ver master.md
+
+✅ Completados
+Hito	Nombre	Período	Estado
+H01	Organización & Tests	2025-10-08 ~ 10-31	✅ 100%
+🔄 En Curso
+Hito	Nombre	Período	Deadline
+H02	Telegram & Web Adapter	2025-11-01 ~ 11-10	2025-11-10
+H03	FSM Avanzado	2025-11-11 ~ 11-15	2025-11-15
+H04	Persistencia & DB	2025-11-16 ~ 11-25	2025-11-25
+H05	Agentes Verticales	2025-11-26 ~ 12-01	2025-12-01
+H06	ML/NLP Pipelines	2025-12-02 ~ 12-10	2025-12-10
+H07	E2E Tests & QA	2025-12-11 ~ 12-15	2025-12-15
+⏳ Planificados
+Hito	Nombre	Período (aprox)
+H08	Multi-empresa RBAC	2026-01-10
+H09	Docker/K8s & CI/CD	2026-01-20
+H10	WhatsApp & REST API	2026-02-01
+H11	Observabilidad	2026-02-15
+H12	Integraciones Externas	2026-03-01
+H13	Seguridad & Hardening	2026-03-15
+H14	Onboarding Profesional	2026-04-01
+H15	Performance & Stress Testing	2026-04-20
+H16	Plugins & Customización	2026-05-10
+H17	Auditoría Final & Go-Live	2026-06-01
+→ Ver master.md para detalles operativos de cada hito
+
+📊 Auditoría de Documentación (HITO COMPLEMENTARIO)
+Plan maestro auditoria: PLAN-AUDITORIA-updated.md
 
-### Dockerfile (production)
-FROM python:3.10-slim
-
-WORKDIR /app
-
-Deps
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-Code
-COPY src/ src/
-COPY alembic/ alembic/
-COPY alembic.ini .
-
-Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3
-CMD python -c "import requests; requests.get('http://localhost:8000/health')"
-
-Run
-CMD ["uvicorn", "src.theaia.api:app", "--host", "0.0.0.0", "--port", "8000"]
-
-text
-
----
-
-## ☸️ Step 2: Kubernetes Deployment (H09)
-
-### k8s/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-name: thea-ia
-labels:
-app: thea-ia
-spec:
-replicas: 3
-selector:
-matchLabels:
-app: thea-ia
-template:
-metadata:
-labels:
-app: thea-ia
-spec:
-containers:
-- name: thea-ia
-image: your-registry/thea-ia:v0.14.0
-ports:
-- containerPort: 8000
-env:
-- name: ENVIRONMENT
-value: "production"
-- name: DATABASE_URL
-valueFrom:
-secretKeyRef:
-name: thea-secrets
-key: database-url
-- name: JWT_SECRET
-valueFrom:
-secretKeyRef:
-name: thea-secrets
-key: jwt-secret
-resources:
-requests:
-memory: "256Mi"
-cpu: "250m"
-limits:
-memory: "512Mi"
-cpu: "500m"
-livenessProbe:
-httpGet:
-path: /health
-port: 8000
-initialDelaySeconds: 30
-periodSeconds: 10
-
-text
-
-### k8s/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-name: thea-ia-service
-spec:
-selector:
-app: thea-ia
-type: LoadBalancer
-ports:
-
-protocol: TCP
-port: 80
-targetPort: 8000
-
-text
-
-### Deploy
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
-
-Verificar
-kubectl get pods -l app=thea-ia
-kubectl logs -f deployment/thea-ia
+Estado Auditoría docs/ (Sesión 37)
+Carpeta	Archivos	Status	%	IDs
+Security	7	✅ COMPLETADA	100%	
+Guides	9	✅ COMPLETADA	100%	[175-183]
+Roadmap	1	✅ COMPLETADA	100%	
+Audit	3	⏳ PRÓXIMO	0%	-
+Diary	1	⏳ PRÓXIMO	0%	-
+TOTAL S37	21	🔄 EN PROGRESO	70%	-
+Meta S37: Completar 100% auditoría docs/ (55/55 archivos)
+Estado global: 49% (27/55 archivos desde S35-S36)
 
-text
+→ Ver PLAN-AUDITORIA-updated.md para metodología y tracking detallado
 
----
+📈 Métricas de Éxito
+Adopción
+Métrica	v0.14 (Actual)	v1.0 (Q3 2025)	v2.0 (Q1 2026)
+Usuarios activos	1	100	1,000
+Conversaciones/día	50	500	5,000
+Agentes funcionales	1	5+	15+
+Contributors	1	10	50
+Performance
+Métrica	v0.14	v1.0	v2.0
+Latencia p95	<200ms	<100ms	<50ms
+Uptime	95%	99%	99.9%
+Throughput	10 req/s	100 req/s	1k req/s
+Documentation & Quality
+Métrica	v0.14	v1.0	v2.0
+Cobertura docs	70%	95%	100%
+Test coverage	80%	90%	95%
+Security score	7/10	9/10	10/10
+🎯 Hitos Estratégicos Clave
+Hito 1: MVP Conversacional (✅ Completado)
+Fecha: 2025-10-31
+Objetivo: FSM funcional + Telegram + tests básicos
 
-## 🗄️ Step 3: Database Setup
+Logros:
 
-### Migraciones (Alembic)
-Remote
-export DATABASE_URL=postgresql://user:pass@db.host:5432/theaia
+✅ FSM engine operativo
 
-Run migrations
-alembic upgrade head
+✅ Estructura profesional raíz
 
-Crear índices
-psql $DATABASE_URL < scripts/create_indexes.sql
+✅ Documentación inicial
 
-text
+✅ Tests unitarios ≥80%
 
----
+Entrega: H01 - Organización & Tests
 
-## 🔐 Step 4: Secrets Management
+Hito 2: Multi-Adapter & Multi-Agent (🔄 En progreso)
+Fecha objetivo: 2025-12-15
+Objetivo: Telegram, Web, 4+ agentes, ML pipelines
 
-### K8s secrets
-Crear secret
-kubectl create secret generic thea-secrets
---from-literal=database-url=postgresql://...
---from-literal=jwt-secret=$(openssl rand -hex 32)
+Avance:
 
-Verificar
-kubectl get secrets thea-secrets
+🔄 Telegram adapter (H02 en curso)
 
-text
+⏳ Web client
 
----
+⏳ Agentes: Agenda, Notas, Eventos, Query
 
-## 🚀 Step 5: CI/CD (GitHub Actions)
+⏳ ML pipelines (intent, entity)
 
-### .github/workflows/deploy.yml
-name: Deploy to K8s
+Tracking: master.md - H02-H07
 
-on:
-push:
-branches: [main]
+Hito 3: Enterprise Infrastructure (⏳ Planificado)
+Fecha objetivo: 2026-04-01
+Objetivo: Multi-tenancy, K8s, observabilidad, seguridad
 
-jobs:
-deploy:
-runs-on: ubuntu-latest
-steps:
-- uses: actions/checkout@v3
+Incluye:
 
-text
-- name: Build and push Docker
-  uses: docker/build-push-action@v4
-  with:
-    context: .
-    push: true
-    tags: ${{ secrets.REGISTRY }}/thea-ia:${{ github.sha }}
+Multi-tenant RBAC
 
-- name: Deploy to K8s
-  run: |
-    kubectl set image deployment/thea-ia \
-      thea-ia=${{ secrets.REGISTRY }}/thea-ia:${{ github.sha }}
-    kubectl rollout status deployment/thea-ia
-text
+Kubernetes orchestration
 
----
+Prometheus + Grafana + Loki + Jaeger
 
-## 📊 Step 6: Observabilidad (H11)
+Security audit + hardening
 
-### Prometheus scrape
-prometheus.yml
-global:
-scrape_interval: 15s
+Compliance GDPR/SOC2
 
-scrape_configs:
+Tracking: master.md - H08-H14
 
-job_name: 'thea-ia'
-static_configs:
+Hito 4: Scale & Release (⏳ Futuro)
+Fecha objetivo: 2026-06-01
+Objetivo: Performance, plugins, go-live profesional
 
-targets: ['localhost:8000']
+Incluye:
 
-text
+Stress testing + optimizaciones
 
-### Grafana dashboard
-http://grafana.your-domain.com
+Plugin system
 
-Import: Prometheus datasource
+Advanced customization
 
-Create: FSM latency, requests/sec, errors
+Production go-live
 
-text
+Enterprise onboarding
 
----
+Tracking: master.md - H15-H17
 
-## 📋 Checklist Pre-deployment
+🔗 Recursos Clave
+Planificación Operativa
+Roadmap Maestro (master.md) — Tracking real por sesión, H01-H17
 
-- [ ] Tests pasen ≥90%
-- [ ] Build Docker exitoso
-- [ ] Secrets configurados en K8s
-- [ ] Migraciones DB ejecutadas
-- [ ] Health check respondiendo
-- [ ] Logs en Loki visibles
-- [ ] Métricas Prometheus activas
-- [ ] SSL/TLS certificado válido
+Carpeta Milestones — Detalle operativo cada hito
 
----
+Plan Auditoría Docs — Auditoría S35-S37
 
-## 🔍 Verificaciones Post-deployment
+Documentación Actual
+Guides (docs/guides/) — Guías para usuarios (9 archivos)
 
-Health check
-curl https://your-domain.com/health
+Security (docs/security/) — Seguridad & compliance (7 archivos)
 
-Logs
-kubectl logs -f deployment/thea-ia
+Architecture (docs/architecture/) — Diseño técnico
 
-Métricas
-curl https://your-domain.com/metrics
+Agents (docs/agents/) — Agentes especializados
 
-DB connection
-psql postgresql://... -c "SELECT 1"
+Adapters (docs/adapters/) — Integraciones
 
-text
+📌 Meta-información
+Campo	Valor
+Archivo	docs/roadmap/overview.md
+Versión	v0.14.0
+Última revisión	2025-11-09 19:33 CET (S37)
+Responsable	CEO THEA IA
+Estado	✅ Activo
+Alineación	master.md + milestones/ + PLAN-AUDITORIA
+🚀 Siguiente
+→ Roadmap Maestro (Tracking Operativo)
+→ Auditoría Documentación
 
----
-
-## 🔄 Rollback
-
-Si algo falla
-kubectl rollout undo deployment/thea-ia
-
-Ver historial
-kubectl rollout history deployment/thea-ia
-
-text
-
----
-
-## 📖 Documentación relacionada
-
-- [Quickstart](./quickstart.md) — Desarrollo local
-- [Troubleshooting](./troubleshooting.md) — Resolver problemas
-- [H09 - Docker/K8s](../roadmap/milestones/H03_17.md)
-
----
-
-**Última actualización:** 2025-10-31 03:23 CET
+Última actualización: 2025-11-09 19:33 CET (Sesión 37)

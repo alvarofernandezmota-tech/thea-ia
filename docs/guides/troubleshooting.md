@@ -1,358 +1,381 @@
-text
-# 🔧 Troubleshooting — THEA IA
+🔧 Troubleshooting — THEA IA
+Versión: v0.14.0
+Última actualización: 2025-11-09 19:08 CET (Sesión 37)
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Estado: ✅ Activo
 
-**Versión:** v0.14.0  
-**Última actualización:** 2025-10-31 03:25 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+🔴 Problemas Comunes
+1. FSM stuck en processing
+Síntomas:
 
----
+Mensaje enviado pero sin respuesta
 
-## 🔴 Problemas Comunes
+Estado no avanza
 
-### 1. FSM stuck en `processing`
+Logs: FSM.processing timeout
 
-**Síntomas:**
-- Mensaje enviado pero sin respuesta
-- Estado no avanza
-- Logs: `FSM.processing timeout`
+Causa probable:
 
-**Causa probable:**
-- Agente falla sin error capturado
-- Context corrupto
+Agente falla sin error capturado
 
-**Solución:**
-Opción 1: Reset contexto (dev)
+Context corrupto
+
+Solución:
+
+bash
+# Opción 1: Reset contexto (dev)
 curl -X POST http://localhost:8000/admin/context/user_123/reset
 
-Opción 2: Limpiar manualmente
+# Opción 2: Limpiar manualmente
 python -c "
 from src.theaia.core.context import ContextManager
 cm = ContextManager()
 cm.clear('user_123')
 "
 
-Opción 3: Check logs
+# Opción 3: Check logs
 docker logs thea-ia | grep "user_123"
+2. Database connection timeout
+Síntomas:
 
-text
+Error: psycopg2.OperationalError: could not connect to server
 
----
+Queries lentas (>1s)
 
-### 2. Database connection timeout
+Logs: DB connection pool exhausted
 
-**Síntomas:**
-- Error: `psycopg2.OperationalError: could not connect to server`
-- Queries lentas (>1s)
-- Logs: `DB connection pool exhausted`
+Causa probable:
 
-**Causa probable:**
-- PostgreSQL no corre
-- Connection pool lleno (leak)
-- Red bloqueada (firewall)
+PostgreSQL no corre
 
-**Solución:**
-Verificar PostgreSQL
+Connection pool lleno (leak)
+
+Red bloqueada (firewall)
+
+Solución:
+
+bash
+# Verificar PostgreSQL
 docker ps | grep postgres
-
-o
+# o
 psql postgresql://user:pass@localhost:5432/theaia -c "SELECT 1"
 
-Si no corre, iniciar
+# Si no corre, iniciar
 docker-compose up -d postgres
 
-Check connection pool
+# Check connection pool
 docker logs thea-ia | grep "pool"
 
-Reset pool (si está corrupto)
-Reiniciar app
+# Reset pool (si está corrupto)
+# Reiniciar app
 kubectl rollout restart deployment/thea-ia
+3. Intent detection no funciona
+Síntomas:
 
-text
+Intent siempre "unknown"
 
----
+Entity extraction falla
 
-### 3. Intent detection no funciona
+Logs: Model not found o spaCy error
 
-**Síntomas:**
-- Intent siempre "unknown"
-- Entity extraction falla
-- Logs: `Model not found` o `spaCy error`
+Causa probable:
 
-**Causa probable:**
-- Modelo ML no descargado
-- spaCy model corrupto
-- Versión Python incompatible
+Modelo ML no descargado
 
-**Solución:**
-Descargar modelo spaCy
+spaCy model corrupto
+
+Versión Python incompatible
+
+Solución:
+
+bash
+# Descargar modelo spaCy
 python -m spacy download es_core_news_sm
 
-Verificar instalación
+# Verificar instalación
 python -c "import spacy; nlp=spacy.load('es_core_news_sm'); print('OK')"
 
-Entrenar modelo intent si es necesario
+# Entrenar modelo intent si es necesario
 python scripts/train_intent_model.py --data data/training_data.json --output models/intent_model.pkl
 
-Check versión Python
-python --version # Debe ser 3.10+
+# Check versión Python
+python --version  # Debe ser 3.10+
+4. Telegram bot no recibe mensajes
+Síntomas:
 
-text
+Bot no responde en Telegram
 
----
+Webhooks no llamados
 
-### 4. Telegram bot no recibe mensajes
+Logs vacíos
 
-**Síntomas:**
-- Bot no responde en Telegram
-- Webhooks no llamados
-- Logs vacíos
+Causa probable:
 
-**Causa probable:**
-- Token inválido
-- Webhook URL incorrecta
-- IP no whitelisted
+Token inválido
 
-**Solución:**
-Verificar token
+Webhook URL incorrecta
+
+IP no whitelisted
+
+Solución:
+
+bash
+# Verificar token
 curl -s https://api.telegram.org/botTOKEN/getMe | jq
 
-Verificar webhook
+# Verificar webhook
 curl -s https://api.telegram.org/botTOKEN/getWebhookInfo | jq
 
-Establecer webhook correcto
-curl https://api.telegram.org/botTOKEN/setWebhook
--d url=https://your-domain.com/adapters/telegram/webhook
--d allowed_updates=message,callback_query
+# Establecer webhook correcto
+curl https://api.telegram.org/botTOKEN/setWebhook \
+  -d url=https://your-domain.com/adapters/telegram/webhook \
+  -d allowed_updates=message,callback_query
 
-Test webhook local
-ngrok http 8000 # Expone local a internet
+# Test webhook local
+ngrok http 8000  # Expone local a internet
+5. JWT token expirado
+Síntomas:
 
-text
+Error 401 Unauthorized
 
----
+Logs: JWT signature invalid o Token expired
 
-### 5. JWT token expirado
+Causa probable:
 
-**Síntomas:**
-- Error 401 Unauthorized
-- Logs: `JWT signature invalid` o `Token expired`
+Token expirado (lifetime < 1h)
 
-**Causa probable:**
-- Token expirado (lifetimeToken < 1h)
-- Secret JWT cambió
-- Clock drift
+Secret JWT cambió
 
-**Solución:**
-Verificar expiración token
-python -c "
+Clock drift
+
+Solución:
+
+python
+# Verificar expiración token
 import jwt
+
 token = 'your_token'
 try:
-jwt.decode(token, 'secret', algorithms=['HS256'])
-print('Token válido')
+    jwt.decode(token, 'secret', algorithms=['HS256'])
+    print('Token válido')
 except jwt.ExpiredSignatureError:
-print('Token expirado')
+    print('Token expirado')
 except jwt.InvalidSignatureError:
-print('Firma inválida')
-"
+    print('Firma inválida')
+bash
+# Solicitar nuevo token
+curl -X POST http://localhost:8000/auth/login \
+  -d '{"email":"user@example.com","password":"..."}'
 
-Solicitar nuevo token
-curl -X POST http://localhost:8000/auth/login
--d '{"email":"user@example.com","password":"..."}'
+# Sync time si hay clock drift
+sudo ntpdate -s time.nist.gov  # Linux
+6. Tests fallan aleatoriamente
+Síntomas:
 
-Sync time si hay clock drift
-sudo ntpdate -s time.nist.gov # Linux
+pytest pasa local, falla en CI
 
-text
+Errores race conditions
 
----
+Connection refused aleatorio
 
-### 6. Tests fallan aleatoriamente
+Causa probable:
 
-**Síntomas:**
-- `pytest` pasa local, falla en CI
-- Errores race conditions
-- `Connection refused` aleatorio
+Race condition en tests paralelos
 
-**Causa probable:**
-- Race condition en tests paralelos
-- DB fixture no limpia
-- Port en uso
+DB fixture no limpia
 
-**Solución:**
-Ejecutar tests secuencialmente
-pytest -n 0 # -n 0 = no parallelismo
+Port en uso
 
-Limpiar DB antes de tests
+Solución:
+
+bash
+# Ejecutar tests secuencialmente
+pytest -n 0  # -n 0 = no parallelismo
+
+# Limpiar DB antes de tests
 pytest --fixtures | grep -A 5 "db"
 
-O manual:
+# O manual:
 python -c "
 from src.theaia.tests.conftest import reset_db
 reset_db()
 "
 
-Liberar port
+# Liberar port
 lsof -i :8000 | grep LISTEN | awk '{print $2}' | xargs kill -9
+7. Observabilidad (Prometheus/Grafana) no muestra métricas
+Síntomas:
 
-text
+Grafana: "No data"
 
----
+Prometheus: targets "DOWN"
 
-### 7. Observabilidad (Prometheus/Grafana) no muestra métricas
+Logs: metrics endpoint 404
 
-**Síntomas:**
-- Grafana: "No data"
-- Prometheus: targets "DOWN"
-- Logs: `metrics endpoint 404`
+Causa probable:
 
-**Causa probable:**
-- App no expone `/metrics`
-- Prometheus no configado correctamente
-- Firewall bloquea puerto 9090
+App no expone /metrics
 
-**Solución:**
-Verificar metrics endpoint
+Prometheus no configurado correctamente
+
+Firewall bloquea puerto 9090
+
+Solución:
+
+bash
+# Verificar metrics endpoint
 curl http://localhost:8000/metrics
-
-Si 404, agregar a app
-En src/theaia/api.py
+python
+# Si 404, agregar a app
+# En src/theaia/api.py
 from prometheus_client import make_wsgi_app
 from prometheus_client import Counter, Histogram
+bash
+# Verificar Prometheus
+curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets[].health'
 
-Verificar Prometheus
-curl http://localhost:9090/api/v1/targets | jq '.data.activeTargets.health'
-
-Recargar config Prometheus
+# Recargar config Prometheus
 curl -X POST http://localhost:9090/-/reload
+8. Docker build falla
+Síntomas:
 
-text
+Error: ImportError o ModuleNotFoundError
 
----
+Logs: Dockerfile failed
 
-### 8. Docker build falla
+Causa probable:
 
-**Síntomas:**
-- Error: `ImportError` o `ModuleNotFoundError`
-- Logs: `Dockerfile failed`
+requirements.txt outdated
 
-**Causa probable:**
-- requirements.txt outdated
-- Dependencia incompatible con Python 3.10
-- Cache corrupta
+Dependencia incompatible con Python 3.10
 
-**Solución:**
-Rebuild sin cache
+Cache corrupta
+
+Solución:
+
+bash
+# Rebuild sin cache
 docker build --no-cache -t thea-ia:dev .
 
-Actualizar requirements
+# Actualizar requirements
 pip install -U pip
 pip freeze > requirements.txt
 
-Verificar compatibilidad
+# Verificar compatibilidad
 python -m pip install -r requirements.txt --dry-run
+9. Logs no visibles en Loki
+Síntomas:
 
-text
+Loki up pero sin logs
 
----
+Grafana: No data en Loki datasource
 
-### 9. Logs no visibles en Loki
+Causa probable:
 
-**Síntomas:**
-- Loki up pero sin logs
-- Grafana: `No data` en Loki datasource
+Promtail no scrapeando logs
 
-**Causa probable:**
-- Promtail no scrapeando logs
-- Labels incorrectas
-- App no mandando logs
+Labels incorrectas
 
-**Solución:**
-Verificar Promtail
+App no mandando logs
+
+Solución:
+
+bash
+# Verificar Promtail
 docker ps | grep promtail
 
-Check config Promtail
+# Check config Promtail
 cat /etc/promtail/config.yml
 
-Mandar log de prueba
+# Mandar log de prueba
 echo "test log" | logger
 
-Query Loki
+# Query Loki
 curl 'http://localhost:3100/loki/api/v1/query?query={job="thea-ia"}'
+10. Performance degradada (latencia > 100ms)
+Síntomas:
 
-text
+FSM transiciones lentas (> 10ms)
 
----
+Queries DB lentas (> 100ms)
 
-### 10. Performance degradada (latencia > 100ms)
+Requests Telegram timeout
 
-**Síntomas:**
-- FSM transiciones lentasrandom (`> 10ms`)
-- Queries DB lentass (`> 100ms`)
-- Requests Telegram timeout
+Causa probable:
 
-**Causa probable:**
-- DB queries sin índices
-- Memory leak
-- CPU saturada
+DB queries sin índices
 
-**Solución:**
-Check CPU/Memory
+Memory leak
+
+CPU saturada
+
+Solución:
+
+bash
+# Check CPU/Memory
 docker stats thea-ia
 
-Analizar queries lentas
+# Analizar queries lentas
 psql $DATABASE_URL -c "
 SELECT query, calls, mean_time
 FROM pg_stat_statements
 ORDER BY mean_time DESC LIMIT 5;
 "
 
-Crear índices
+# Crear índices
 psql $DATABASE_URL < scripts/create_indexes.sql
 
-Profile app
+# Profile app
 python -m cProfile -s cumtime src/theaia/api.py
-
-Usar APM (H11)
-Agregar Jaeger tracing
+python
+# Usar APM (H11)
+# Agregar Jaeger tracing
 from opentelemetry import trace
+# ... configure Jaeger
+📋 Checklist de Debug
+ Revisar logs: docker logs thea-ia
 
-... configure Jaeger
-text
+ Verificar DB: psql $DATABASE_URL -c "SELECT 1"
 
----
+ Ping app: curl http://localhost:8000/health
 
-## 📋 Checklist de Debug
+ Métricas: curl http://localhost:8000/metrics
 
-- [ ] Revisar logs: `docker logs thea-ia`
-- [ ] Verificar DB: `psql $DATABASE_URL -c "SELECT 1"`
-- [ ] Ping app: `curl http://localhost:8000/health`
-- [ ] Métricas: `curl http://localhost:8000/metrics`
-- [ ] Traces: `jaeger-ui:16686`
-- [ ] Resetear contexto si FSM stuck
-- [ ] Limpiar cache Docker si build falla
-- [ ] Restart pod si todo falla: `kubectl rollout restart deployment/thea-ia`
+ Traces: jaeger-ui:16686
 
----
+ Resetear contexto si FSM stuck
 
-## 🆘 Escalación
+ Limpiar cache Docker si build falla
 
+ Restart pod si todo falla: kubectl rollout restart deployment/thea-ia
+
+🆘 Escalación
 Si problema persiste:
-1. Guardar logs: `docker logs thea-ia > debug.log`
-2. Export metrics: `curl http://localhost:9090/api/v1/query_range?query=...`
-3. Create issue: https://github.com/thea-ia/thea-ia/issues
-4. Mencionar: versión, reproducción, logs, metrics
 
----
+Guardar logs: docker logs thea-ia > debug.log
 
-## 📖 Documentación relacionada
+Export metrics: curl http://localhost:9090/api/v1/query_range?query=...
 
-- [Quickstart](./quickstart.md) — Setup inicial
-- [Deployment](./deployment.md) — Producción
-- [Architecture](../architecture/overview.md) — Entender diseño
-- [Roadmap](../roadmap/master.md) — Plan completo
+Create issue: https://github.com/thea-ia/thea-ia/issues
 
----
+Mencionar: versión, reproducción, logs, metrics
 
-**Última actualización:** 2025-10-31 03:25 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+📖 Documentación relacionada
+Quickstart — Setup inicial
+
+Configuration — Variables y ajustes
+
+Deployment — Producción
+
+Architecture — Entender diseño
+
+Security — Seguridad y compliance
+
+📌 Meta-información
+Campo	Valor
+Archivo	docs/guides/troubleshooting.md
+Versión	v0.14.0
+Última revisión	2025-11-09 19:08 CET (S37)
+Responsable	CEO THEA IA
+Estado	✅ Activo
+Última actualización: 2025-11-09 19:08 CET

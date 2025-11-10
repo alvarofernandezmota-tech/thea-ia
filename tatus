@@ -1,0 +1,5 @@
+[33mdb1f83fa[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m docs: S38 - Actualización roadmap_auditoria (audit), inicio sesiones src/ y nuevas fases
+[33m926be98b[m docs: S37 FINAL - Auditoría docs/ 100% + Limpieza + API recreada
+[33m6293e5b1[m [SESIÓN 35-37] docs: Auditoría completa testing + agents + adapters + architecture + security (6/7)...
+[33me8693a02[m [SESIÓN-36] docs: Auditoría COMPLETA adapters + architecture (14 archivos)
+[33m1416df1d[m [SESIÓN-35] docs: Auditoría completa testing + agents (16 archivos) - docs/testing/: 6 archivos (index, unit, integration, e2e, coverage, ci_cd) - docs/agents/: 10 archivos (overview + 9 agentes específicos) - Duración: 43 minutos (16:23-17:06 CET) - Responsable: Álvaro Fernández Mota (CEO THEA IA) - Hito: 35.1 completado al 100% - IDs: -
