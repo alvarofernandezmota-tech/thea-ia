@@ -1,0 +1,40 @@
+🧪 Event Agent Tests
+Coverage: 85%+
+
+Test Suite
+test_handler.py (1353 bytes)
+
+✅ test_event_agent_initialization()
+
+✅ test_get_supported_intents()
+
+✅ test_handle_basic_flow()
+
+✅ test_handle_cancellation()
+
+test_event_fsm.py (1906 bytes)
+
+✅ test_fsm_initialization()
+
+✅ test_fsm_name_transition()
+
+✅ test_fsm_date_transition()
+
+✅ test_fsm_recurrence_positive()
+
+✅ test_fsm_recurrence_negative()
+
+✅ test_fsm_confirmation()
+
+✅ test_fsm_state_persistence()
+
+Ejecutar
+bash
+pytest src/theaia/agents/event_agent/tests/ -v
+Coverage
+Module	Coverage
+handler.py	83%
+manager.py	80%
+event_fsm.py	91%
+TOTAL	85%
+Event Agent Tests v1.0 — 12+ tests ✅
