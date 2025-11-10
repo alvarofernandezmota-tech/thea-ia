@@ -1,0 +1,54 @@
+🛣️ Agents Module ROADMAP — Evolución Futura
+Versión: v1.0.0 → v2.0+ | Status: 🟡 Planificado
+
+📅 Fases Planificadas
+v1.0 ✅ COMPLETADO (Nov 2025)
+✅ BaseAgent (clase abstracta)
+
+✅ Registry system (auto-discovery)
+
+✅ 8 agentes conversacionales
+
+✅ FSM multi-turno
+
+✅ 30+ documentación
+
+v1.1 🟡 PRÓXIMO (Nov 2025)
+ Error handling mejorado
+
+ Logging avanzado
+
+ Métricas por agente
+
+ Rate limiting
+
+v2.0 🔜 FUTURO (Dic 2025)
+ Agentes NLP mejorados
+
+ Machine learning inference
+
+ Context persistence (DB)
+
+ Multi-language support
+
+ Agent chaining
+
+v3.0 🌟 LARGO PLAZO (Q1 2026)
+ Custom agent builder UI
+
+ Plugin system
+
+ Agentes remotos (API)
+
+ Federación de agentes
+
+🎯 KPIs
+Response time < 500ms
+
+Intent accuracy > 95%
+
+Coverage > 90%
+
+Uptime 99.9%
+
+Agents Roadmap v1.0
