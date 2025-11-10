@@ -1,169 +1,139 @@
-# 🚀 Quickstart — THEA IA
+🚀 Quickstart — THEA IA
+Versión: v0.14.0
+Última actualización: 2025-11-09 19:06 CET (Sesión 37)
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Estado: ✅ Activo
 
-**Versión:** v0.14.0  
-**Última actualización:** 2025-10-31 03:22 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
+📋 Prerequisitos
+Python 3.10+
 
----
+Git
 
-## 📋 Prerequisitos
+Docker (opcional, para prod)
 
-- Python 3.10+
-- Git
-- Docker (opcional, para prod)
-- PostgreSQL (opcional, fallback a JSON local)
+PostgreSQL (opcional, fallback a JSON local)
 
----
-
-## 1️⃣ Instalación Local
-
-### Clonar repo
+1️⃣ Instalación Local
+Clonar repo
+bash
 git clone https://github.com/thea-ia/thea-ia.git
 cd thea-ia
-
-text
-
-### Crear virtual env
+Crear virtual env
+bash
 python -m venv venv
-source venv/bin/activate # Linux/Mac
-
-o
-venv\Scripts\activate # Windows
-
-text
-
-### Instalar dependencias
+source venv/bin/activate  # Linux/Mac
+# o
+venv\Scripts\activate  # Windows
+Instalar dependencias
+bash
 pip install -r requirements.txt
-pip install -r requirements-dev.txt # Para development
-
-text
-
----
-
-## 2️⃣ Configuración
-
-### .env local
+pip install -r requirements-dev.txt  # Para development
+2️⃣ Configuración
+.env local
+bash
 cp .env.example .env
+# Editar .env con configuración local
+Variables principales:
 
-Editar .env con configuración local
-text
-
-**Variables principales:**
+bash
 ENVIRONMENT=development
-DATABASE_URL=sqlite:///thea.db # Local (fallback JSON)
+DATABASE_URL=sqlite:///thea.db  # Local (fallback JSON)
 TELEGRAM_BOT_TOKEN=your_token
 JWT_SECRET=your_secret
 LOG_LEVEL=INFO
-
-text
-
----
-
-## 3️⃣ Tests
-
-### Ejecutar tests unitarios
+3️⃣ Tests
+Ejecutar tests unitarios
+bash
 pytest src/theaia/tests/unit -v
-
-text
-
-### Con cobertura
+Con cobertura
+bash
 pytest src/theaia/tests -v --cov=src/theaia --cov-report=html
-
-Abrir htmlcov/index.html
-text
-
-### Tests e2e
+# Abrir htmlcov/index.html
+Tests e2e
+bash
 pytest src/theaia/tests/e2e -v
-
-text
-
----
-
-## 4️⃣ Ejecutar (Local)
-
-### FastAPI dev server
+4️⃣ Ejecutar (Local)
+FastAPI dev server
+bash
 uvicorn src.theaia.api:app --reload --host 0.0.0.0 --port 8000
-
+Visitar
 text
-
-### Visitar
 http://localhost:8000
-
+Swagger docs
 text
-
-### Swagger docs
 http://localhost:8000/docs
-
-text
-
----
-
-## 5️⃣ Docker (Local)
-
-### Build image
+5️⃣ Docker (Local)
+Build image
+bash
 docker build -t thea-ia:dev -f Dockerfile.lite .
-
-text
-
-### Run container
+Run container
+bash
 docker run -p 8000:8000 -e ENVIRONMENT=development thea-ia:dev
-
-text
-
-### Docker Compose (con PostgreSQL opcional)
+Docker Compose (con PostgreSQL opcional)
+bash
 docker-compose up -d
-
-text
-
----
-
-## 6️⃣ Primeros pasos
-
-### Crear usuario
-curl -X POST http://localhost:8000/users
--H "Content-Type: application/json"
--d '{"name":"John","email":"john@example.com"}'
-
-text
-
-### Enviar mensaje
-curl -X POST http://localhost:8000/chat/user_123
--H "Content-Type: application/json"
--d '{"message":"quiero agendar cita"}'
-
-text
-
-### Respuesta esperada
+6️⃣ Primeros pasos
+Crear usuario
+bash
+curl -X POST http://localhost:8000/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"John","email":"john@example.com"}'
+Enviar mensaje
+bash
+curl -X POST http://localhost:8000/chat/user_123 \
+  -H "Content-Type: application/json" \
+  -d '{"message":"quiero agendar cita"}'
+Respuesta esperada
+json
 {
-"response": "¿Qué día prefieres?",
-"state": "disambiguation",
-"agent": "AgendaAgent"
+  "response": "¿Qué día prefieres?",
+  "state": "disambiguation",
+  "agent": "AgendaAgent"
 }
+📖 Próximos pasos
+Installation Guide — Instalación detallada
 
-text
+Configuration — Configuración avanzada
 
----
+Deployment — Desplegar a producción
 
-## 📖 Próximos pasos
+Troubleshooting — Resolver problemas
 
-- [Deployment](./deployment.md) — Desplegar a producción
-- [Troubleshooting](./troubleshooting.md) — Resolver problemas
-- [Architecture](../architecture/overview.md) — Entender diseño
-- [Roadmap](../roadmap/master.md) — Ver plan completo
+Architecture — Entender diseño
 
----
+Roadmap — Ver plan completo
 
-## 🆘 Ayuda
+🆘 Ayuda
+Problema: ImportError con src.theaia
 
-**Problema:** ImportError con `src.theaia`
+Solución:
 
-**Solución:**
-Agregar raíz al PYTHONPATH
+bash
+# Agregar raíz al PYTHONPATH
 export PYTHONPATH="${PYTHONPATH}:$(pwd)"
 pytest ...
+Problema: Docker build falla
 
-text
+Solución:
 
----
+bash
+# Limpiar cache Docker
+docker system prune -a
+docker build --no-cache -t thea-ia:dev .
+Problema: Tests fallan por falta de variables
 
-**Última actualización:** 2025-10-31 03:22 CET
+Solución:
+
+bash
+# Crear .env.test
+cp .env.example .env.test
+# Editar con valores test
+pytest --envfile .env.test
+📌 Meta-información
+Campo	Valor
+Archivo	docs/guides/quickstart.md
+Versión	v0.14.0
+Última revisión	2025-11-09 19:06 CET (S37)
+Responsable	CEO THEA IA
+Estado	✅ Activo
+Última actualización: 2025-11-09 19:06 CET

@@ -1,292 +1,262 @@
-# 🚀 Deployment — THEA IA
-
-**Versión:** v0.14.0  
-**Última actualización:** 2025-10-31 03:23 CET  
-**Responsable:** Álvaro Fernández Mota (CEO THEA IA)
-
----
-
-## 📍 Ambientes
-
-| Ambiente | Hosting | DB | Observabilidad |
-|----------|---------|-----|---|
-| **Local** | Localhost | JSON local | Logs console |
-| **Staging** | Railway/Heroku | PostgreSQL | Basic |
-| **Production** | AWS/GCP + K8s (H09) | PostgreSQL + backup | Prometheus + Grafana + Loki |
-
----
-
-## 🏗️ Production Deployment (H09+)
-
-### Prerequisitos (H09 — K8s)
-
-- Kubernetes cluster (AWS EKS / GCP GKE)
-- Docker registry (ECR / Artifact Registry)
-- PostgreSQL managed (RDS / Cloud SQL)
-- GitHub Actions para CI/CD
-
----
-
-## 🐳 Step 1: Build & Push Docker Image
-
-### Build Dockerfile optimizado
-Build
-docker build -t your-registry/thea-ia:v0.14.0
--f Dockerfile
---build-arg ENVIRONMENT=production
-.
-
-Push
-docker push your-registry/thea-ia:v0.14.0
-
-text
-
-### Dockerfile (production)
-FROM python:3.10-slim
-
-WORKDIR /app
-
-Deps
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-
-Code
-COPY src/ src/
-COPY alembic/ alembic/
-COPY alembic.ini .
-
-Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3
-CMD python -c "import requests; requests.get('http://localhost:8000/health')"
-
-Run
-CMD ["uvicorn", "src.theaia.api:app", "--host", "0.0.0.0", "--port", "8000"]
-
-text
-
----
-
-## ☸️ Step 2: Kubernetes Deployment (H09)
-
-### k8s/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-name: thea-ia
-labels:
-app: thea-ia
-spec:
-replicas: 3
-selector:
-matchLabels:
-app: thea-ia
-template:
-metadata:
-labels:
-app: thea-ia
-spec:
-containers:
-- name: thea-ia
-image: your-registry/thea-ia:v0.14.0
-ports:
-- containerPort: 8000
-env:
-- name: ENVIRONMENT
-value: "production"
-- name: DATABASE_URL
-valueFrom:
-secretKeyRef:
-name: thea-secrets
-key: database-url
-- name: JWT_SECRET
-valueFrom:
-secretKeyRef:
-name: thea-secrets
-key: jwt-secret
-resources:
-requests:
-memory: "256Mi"
-cpu: "250m"
-limits:
-memory: "512Mi"
-cpu: "500m"
-livenessProbe:
-httpGet:
-path: /health
-port: 8000
-initialDelaySeconds: 30
-periodSeconds: 10
-
-text
-
-### k8s/service.yaml
-apiVersion: v1
-kind: Service
-metadata:
-name: thea-ia-service
-spec:
-selector:
-app: thea-ia
-type: LoadBalancer
-ports:
+🚀 Deployment Guide — THEA IA
+Versión: v0.14.0
+Última actualización: 2025-11-09 19:14 CET (Sesión 37)
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Estado: ✅ Activo
 
-protocol: TCP
-port: 80
-targetPort: 8000
+📋 Propósito
+Guía práctica para deployar THEA IA en local y producción.
 
-text
+Para documentación técnica detallada de arquitectura deployment:
+👉 Architecture: Deployment
 
-### Deploy
-kubectl apply -f k8s/deployment.yaml
-kubectl apply -f k8s/service.yaml
+🏠 Quick Deploy Local
+Opción 1: Docker Compose (recomendado)
+bash
+# Clonar repo
+git clone https://github.com/thea-ia/thea-ia.git
+cd thea-ia
 
-Verificar
-kubectl get pods -l app=thea-ia
-kubectl logs -f deployment/thea-ia
-
-text
-
----
-
-## 🗄️ Step 3: Database Setup
-
-### Migraciones (Alembic)
-Remote
-export DATABASE_URL=postgresql://user:pass@db.host:5432/theaia
-
-Run migrations
-alembic upgrade head
-
-Crear índices
-psql $DATABASE_URL < scripts/create_indexes.sql
-
-text
-
----
-
-## 🔐 Step 4: Secrets Management
-
-### K8s secrets
-Crear secret
-kubectl create secret generic thea-secrets
---from-literal=database-url=postgresql://...
---from-literal=jwt-secret=$(openssl rand -hex 32)
-
-Verificar
-kubectl get secrets thea-secrets
-
-text
-
----
-
-## 🚀 Step 5: CI/CD (GitHub Actions)
-
-### .github/workflows/deploy.yml
-name: Deploy to K8s
-
-on:
-push:
-branches: [main]
-
-jobs:
-deploy:
-runs-on: ubuntu-latest
-steps:
-- uses: actions/checkout@v3
-
-text
-- name: Build and push Docker
-  uses: docker/build-push-action@v4
-  with:
-    context: .
-    push: true
-    tags: ${{ secrets.REGISTRY }}/thea-ia:${{ github.sha }}
-
-- name: Deploy to K8s
-  run: |
-    kubectl set image deployment/thea-ia \
-      thea-ia=${{ secrets.REGISTRY }}/thea-ia:${{ github.sha }}
-    kubectl rollout status deployment/thea-ia
-text
-
----
-
-## 📊 Step 6: Observabilidad (H11)
-
-### Prometheus scrape
-prometheus.yml
-global:
-scrape_interval: 15s
-
-scrape_configs:
-
-job_name: 'thea-ia'
-static_configs:
-
-targets: ['localhost:8000']
-
-text
-
-### Grafana dashboard
-http://grafana.your-domain.com
-
-Import: Prometheus datasource
-
-Create: FSM latency, requests/sec, errors
-
-text
-
----
-
-## 📋 Checklist Pre-deployment
-
-- [ ] Tests pasen ≥90%
-- [ ] Build Docker exitoso
-- [ ] Secrets configurados en K8s
-- [ ] Migraciones DB ejecutadas
-- [ ] Health check respondiendo
-- [ ] Logs en Loki visibles
-- [ ] Métricas Prometheus activas
-- [ ] SSL/TLS certificado válido
-
----
-
-## 🔍 Verificaciones Post-deployment
-
-Health check
+# Setup .env
+cp .env.example .env
+# Editar .env con tus valores
+
+# Start todos los servicios
+docker-compose up -d
+
+# Verificar
+curl http://localhost:8000/health
+Servicios levantados:
+
+FastAPI app (puerto 8000)
+
+PostgreSQL (puerto 5432)
+
+Prometheus (puerto 9090)
+
+Grafana (puerto 3000)
+
+Loki + Promtail (logs)
+
+Opción 2: Manual (dev)
+bash
+# Setup Python
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+# Start app
+uvicorn src.theaia.api:app --reload --host 0.0.0.0 --port 8000
+☁️ Quick Deploy Producción
+Opción 1: Kubernetes (recomendado)
+bash
+# Aplicar manifests
+kubectl apply -f k8s/
+
+# Verificar pods
+kubectl get pods -n thea-ia
+
+# Ver logs
+kubectl logs -f deployment/thea-ia -n thea-ia
+
+# Obtener URL externa
+kubectl get svc -n thea-ia
+Recursos desplegados:
+
+Deployment (3 replicas)
+
+Service (LoadBalancer)
+
+ConfigMap (.env vars)
+
+Secret (JWT, DB password)
+
+HPA (Horizontal Pod Autoscaler)
+
+Ingress (HTTPS/TLS)
+
+Opción 2: Docker (standalone)
+bash
+# Build image
+docker build -t thea-ia:latest .
+
+# Run container
+docker run -d \
+  --name thea-ia \
+  -p 8000:8000 \
+  -e DATABASE_URL=postgresql://... \
+  -e JWT_SECRET=... \
+  -e TELEGRAM_BOT_TOKEN=... \
+  thea-ia:latest
+
+# Check logs
+docker logs -f thea-ia
+🔐 Variables de Entorno Esenciales
+bash
+# App
+ENVIRONMENT=production
+LOG_LEVEL=INFO
+SECRET_KEY=<random-string-64-chars>
+
+# Database
+DATABASE_URL=postgresql://user:pass@host:5432/theaia
+
+# Auth
+JWT_SECRET=<random-string-64-chars>
+JWT_ALGORITHM=HS256
+JWT_EXPIRATION=3600
+
+# Telegram
+TELEGRAM_BOT_TOKEN=<your-bot-token>
+TELEGRAM_WEBHOOK_URL=https://your-domain.com/adapters/telegram/webhook
+
+# Observability
+PROMETHEUS_PORT=9090
+LOKI_URL=http://loki:3100
+JAEGER_ENDPOINT=http://jaeger:14268/api/traces
+Ver guía completa: Configuration
+
+✅ Verificación Post-Deploy
+1. Health check
+bash
 curl https://your-domain.com/health
 
-Logs
-kubectl logs -f deployment/thea-ia
+# Respuesta esperada:
+{
+  "status": "healthy",
+  "version": "v0.14.0",
+  "database": "connected",
+  "uptime": 3600
+}
+2. Logs
+bash
+# Docker
+docker logs thea-ia
 
-Métricas
+# Kubernetes
+kubectl logs deployment/thea-ia -n thea-ia
+
+# Loki (Grafana)
+# http://your-domain.com:3000 → Explore → Loki → {job="thea-ia"}
+3. Métricas
+bash
 curl https://your-domain.com/metrics
 
-DB connection
-psql postgresql://... -c "SELECT 1"
+# O visitar Prometheus:
+# http://your-domain.com:9090
+4. Test funcional
+bash
+# Crear usuario
+curl -X POST https://your-domain.com/users \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com"}'
 
+# Enviar mensaje
+curl -X POST https://your-domain.com/chat/test_user \
+  -H "Content-Type: application/json" \
+  -d '{"message":"hola"}'
+🔄 CI/CD (GitHub Actions)
+Setup automático
 text
+# .github/workflows/deploy.yml
+name: Deploy THEA IA
 
----
+on:
+  push:
+    branches: [main]
 
-## 🔄 Rollback
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Build Docker image
+        run: docker build -t thea-ia:${{ github.sha }} .
+      
+      - name: Push to registry
+        run: docker push thea-ia:${{ github.sha }}
+      
+      - name: Deploy to K8s
+        run: |
+          kubectl set image deployment/thea-ia \
+            thea-ia=thea-ia:${{ github.sha }} \
+            -n thea-ia
+Ver detalles: Architecture: CI/CD
 
-Si algo falla
-kubectl rollout undo deployment/thea-ia
+🐛 Troubleshooting Deploy
+Problema	Solución
+Pod no inicia	Check logs: kubectl logs pod/thea-ia-xxx
+DB connection failed	Verificar DATABASE_URL en ConfigMap
+502 Bad Gateway	Service no expone puerto correcto
+Memory leak	Aumentar resources.limits.memory
+High latency	Escalar replicas: kubectl scale --replicas=5 deployment/thea-ia
+Ver guía completa: Troubleshooting
 
-Ver historial
-kubectl rollout history deployment/thea-ia
+📊 Monitoreo Post-Deploy
+Grafana Dashboards
+App Performance
 
-text
+Request rate
 
----
+Error rate
 
-## 📖 Documentación relacionada
+Latency (p50, p95, p99)
 
-- [Quickstart](./quickstart.md) — Desarrollo local
-- [Troubleshooting](./troubleshooting.md) — Resolver problemas
-- [H09 - Docker/K8s](../roadmap/milestones/H03_17.md)
+FSM Metrics
 
----
+Transiciones/sec
 
-**Última actualización:** 2025-10-31 03:23 CET
+State distribution
+
+Agent response time
+
+Infrastructure
+
+CPU/Memory usage
+
+Network I/O
+
+Disk I/O
+
+Importar dashboards:
+
+bash
+# Dashboard ID: 12345 (THEA IA Overview)
+curl -X POST http://grafana:3000/api/dashboards/import \
+  -H "Content-Type: application/json" \
+  -d '{"dashboard": {...}, "overwrite": true}'
+🔒 Seguridad en Producción
+ HTTPS habilitado (TLS 1.3)
+
+ Variables secretas en Kubernetes Secrets
+
+ Network policies configuradas
+
+ Rate limiting activo
+
+ Firewall rules (solo puertos necesarios)
+
+ Backup automático DB (diario)
+
+ Monitoring alerts configurados
+
+Ver: Security Overview
+
+📖 Recursos Adicionales
+Architecture: Deployment — Detalles técnicos completos
+
+Architecture: Scalability — Escalar horizontal/vertical
+
+Configuration — Variables avanzadas
+
+Troubleshooting — Resolver problemas
+
+📌 Meta-información
+Campo	Valor
+Archivo	docs/guides/deployment.md
+Versión	v0.14.0
+Última revisión	2025-11-09 19:14 CET (S37)
+Responsable	CEO THEA IA
+Estado	✅ Activo
+Última actualización: 2025-11-09 19:14 CET
