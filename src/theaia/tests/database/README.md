@@ -200,6 +200,86 @@ text
 - [SQLAlchemy Testing](https://docs.sqlalchemy.org/en/20/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites)
 
 ---
+## 🔍 Utilidad: check_database.py
+
+Script para verificar contenido PostgreSQL visualmente.
+
+### Uso:
+
+python src/theaia/tests/database/check_database.py
+
+text
+
+### Output:
+
+============================================================
+📊 BASE DE DATOS THEA IA - PostgreSQL
+🧑 USUARIOS:
+ID: 12
+Telegram ID: 6961767622
+Username: @None
+Nombre: Entu
+Creado: 2025-11-12 17:02:43.270788
+💬 CONVERSACIONES:
+ID: 4
+Session ID: telegram_6961767622
+Estado: idle
+Activa: Sí
+Iniciada: 2025-11-12 17:02:43.281514+00:00
+📝 MENSAJES (últimos 5):
+[Lista de mensajes]
+text
+
+### Características:
+
+- ✅ Muestra usuarios registrados
+- ✅ Muestra conversaciones activas
+- ✅ Muestra últimos 5 mensajes
+- ✅ Formato legible humano
+- ✅ Sin necesidad de psql.exe
+
+### Cuándo usar:
+
+- Verificar que usuarios se registran correctamente
+- Debug conversaciones FSM
+- Auditar mensajes guardados
+- Confirmar persistencia database
+
+**Alternativa a `psql`:** No requiere PostgreSQL CLI instalado.
+
+---
+
+## 📊 Primera Conversación Exitosa (12 Nov 2025)
+
+**Usuario registrado:**
+- Nombre: Entu
+- Telegram ID: 6961767622
+- Estado: Activo ✅
+
+**Conversación:**
+- Session ID: telegram_6961767622
+- Estado FSM: idle
+- Mensajes: 2 (✅ /start, ✅ Hola THEA)
+
+**Resultado:** ✅ H02 Database + Telegram Integration COMPLETO
+
+---
+
+**Última actualización:** 12 nov 18:17 CET  
+**Versión:** 1.1  
+**Estado:** H02 100% COMPLETADO ✅
+🚀 Comandos Completos
+powershell
+# 1. Mover archivo
+Move-Item -Path "ver_db.py" -Destination "src/theaia/tests/database/check_database.py"
+
+# 2. Abrir README para actualizar
+code src/theaia/tests/database/README.md
+
+# 3. Añadir la sección de arriba al final del README
+
+# 4. Guardar (Ctrl+S)
+
 
 **Estado:** ✅ COMPLETADO  
 **Versión:** 1.0  
