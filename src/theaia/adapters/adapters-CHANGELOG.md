@@ -274,6 +274,47 @@ Semantic Versioning
 
 Conventional Commits
 
-Última actualización: 11 noviembre 2025
-Mantenedor: Álvaro Fernández Mota
-Próxima revisión: 15 noviembre 2025 (post H02 release)
+## [1.0.0] - 2025-11-12 (H02 Telegram Integration)
+
+**Sesión 8:** 14:30-18:19 (3h 49min)  
+**Responsable:** Álvaro Fernández Mota  
+**Estado:** H02 TelegramAdapter COMPLETADO ✅
+
+### ✅ Added (12 Nov 2025)
+
+**TelegramAdapter (1 archivo, ~400 LOC):**
+- `telegram_adapter.py` - Adapter completo Telegram + PostgreSQL
+
+**Features:**
+- ✅ Persistencia usuarios (get_or_create_from_telegram)
+- ✅ Persistencia conversaciones (session_id, FSM state, context)
+- ✅ Auditoría mensajes (user_message, bot_response, intent, confidence, processing_time)
+- ✅ Multi-tenant support (tenant_id)
+- ✅ Comandos: /start, /help, /reset
+- ✅ MessageHandler texto libre
+- ✅ Error handling con rollback
+- ✅ Async/await completo
+
+**Integración:**
+- ✅ UserRepository (database.repositories)
+- ✅ ConversationRepository (database.repositories)
+- ✅ MessageHistoryRepository (database.repositories)
+- ⏳ CoreRouter (placeholder H03)
+
+**Primera conversación:**
+- Usuario: Entu (Telegram ID: 6961767622)
+- Fecha: 12 Nov 2025, 17:02 CET
+- Mensajes: 2 guardados en PostgreSQL
+- Estado: Funcional ✅
+
+### 🎯 Impacto:
+
+🎉 **H02 Database + Telegram Integration COMPLETADO**
+- ✅ Bot Telegram funcional
+- ✅ Persistencia completa PostgreSQL
+- ✅ Primera conversación exitosa
+- ✅ Base para H03 CoreRouter + NLP
+
+**Próximo:** H03 CoreRouter Integration (13 Nov)
+
+---

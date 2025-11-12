@@ -565,5 +565,85 @@ Propuestas: GitHub Discussions
 📝 Licencia
 MIT License - Ver LICENSE en raíz del proyecto
 
-Última actualización: 11 noviembre 2025
-Próxima revisión: 20 noviembre 2025 (post H02)
+
+## 🤖 TelegramAdapter
+
+Adapter completo Telegram Bot con persistencia PostgreSQL.
+
+**Ubicación:** `src/theaia/adapters/telegram_adapter.py`
+
+### Features H02:
+
+- ✅ Persistencia usuarios automática (get_or_create_from_telegram)
+- ✅ Persistencia conversaciones con FSM state
+- ✅ Auditoría completa mensajes (user + bot + intent + confidence)
+- ✅ Multi-tenant support (tenant_id)
+- ✅ Async/await completo
+- ✅ Error handling con rollback PostgreSQL
+- ✅ Comandos: /start, /help, /reset
+
+### Arquitectura:
+
+TelegramAdapter
+├── Database Integration
+│ ├── UserRepository (get_or_create_from_telegram)
+│ ├── ConversationRepository (FSM state management)
+│ └── MessageHistoryRepository (auditoría ML)
+├── Telegram Bot API
+│ ├── CommandHandlers (/start, /help, /reset)
+│ └── MessageHandler (texto libre)
+└── CoreRouter (placeholder H03)
+
+text
+
+### Uso:
+
+Ejecutar bot
+python -m src.theaia.adapters.telegram_adapter
+
+text
+
+**Requiere:**
+- `TELEGRAM_BOT_TOKEN` en `.env`
+- `TENANT_ID` en `.env` (default: "default")
+- PostgreSQL corriendo
+- Migrations aplicadas
+
+### Ejemplo Primera Conversación:
+
+**User:** `/start`  
+**Bot:** 
+👋 ¡Hola Entu!
+
+Soy THEA IA, tu asistente personal inteligente.
+
+Puedo ayudarte con:
+📅 Eventos y recordatorios
+📝 Notas y listas
+🔍 Consultas y búsquedas
+
+Escribe cualquier cosa para empezar.
+
+text
+
+**User:** `Hola THEA`  
+**Bot:** 
+🤖 Recibí: 'Hola THEA'
+
+Estado actual: idle
+
+text
+
+### Estado H02:
+
+- ✅ **Completado:** Persistencia database completa
+- ⏳ **Pendiente H03:** CoreRouter integration (NLP real)
+
+**Primera conversación exitosa:** 12 Nov 2025, 17:02 CET  
+**Usuario:** Entu (Telegram ID: 6961767622)  
+**Mensajes guardados:** 2 mensajes en PostgreSQL
+
+---
+
+**Última actualización:** 12 nov 18:19 CET  
+**Estado:** H02 TelegramAdapter COMPLETO ✅
