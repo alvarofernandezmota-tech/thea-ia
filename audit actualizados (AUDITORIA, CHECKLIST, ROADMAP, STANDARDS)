@@ -1,8 +1,0 @@
-[33mcommit f20713eb0664e1f608011fea92b1cdd147f76be4[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m
-Author: Alvaro Fernandez <alvarofernandezmota@gmail.com>
-Date:   Tue Nov 11 01:50:04 2025 +0100
-
-    docs(diary): Actualizar sesiones 5-6 (11 nov) - 22h 59min total
-
- docs/diary/diarynoviembre.md | 234 [32m+++++++++++++++++++++++++++++++[m[31m------------[m
- 1 file changed, 169 insertions(+), 65 deletions(-)

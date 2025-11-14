@@ -1,54 +1,69 @@
+# =======================================================
+# THEA IA v0.15.0 — PYTHON DEPENDENCIES
+# =======================================================
+# Última actualización: 2025-11-14
+# Responsable: Álvaro Fernández Mota (CEO THEA IA)
+# Python: 3.11+
+# Notas: H02 completado - Database (asyncpg, alembic) + Telegram (python-telegram-bot)
+
 # --- CORE WEB FRAMEWORK ---
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
+pydantic==2.5.0
+pydantic-settings==2.1.0
 
 # --- CONFIGURACIÓN Y ENTORNO ---
 python-dotenv==1.0.1
 
-# --- ORM Y BASES DE DATOS ---
+# --- ORM Y BASES DE DATOS (H02 - COMPLETADO 12 Nov 2025) ---
 SQLAlchemy==2.0.44
 alembic==1.12.1
-psycopg2-binary==2.9.9
-asyncpg==0.29.0
-aiosqlite==0.19.0
+asyncpg==0.29.0  # PostgreSQL async driver (H02)
+psycopg2-binary==2.9.9  # PostgreSQL sync fallback
+aiosqlite==0.19.0  # SQLite async (desarrollo/tests)
 
 # --- CACHÉ Y REDIS ---
 redis==5.0.4
 aioredis==2.0.1
 
-# --- FSM / AGENTES ---
+# --- FSM / AGENTES (H01-H03) ---
 transitions==0.9.3
 
-# --- NLP (Machine Learning & Procesamiento de Lenguaje) ---
+# --- TELEGRAM ADAPTER (H02 - COMPLETADO 12 Nov 2025) ---
+python-telegram-bot==20.7  # Bot API oficial (reemplaza aiogram)
+aiohttp==3.9.1
+httpx==0.25.2
+anyio>=3.7.1,<4.0.0
+aiofiles==23.2.1
+validators==0.22.0
+
+# --- NLP (Machine Learning & Procesamiento de Lenguaje) (H06 - FUTURO) ---
 spacy==3.7.2
-# modelo lingüístico: python -m spacy download es_core_news_sm
+# Instalar modelo: python -m spacy download es_core_news_md
 numpy==1.26.4
 pandas==2.1.4
 nltk==3.8.1
 scikit-learn==1.3.2
 
+# --- LLM & RAG (H06 - FUTURO) ---
+# langchain==0.1.0  # Descomentado en H06
+# openai==1.10.0  # Descomentado en H06
+# anthropic==0.8.0  # Descomentado en H06
+# chromadb==0.4.22  # Vector DB para RAG (H06)
+
 # --- FECHAS Y TIEMPOS ---
 python-dateutil==2.8.2
-pytz==2023.3
+pytz==2024.1
 arrow==1.3.0
 
-# --- LOGGING Y MONITORIZACIÓN ---
+# --- LOGGING Y MONITORIZACIÓN (H11 - FUTURO) ---
 structlog==23.2.0
-prometheus-client==0.19.0
+prometheus-client==0.19.0  # H11
 
 # --- SEGURIDAD ---
 cryptography==41.0.7
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
-
-# --- TELEGRAM / ASYNC BOT ---
-aiogram==3.2.0
-aiohttp==3.9.1
-asyncio-mqtt==0.16.1
-httpx==0.25.2
-anyio>=3.7.1,<4.0.0
-aiofiles==23.2.1
-validators==0.22.0
 
 # --- SERIALIZACIÓN Y UTILIDADES ---
 orjson==3.9.10
@@ -56,7 +71,7 @@ python-multipart==0.0.6
 click==8.1.7
 rich==13.7.0
 
-# --- TAREAS ASÍNCRONAS ---
+# --- TAREAS ASÍNCRONAS (H04-H05 - FUTURO) ---
 celery==5.3.4
 
 # --- DOCUMENTACIÓN (mkdocs) ---
@@ -67,16 +82,69 @@ pymdown-extensions==10.8
 # --- GIT & CI/CD ---
 gitpython==3.1.42
 
-# --- TESTS ---
+# --- TESTS (H01-H07) ---
 pytest==8.1.1
 pytest-cov==5.0.0
 pytest-asyncio==0.23.6
+pytest-mock==3.12.0
 
 # --- BUILD / EMPAQUETADO ---
 setuptools==80.9.0
 wheel==0.45.1
 build==1.3.0
 
-alembic==1.12.1
-asyncpg==0.29.0
-psycopg2-binary==2.9.9
+# =======================================================
+# NOTAS DE INSTALACIÓN
+# =======================================================
+# Instalación básica:
+#   pip install -r requirements.txt
+# Modelo spaCy español (H06):
+#   python -m spacy download es_core_news_md
+# PostgreSQL (H02 - OBLIGATORIO):
+#   - Instalar PostgreSQL 14+
+#   - Configurar DATABASE_URL en .env
+#   - Ejecutar: alembic upgrade head
+# Desarrollo:
+#   pip install -r requirements.txt
+#   pip install -r requirements-dev.txt  # Si existe
+# Tests:
+#   pytest src/theaia/tests/
+# =======================================================
+# DEPENDENCIAS POR HITO
+# =======================================================
+# H01 (Completado 31 oct 2025):
+#   - fastapi, uvicorn, pytest, transitions
+# H02 (Completado 12 nov 2025):
+#   - asyncpg, alembic, SQLAlchemy 2.0
+#   - python-telegram-bot (reemplazó aiogram)
+# H03 (Próximo 15-20 nov 2025):
+#   - spacy (NLP básico)
+# H04 (Optimizaciones):
+#   - Ninguna nueva
+# H05-H06 (Dic 2025):
+#   - langchain, openai/anthropic
+#   - chromadb (RAG)
+# H07 (Tests E2E):
+#   - pytest-asyncio avanzado
+# H08-H17 (2026):
+#   - Ver roadmap para dependencias futuras
+# =======================================================
+# CAMBIOS RECIENTES v0.15.0 (12 Nov 2025)
+# =======================================================
+# AÑADIDO:
+#   - python-telegram-bot==20.7 (reemplaza aiogram)
+#   - asyncpg==0.29.0 (PostgreSQL async)
+#   - alembic==1.12.1 (migraciones database)
+#   - pydantic-settings==2.1.0
+# ACTUALIZADO:
+#   - SQLAlchemy 1.4 → 2.0.44 (async/await completo)
+#   - pytz 2023.3 → 2024.1
+# ELIMINADO:
+#   - aiogram (reemplazado por python-telegram-bot)
+#   - asyncio-mqtt (no usado)
+#   - Duplicados: alembic, asyncpg, psycopg2-binary
+# PENDIENTE H06:
+#   - langchain (LLM orchestration)
+#   - openai/anthropic (LLM providers)
+#   - chromadb (vector database RAG)
+```
