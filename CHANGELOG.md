@@ -1,169 +1,554 @@
-# CHANGELOG — THEA IA (Raíz)
+CHANGELOG — THEA IA (Raíz)
+Proyecto: THEA IA
+Actualizado por: Álvaro Fernández Mota (CEO THEA IA)
+Última actualización: 2025-11-14 17:12 CET
 
-**Proyecto:** THEA IA  
-**Actualizado por:** Álvaro Fernández Mota (CEO THEA IA)  
-**Última actualización:** 2025-10-31 01:17 CET
+IMPORTANTE
 
----
+Cada carpeta (core, agents, adapters, tests, docs) tiene su propio CHANGELOG.md local para registro de cambios y auditoría en pequeño.
 
-> **IMPORTANTE**
->
-> - Cada carpeta (core, agents, adapters, tests, docs) tiene su propio CHANGELOG.md local para registro de cambios y auditoría en pequeño.
-> - Este archivo refleja TODOS los cambios y hitos de la raíz y del proyecto global, versión y milestone tras milestone, tareas estructurales y avances transversales por equipo y fase.
+Este archivo refleja TODOS los cambios y hitos de la raíz y del proyecto global, versión y milestone tras milestone, tareas estructurales y avances transversales por equipo y fase.
 
----
+v0.15.0 — 2025-11-12 (H02 Core Completado - Database & Telegram)
+Sesión: 2025-11-12 14:20 CET ~ 2025-11-12 18:47 CET
+Duración: 4h 17min (3h 57min core + 20min setup/cierre)
+Hito: H02 — Database Layer & TelegramAdapter (CORE COMPLETADO 70%)
 
-## v0.14.0 — 2025-10-31 (Sesión Documentación Profesional - Auditoría Completa)
+🎉 Logro Principal
+Primera conversación real persistida en PostgreSQL
 
-**Sesión:** 2025-10-31 00:14 CET ~ 2025-10-31 01:17 CET  
-**Duración:** ~63 minutos  
-**Hito:** H01 — Organización y compatibilidad, raíz profesional  
+Usuario: Entu (Telegram ID: 6961767622)
 
-### ✅ Completado durante esta sesión
+Fecha: 12 nov 2025, 17:02 CET
 
-**2025-10-31 00:14 CET — Inicio sesión de documentación**
-- Análisis de arquitectura THEA IA y filosofía de hitos
-- Decisión de crear documentación por hitos (17 principales + micro-hitos)
+Mensajes guardados: 2
 
-**2025-10-31 00:20 CET — README.md raíz adaptado**
-- Estructura modular por carpetas
-- Explicación de los 17 hitos principales
-- Links a documentación viva (ROADMAP, CHANGELOG, CONTRIBUTING, SECURITY, .env)
-- Onboarding para equipos grandes y auditoría
+Estado: ✅ FUNCIONAL
 
-**2025-10-31 00:35 CET — ROADMAP.md raíz detallado**
-- 17 hitos grandes documentados con nombres, descripción, deadlines
-- Fases (4) con fechas y micro-hitos por fase
-- Estado actual: Fase 1 ✅ completada, Fase 2 🔄 en curso
+✅ Completado durante esta sesión
+14:20-14:30 — Preparación
 
-**2025-10-31 00:45 CET — CHANGELOG.md raíz actualizado**
-- Versión v0.14.0 con cambios principales
-- Estructura Added/Changed/Fixed/Docs/Breaking
-- Auditoría y links a carpetas (próxima sesión)
+Setup PostgreSQL verificado
 
-**2025-10-31 00:55 CET — CONTRIBUTING.md completo**
-- Normas de PR y Git Flow profesional
-- Checklist colaborativo para PRs
-- Responsables por área
-- Tests y cobertura ≥80%
-- Commits con Conventional Commits
+Revisión arquitectura database
 
-**2025-10-31 01:05 CET — SECURITY.md protocolo integral**
-- Reporte privado de vulnerabilidades (security@theaia.com)
-- Gestión de secretos en .env
-- JWT, RBAC, encriptación AES-256
-- Auditoría y logs de seguridad
-- Incidentes y severidades
-- OWASP Top 10 mitigación
+Decisión estratégica confirmada: Database Layer adelantado de H04 a H02
 
-**2025-10-31 01:08 CET — .env.example actualizado y documentado**
-- 20 secciones con variables por módulo
-- Especificación de entorno (development, staging, production)
-- Variables por hito (H01-H20)
-- Comentarios de seguridad y auditoría
-- Notas de rotación de secretos
+14:30-15:30 — FASE 1: Modelos SQLAlchemy (1h)
 
-**2025-10-31 01:13 CET — Revisión final y consolidación**
-- Actualización de CHANGELOG.md con hitos de hoy
-- Actualización de ROADMAP.md con estado Fase 1 ✅
-- Revisión de README.md con sección "Documentación viva"
+7 modelos SQLAlchemy multi-tenant creados
 
-**2025-10-31 01:17 CET — Cierre y documentación**
-- Toda la sesión documentada por hora
-- Cambios consolidados en archivos de raíz
-- Listo para commit profesional
+BaseModel abstracto con tenant_id obligatorio
 
-### Added
-- **README.md raíz completo:**
-  - Filosofía THEA IA y ecosistema
-  - Estructura de 17 hitos grandes
-  - Carpetas clave documentadas
-  - Sección "Documentación viva" con links a todos los archivos
-  - Auditoría y onboarding para equipo grande
+Modelos: User, Event, Note, Conversation, MessageHistory
 
-- **ROADMAP.md raíz completo:**
-  - 17 hitos principales (H01-H17) con estado, descripción, deadlines
-  - Hito H01 ✅ COMPLETADO (2025-10-31)
-  - 4 fases orquestadas (Fase 1-4) con fechas críticas
-  - Micro-hitos por área (core, agents, adapters, tests, ml, docs)
-  - Estado actual: Fase 2 🔄 EN CURSO (2025-11-01 ~ 2025-12-15)
+JSONB para metadatos flexibles (preferences, context_data, entities_extracted)
 
-- **CONTRIBUTING.md profesional:**
-  - Git Flow con ramas claras (feature, bugfix, hotfix, refactor)
-  - Commits con Conventional Commits
-  - Checklist de PR detallado (20+ items)
-  - Responsables por módulo/equipo
-  - Testing y coverage ≥80%
-  - Onboarding para nuevos colaboradores
+ARRAY nativo PostgreSQL para tags
 
-- **SECURITY.md protocolo integral:**
-  - Contacto de seguridad privado (security@theaia.com)
-  - Gestión de secretos y .env protegido
-  - JWT (HS256) y autenticación
-  - RBAC con roles (admin, user, auditor, api_client)
-  - Encriptación AES-256 para datos sensibles
-  - Auditoría y logging (eventos críticos, retención 90 días)
-  - Protección OWASP Top 10 (SQL injection, XSS, CSRF, rate limiting)
-  - Gestión de incidentes con severidades
-  - Checklist pre-release
+Timezone-aware timestamps
 
-- **.env.example expandido:**
-  - 20 secciones de configuración
-  - Variables por módulo: core, agents, adapters, ml, tests, observabilidad, seguridad
-  - Entornos: development, staging, production
-  - Todos comentados y explicados
-  - Notas de seguridad y rotación de secretos
-  - Variables versionadas por hito
+15:30-15:50 — FASE 2: Configuración Async Database (20min)
 
-### Changed
-- Versión: v0.13.0 → **v2.0 / v0.14.0**
-- Filosofía: Feature-driven → **Hito-driven (17 hitos grandes + micro-hitos)**
-- Documentación: Básica → **Profesional, versionada, auditada**
-- Auditoría: Inicial → **Integral (logs, seguridad, compliance)**
+AsyncSessionLocal factory configurado
 
-### Fixed
-- Variables faltantes en .env (.env.example original incompleto)
-- Protección de secretos documentada
-- Scopes claros por entorno
-- Responsabilidades de equipo sin asignar
+AsyncEngine con asyncpg driver
 
-### Docs
-- README raíz: Filosofía, estructura, 17 hitos, links transversales
-- CONTRIBUTING.md: Checklist de PR, Git Flow, responsables
-- SECURITY.md: Auditoría completa, encriptación, protocolo de vulnerabilidades
-- .env.example: Todas las variables documentadas por módulo/hito
+Alembic configurado para migraciones async
 
-### Breaking
-- Eliminación de variables genéricas sin contexto
-- Nueva estructura por hitos en toda documentación
-- Obligatorio: Actualizar README/ROADMAP/CHANGELOG en cada carpeta/módulo
+Pool configuration (NullPool desarrollo)
 
----
+15:50-16:17 — FASE 3: Primera Migración Alembic (27min)
 
-## v0.13.0 — 2025-10-20
+Migración inicial generada: e0a17d850507_initial_schema.py (285 líneas)
 
-### Added
-- Estructura base en FSM, agents, adapters y test unitario.
-- Primeros README y guías de integración.
+5 tablas nuevas creadas
 
-### Changed
-- Mejoras en onboarding de módulos.
-- Actualización de dependencias base.
+20+ índices optimizados
 
----
+Troubleshooting resuelto:
 
-**Auditoría por sesión:**
+WinError 64: localhost → 127.0.0.1
 
-| Fecha | Hora | Hito | Archivo | Estado |
-|-------|------|------|---------|--------|
-| 2025-10-31 | 00:14 - 01:17 | H01 | README.md | ✅ Completado |
-| 2025-10-31 | 00:14 - 01:17 | H01 | ROADMAP.md | ✅ Completado |
-| 2025-10-31 | 00:14 - 01:17 | H01 | CHANGELOG.md | ✅ Completado |
-| 2025-10-31 | 00:14 - 01:17 | H01 | CONTRIBUTING.md | ✅ Completado |
-| 2025-10-31 | 00:14 - 01:17 | H01 | SECURITY.md | ✅ Completado |
-| 2025-10-31 | 00:14 - 01:17 | H01 | .env.example | ✅ Completado |
+PostgreSQL auth: pg_hba.conf → trust mode
 
-**Debe mantenerse actualizado por el CEO y responsables técnicos tras cada milestone, refactor crítico o release.  
-Garantiza trazabilidad, transparencia y orquestación para equipos grandes y auditoría integral.**
+16:33-17:00 — FASE 4: Repositories Implementation (27min)
 
-> Última actualización: 2025-10-31 01:17 CET · Álvaro Fernández Mota (CEO THEA IA)
+6 repositories con Repository Pattern
+
+BaseRepository con CRUD genérico
+
+Custom queries: get_or_create, search, get_upcoming, update_state
+
+Multi-tenant isolation automático
+
+Type hints completos
+
+17:00-17:20 — FASE 5: Tests Complete (17min + 3min)
+
+12/12 tests pasando (100% success)
+
+Tests: connection, CRUD, custom queries, auditoría, multi-tenant
+
+Coverage: ~40% database layer
+
+17:20-17:52 — FASE 6-7: Telegram Integration (32min)
+
+TelegramAdapter completo (~400 LOC)
+
+Persistencia usuarios automática
+
+Persistencia conversaciones (FSM state + context JSONB)
+
+Auditoría mensajes completa
+
+Comandos: /start, /help, /reset
+
+17:02 — 🎉 PRIMERA CONVERSACIÓN REAL
+
+17:52-18:27 — FASE 8: Documentación (8min)
+
+5 CHANGELOGs actualizados
+
+Utility check_database.py
+
+Diario sesión documentado
+
+18:27-18:47 — Cierre (20min)
+
+Git setup preparado
+
+Review completo
+
+Added
+Database Layer (~3,000 LOC):
+
+src/theaia/database/models/base.py — BaseModel abstracto multi-tenant
+
+src/theaia/database/models/user.py — Usuarios Telegram
+
+src/theaia/database/models/event.py — Eventos/Recordatorios
+
+src/theaia/database/models/note.py — Notas con tags ARRAY
+
+src/theaia/database/models/conversation.py — Sesiones FSM
+
+src/theaia/database/models/message_history.py — Auditoría ML
+
+src/theaia/database/config/session.py — AsyncSessionLocal factory
+
+src/theaia/database/config/connection.py — AsyncEngine asyncpg
+
+src/theaia/database/repositories/ — 6 repositories CRUD + custom
+
+migrations/versions/e0a17d850507_initial_schema.py — Migración inicial (285 líneas)
+
+alembic.ini, alembic/env.py — Configuración migraciones
+
+TelegramAdapter (~400 LOC):
+
+src/theaia/adapters/telegram/bot.py — Bot completo con persistencia
+
+Tests (~600 LOC):
+
+src/theaia/tests/database/test_database.py — 12 tests (100%)
+
+src/theaia/tests/database/check_database.py — Utility validación
+
+conftest.py — Actualizado
+
+Documentación:
+
+src/theaia/database/database-CHANGELOG.md — v0.3.0
+
+src/theaia/adapters/adapters-CHANGELOG.md — TelegramAdapter v1.0
+
+src/theaia/tests/database/README.md — Guía tests
+
+docs/diary/diarynoviembre.md — Sesión 8 documentada
+
+docs/roadmap/milestones/H02.md — Estado real completado
+
+Características Principales:
+
+✅ Multi-tenant obligatorio (tenant_id en TODAS las tablas)
+
+✅ 5 tablas operativas: users, events, notes, conversations, message_history
+
+✅ 20+ índices optimizados
+
+✅ JSONB para metadatos flexibles
+
+✅ ARRAY nativo PostgreSQL
+
+✅ Timezone-aware timestamps
+
+✅ Foreign keys CASCADE
+
+✅ Async/await SQLAlchemy 2.0
+
+✅ Repository Pattern completo
+
+✅ Primera conversación real persistida
+
+Changed
+Decisiones Estratégicas:
+
+Database Layer adelantado de H04 a H02 (decisión 11 nov)
+
+Web Client aplazado de H02 a Post-H05
+
+OAuth2/JWT aplazado de H02 a H08
+
+Tests E2E completos aplazados de H02 a H07
+
+Arquitectura:
+
+Multi-tenant desde el inicio (no añadido después)
+
+PostgreSQL como base primaria (no SQLite)
+
+Repository Pattern como estándar
+
+Async/await completo (no sync)
+
+Estado Hitos:
+
+H02: Planificado 18h → Completado core en 4.3h (4.2x más rápido)
+
+H02: Scope original → Core 70% completado + componentes aplazados 30%
+
+H04: Scope completo → Reducido a optimizaciones (40h restantes)
+
+Fixed
+Troubleshooting Resuelto:
+
+WinError 64: Cambio localhost → 127.0.0.1
+
+PostgreSQL auth failed: pg_hba.conf → trust mode desarrollo
+
+AsyncSession context manager: Actualizado a SQLAlchemy 2.0 sintaxis
+
+python-telegram-bot: Instalación completada
+
+Module path imports: Corregidos con python -m
+
+Mejoras Técnicas:
+
+metadata → extra_data (palabra reservada PostgreSQL)
+
+Connection pool optimizado para desarrollo
+
+Índices adicionales para queries frecuentes
+
+Error handling con rollback automático
+
+Docs
+Documentación Actualizada:
+
+README raíz: Estado H02 reflejado
+
+ROADMAP raíz: H02 marcado como CORE COMPLETADO (70%)
+
+CHANGELOG raíz: Esta entrada v0.15.0
+
+docs/roadmap/master.md: H02 actualizado con horas reales
+
+docs/roadmap/deployment.md: H02 reflejado
+
+docs/roadmap/milestones/H02.md: Documento completo estado real
+
+docs/roadmap/milestones/H03_17.md: Actualizado con decisiones estratégicas
+
+Diarios:
+
+docs/diary/diarynoviembre.md: Sesión 8 documentada (12 nov)
+
+Registro detallado fase por fase con timestamps
+
+Deferred (Aplazado Estratégicamente)
+H02 Componentes Aplazados a Hitos Futuros:
+
+Web Client (React + Vite) → Post-H05
+
+OAuth2/JWT completo → H08 (Multi-empresa RBAC)
+
+Tests E2E Telegram completos → H07 (E2E Tests & QA)
+
+Webhooks avanzados (rate limiting, retry) → Mejoras incrementales
+
+Documentación completa adapter → H03-H07
+
+Razón: Priorizar conversaciones funcionales persistentes vía Telegram antes que interfaces web. Validar arquitectura con datos reales antes de escalar a múltiples canales.
+
+Métricas
+Performance:
+
+Duración planificada: 18h en 2 sesiones
+
+Duración real: 4h 17min en 1 sesión
+
+Velocidad: 4.2x más rápido de lo estimado
+
+Código:
+
+LOC producción: ~3,000 (Database) + ~400 (Telegram) = ~3,400
+
+LOC tests: ~600
+
+Total: ~4,000 LOC
+
+Archivos: 30 archivos
+
+Tests:
+
+Tests pasando: 12/12 (100%)
+
+Coverage database: ~40% (objetivo H04: ≥85%)
+
+Primera Conversación:
+
+Usuario real: Entu (Telegram ID: 6961767622)
+
+Fecha: 12 nov 2025, 17:02 CET
+
+Mensajes: 2 guardados en PostgreSQL
+
+Estado: ✅ FUNCIONAL
+
+v0.14.0 — 2025-10-31 (Sesión Documentación Profesional - Auditoría Completa)
+Sesión: 2025-10-31 00:14 CET ~ 2025-10-31 01:17 CET
+Duración: ~63 minutos
+Hito: H01 — Organización y compatibilidad, raíz profesional
+
+✅ Completado durante esta sesión
+2025-10-31 00:14 CET — Inicio sesión de documentación
+
+Análisis de arquitectura THEA IA y filosofía de hitos
+
+Decisión de crear documentación por hitos (17 principales + micro-hitos)
+
+2025-10-31 00:20 CET — README.md raíz adaptado
+
+Estructura modular por carpetas
+
+Explicación de los 17 hitos principales
+
+Links a documentación viva (ROADMAP, CHANGELOG, CONTRIBUTING, SECURITY, .env)
+
+Onboarding para equipos grandes y auditoría
+
+2025-10-31 00:35 CET — ROADMAP.md raíz detallado
+
+17 hitos grandes documentados con nombres, descripción, deadlines
+
+Fases (4) con fechas y micro-hitos por fase
+
+Estado actual: Fase 1 ✅ completada, Fase 2 🔄 en curso
+
+2025-10-31 00:45 CET — CHANGELOG.md raíz actualizado
+
+Versión v0.14.0 con cambios principales
+
+Estructura Added/Changed/Fixed/Docs/Breaking
+
+Auditoría y links a carpetas (próxima sesión)
+
+2025-10-31 00:55 CET — CONTRIBUTING.md completo
+
+Normas de PR y Git Flow profesional
+
+Checklist colaborativo para PRs
+
+Responsables por área
+
+Tests y cobertura ≥80%
+
+Commits con Conventional Commits
+
+2025-10-31 01:05 CET — SECURITY.md protocolo integral
+
+Reporte privado de vulnerabilidades (security@theaia.com)
+
+Gestión de secretos en .env
+
+JWT, RBAC, encriptación AES-256
+
+Auditoría y logs de seguridad
+
+Incidentes y severidades
+
+OWASP Top 10 mitigación
+
+2025-10-31 01:08 CET — .env.example actualizado y documentado
+
+20 secciones con variables por módulo
+
+Especificación de entorno (development, staging, production)
+
+Variables por hito (H01-H20)
+
+Comentarios de seguridad y auditoría
+
+Notas de rotación de secretos
+
+2025-10-31 01:13 CET — Revisión final y consolidación
+
+Actualización de CHANGELOG.md con hitos de hoy
+
+Actualización de ROADMAP.md con estado Fase 1 ✅
+
+Revisión de README.md con sección "Documentación viva"
+
+2025-10-31 01:17 CET — Cierre y documentación
+
+Toda la sesión documentada por hora
+
+Cambios consolidados en archivos de raíz
+
+Listo para commit profesional
+
+Added
+README.md raíz completo:
+
+Filosofía THEA IA y ecosistema
+
+Estructura de 17 hitos grandes
+
+Carpetas clave documentadas
+
+Sección "Documentación viva" con links a todos los archivos
+
+Auditoría y onboarding para equipo grande
+
+ROADMAP.md raíz completo:
+
+17 hitos principales (H01-H17) con estado, descripción, deadlines
+
+Hito H01 ✅ COMPLETADO (2025-10-31)
+
+4 fases orquestadas (Fase 1-4) con fechas críticas
+
+Micro-hitos por área (core, agents, adapters, tests, ml, docs)
+
+Estado actual: Fase 2 🔄 EN CURSO (2025-11-01 ~ 2025-12-15)
+
+CONTRIBUTING.md profesional:
+
+Git Flow con ramas claras (feature, bugfix, hotfix, refactor)
+
+Commits con Conventional Commits
+
+Checklist de PR detallado (20+ items)
+
+Responsables por módulo/equipo
+
+Testing y coverage ≥80%
+
+Onboarding para nuevos colaboradores
+
+SECURITY.md protocolo integral:
+
+Contacto de seguridad privado (security@theaia.com)
+
+Gestión de secretos y .env protegido
+
+JWT (HS256) y autenticación
+
+RBAC con roles (admin, user, auditor, api_client)
+
+Encriptación AES-256 para datos sensibles
+
+Auditoría y logging (eventos críticos, retención 90 días)
+
+Protección OWASP Top 10 (SQL injection, XSS, CSRF, rate limiting)
+
+Gestión de incidentes con severidades
+
+Checklist pre-release
+
+.env.example expandido:
+
+20 secciones de configuración
+
+Variables por módulo: core, agents, adapters, ml, tests, observabilidad, seguridad
+
+Entornos: development, staging, production
+
+Todos comentados y explicados
+
+Notas de seguridad y rotación de secretos
+
+Variables versionadas por hito
+
+Changed
+Versión: v0.13.0 → v2.0 / v0.14.0
+
+Filosofía: Feature-driven → Hito-driven (17 hitos grandes + micro-hitos)
+
+Documentación: Básica → Profesional, versionada, auditada
+
+Auditoría: Inicial → Integral (logs, seguridad, compliance)
+
+Fixed
+Variables faltantes en .env (.env.example original incompleto)
+
+Protección de secretos documentada
+
+Scopes claros por entorno
+
+Responsabilidades de equipo sin asignar
+
+Docs
+README raíz: Filosofía, estructura, 17 hitos, links transversales
+
+CONTRIBUTING.md: Checklist de PR, Git Flow, responsables
+
+SECURITY.md: Auditoría completa, encriptación, protocolo de vulnerabilidades
+
+.env.example: Todas las variables documentadas por módulo/hito
+
+Breaking
+Eliminación de variables genéricas sin contexto
+
+Nueva estructura por hitos en toda documentación
+
+Obligatorio: Actualizar README/ROADMAP/CHANGELOG en cada carpeta/módulo
+
+v0.13.0 — 2025-10-20
+Added
+Estructura base en FSM, agents, adapters y test unitario.
+
+Primeros README y guías de integración.
+
+Changed
+Mejoras en onboarding de módulos.
+
+Actualización de dependencias base.
+
+📊 Auditoría por Sesión
+|| Fecha | Hora | Hito | Versión | Duración | Estado |
+|-------|------|------|---------|----------|--------|
+| 2025-11-12 | 14:20-18:47 | H02 | v0.15.0 | 4h 17min | ✅ Core Completado |
+| 2025-10-31 | 00:14-01:17 | H01 | v0.14.0 | 1h 3min | ✅ Completado |
+| 2025-10-20 | - | Previo | v0.13.0 | - | ✅ Completado |
+
+🔗 Enlaces Relacionados
+ROADMAP.md — Roadmap completo del proyecto
+
+README.md — Guía principal
+
+CONTRIBUTING.md — Guía de contribución
+
+SECURITY.md — Política de seguridad
+
+docs/roadmap/milestones/H02.md — Detalle H02
+
+docs/diary/diarynoviembre.md — Diario noviembre
+
+Debe mantenerse actualizado por el CEO y responsables técnicos tras cada milestone, refactor crítico o release.
+Garantiza trazabilidad, transparencia y orquestación para equipos grandes y auditoría integral.
+
+Última actualización: 2025-11-14 17:12 CET
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Versión actual: v0.15.0 (H02 Core Completado)
