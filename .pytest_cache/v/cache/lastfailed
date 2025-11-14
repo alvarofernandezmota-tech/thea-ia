@@ -261,5 +261,14 @@
   "src/theaia/tests/unit/test_intent.py": true,
   "src/theaia/tests/integration/test_conversation_flow.py::test_conversation_flow_with_fsm": true,
   "src/theaia/tests/integration/test_conversation_flow.py::test_disambiguation_flow": true,
-  "src/theaia/tests/integration/test_conversation_flow.py::test_conversation_context_persistence": true
+  "src/theaia/tests/integration/test_conversation_flow.py::test_conversation_context_persistence": true,
+  "src/theaia/tests/integration/test_context_persistence_between_agents.py": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_user_creation_from_telegram": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_conversation_persistence": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_conversation_state_transitions": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_message_audit_full_flow": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_multi_tenant_isolation_integration": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_conversation_repository_create": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_message_repository_create": true,
+  "src/theaia/tests/integration/test_telegram_database.py::TestTelegramDatabaseIntegration::test_multi_tenant_isolation": true
 }
