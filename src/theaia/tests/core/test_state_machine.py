@@ -1,60 +1,38 @@
-# src/theaia/tests/core/test_state_machine.py
+"""Tests for FSM State Machine."""
 
 import pytest
-from src.theaia.core.state_machine import StateMachine, State, Transition
+from src.theaia.core.fsm.state_machine import ConversationStateMachine
 
-# Callbacks para pruebas
-def ok_callback(context):
-    return "ok"
 
-def help_callback(context):
-    return "help"
-
-def fallback_callback(context):
-    return "fallback"
-
-def error_callback(context):
-    return "error"
-
-@pytest.mark.parametrize("trigger, expected_state, callback", [
-    ("create_agenda", State.AGENDA, ok_callback),
-    ("schedule_task", State.SCHEDULER, ok_callback),
-    ("add_event", State.EVENT, ok_callback),
-    ("save_note", State.NOTE, ok_callback),
-    ("run_query", State.QUERY, ok_callback),
-    ("get_help", State.HELP, help_callback),
-    ("fallback", State.FALLBACK, fallback_callback),
-    ("error", State.ERROR, error_callback),
-])
-def test_flows(trigger, expected_state, callback):
-    transitions = [
-        Transition(trigger, State.INIT, expected_state, callback),
-        Transition(f"{trigger}_complete", expected_state, State.COMPLETED, callback),
-    ]
-    fsm = StateMachine(initial=State.INIT, transitions=transitions)
-    # Estado inicial
-    assert fsm.current_state() == State.INIT
-    # Disparo de trigger
-    assert fsm.advance(trigger) == callback({})
-    # Verificación de cambio de estado
-    assert fsm.current_state() == expected_state
-
-def test_reset_functionality():
-    transitions = [
-        Transition("create_agenda", State.INIT, State.AGENDA, ok_callback),
-        Transition("agenda_complete", State.AGENDA, State.COMPLETED, ok_callback),
-    ]
-    fsm = StateMachine(initial=State.INIT, transitions=transitions)
-    fsm.advance("create_agenda")
-    fsm.advance("agenda_complete")
-    assert fsm.current_state() == State.COMPLETED
-    fsm.reset()
-    assert fsm.current_state() == State.INIT
-
-def test_invalid_trigger():
-    transitions = [
-        Transition("create_agenda", State.INIT, State.AGENDA, ok_callback),
-    ]
-    fsm = StateMachine(initial=State.INIT, transitions=transitions)
-    result = fsm.advance("unknown_trigger")
-    assert result == "Transición no válida desde el estado actual."
+class TestConversationStateMachine:
+    """Test ConversationStateMachine class."""
+    
+    @pytest.fixture
+    def state_machine(self):
+        """Create conversation state machine for testing."""
+        return ConversationStateMachine(user_id="test_user_123")
+    
+    def test_state_machine_initialization(self, state_machine):
+        """Test state machine initialization."""
+        assert state_machine.state == "initial"
+        assert state_machine.user_id == "test_user_123"
+    
+    def test_state_attributes(self, state_machine):
+        """Test state machine attributes."""
+        assert hasattr(state_machine, 'pending_message')
+        assert hasattr(state_machine, 'candidate_intents')
+        assert hasattr(state_machine, 'active_agent')
+        
+        assert state_machine.pending_message is None
+        assert state_machine.candidate_intents == []
+        assert state_machine.active_agent is None
+    
+    def test_get_states(self, state_machine):
+        """Test get_states method."""
+        states = state_machine.get_states()
+        assert isinstance(states, list)
+        assert len(states) > 0
+    
+    def test_user_id_property(self, state_machine):
+        """Test user_id access."""
+        assert state_machine.user_id == "test_user_123"
