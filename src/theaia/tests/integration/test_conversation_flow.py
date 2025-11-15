@@ -12,10 +12,10 @@ def test_conversation_flow_with_fsm():
     """
     router = CoreRouter()
     user_id = "test_user_fsm"
-    
+
     # Mensaje inicial con intención clara
-    result = router.handle(user_id, "quiero crear una nota", {})
-    
+    result = router.handle(user_id, "quiero crear una nota")  # ✅ SIN {}
+
     assert result["status"] == "ok"
     assert "message" in result
     assert "context" in result
@@ -28,11 +28,10 @@ def test_disambiguation_flow():
     """
     router = CoreRouter()
     user_id = "test_disambiguation"
-    
+
     # Mensaje ambiguo que requiere desambiguación
-    # (depende de cómo esté entrenado tu modelo ML)
-    result = router.handle(user_id, "recordar algo importante", {})
-    
+    result = router.handle(user_id, "recordar algo importante")  # ✅ SIN {}
+
     assert result["status"] == "ok"
     assert "message" in result
     print(f"Respuesta de desambiguación: {result['message']}")
@@ -44,14 +43,13 @@ def test_conversation_context_persistence():
     """
     router = CoreRouter()
     user_id = "test_context"
-    
+
     # Primer mensaje
-    result1 = router.handle(user_id, "quiero agendar algo", {})
-    context1 = result1["context"]
-    
-    # Segundo mensaje (debería usar el mismo ConversationManager)
-    result2 = router.handle(user_id, "mañana a las 3", context1)
-    
+    result1 = router.handle(user_id, "quiero agendar algo")  # ✅ SIN {}
+
+    # Segundo mensaje (router maneja contexto internamente)
+    result2 = router.handle(user_id, "mañana a las 3")  # ✅ SIN context1
+
     assert result2["status"] == "ok"
     assert "context" in result2
     print(f"Contexto persistido: {result2['context']}")
