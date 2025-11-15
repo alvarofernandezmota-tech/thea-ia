@@ -1,283 +1,474 @@
-# ✅ CHECKLIST ACTUALIZADO - SESIÓN 15 NOV 2025 (FINAL 17:55 CET)
+📋 THEA-IA Development - CHECKLIST COMPLETO
+Última actualización: 15 Noviembre 2025, 19:07 CET
+Estado: Fase 2 COMPLETADA (100%) ✅
+Responsable: Álvaro Fernández Mota
 
-## 🔧 PRE-SESIÓN: CONFIGURACIÓN REMOTA (5 min)
-[✅] 1. Tú dices: "Empezamos día 15" (16:13 CET)
-[✅] 2. Tú compartes:
-      [✅] URL repo: https://github.com/alvarofernandezmota-tech/thea-ia
-      [✅] GitHub Personal Access Token (14 Nov 23:18)
-[✅] 3. Configuración acceso remoto (14 Nov 23:18)
-[✅] 4. Verificación conexión:
-      [✅] Acceso configurado
-      [✅] Token guardado
-[✅] 5. LISTO → Empezamos H02
+🎯 RESUMEN EJECUTIVO
+text
+✅ FASE 0: Setup & Architecture (10-11 Nov) - COMPLETADO
+✅ FASE 1: Core FSM & ML (12-13 Nov) - COMPLETADO
+✅ FASE 2: PostgreSQL Database (14-15 Nov) - COMPLETADO
+🔵 FASE 3: Agents Configuration (Pendiente)
+🔵 FASE 4: Deployment (Pendiente)
+Progreso: 60% (3/5 fases)
+Tests: 31/86 PASSED (36%)
+Coverage: 33%
 
-⏱️ Tiempo: 5 minutos (14 Nov 23:13-23:18)
-✅ COMPLETADO
+✅ FASE 0: Setup & Architecture - COMPLETADO
+H00.1: Project Structure ✅
+ Estructura directorios
 
----
+ Virtual environment
 
-## 🔧 PRE-SESIÓN: VERIFICACIÓN ENTORNO (10 min)
-[✅] Activar venv (.venv activado)
-[✅] PostgreSQL corriendo (postgresql-x64-18 Running)
-[✅] Git limpio (modificaciones en diary detectadas)
-[✅] .env configurado (exists: True)
-[✅] Verificar estructura database (models OK)
-[✅] Verificar migrations (e0a17d850507_initial_schema.py existe)
+ Dependencies instaladas
 
-⏱️ Tiempo: 38 minutos (16:13 - 16:51)
-✅ COMPLETADO (con resolución Docker + PostgreSQL 18)
+ .gitignore, README
 
----
+H00.2: Development Environment ✅
+ Python 3.12
 
-## 🎯 FASE 1: MIGRACIÓN ALEMBIC (20 min)
-[✅] alembic history (verificado)
-[✅] alembic current (e0a17d850507 confirmado)
-[✅] Configuración alembic.ini:
-      [✅] script_location = src/theaia/database/migrations
-      [✅] version_locations corregido
-[✅] Corrección env.py:
-      [✅] Import: from src.theaia.database.models.base import Base
-[✅] Creación script.py.mako (template regenerado)
-[✅] alembic revision -m "H02: Fix multi-tenant constraints and add user_id"
-      [✅] Migración generada: dbc963a8ddad_h02_fix_multi_tenant_constraints_and_.py
-[✅] Revisar y editar migración:
-      [✅] upgrade() completado (3 cambios)
-      [✅] downgrade() completado (reversible)
-[✅] alembic upgrade head (APLICADA)
-[✅] Verificación BD:
-      [✅] \d users → uq_user_tenant_telegram UNIQUE CONSTRAINT ✅
-      [✅] \d message_history → user_id column + FK CASCADE ✅
-      [✅] \d conversations → ix_conversations_session_id UNIQUE ✅
-[✅] GIT:
-      [✅] git add src/theaia/database/migrations/
-      [✅] git commit -m "feat(H02): Migración Alembic dbc963a8ddad"
-      [✅] git push origin main
+ PostgreSQL 14+
 
-**Cambios aplicados:**
-- ✅ message_history.user_id (nullable, FK CASCADE, index)
-- ✅ users: uq_user_tenant_telegram (multi-tenant constraint)
-- ✅ conversations: ix_conversations_session_id UNIQUE
+ VS Code
 
-⏱️ Tiempo real: 55 min (16:13 - 17:08)
-✅ FASE 1 COMPLETADA (17:08 CET)
+ Git repository
 
----
+H00.3: Architecture Design ✅
+ Diagrama arquitectura
 
-## 🎯 FASE 2: TESTS EXECUTION (42 min) ✅ COMPLETADA
+ Database schema
 
-### 2.1 Tests Database (10 min)
-[✅] pytest src/theaia/tests/database/ -v
-[✅] Resultado: 12/12 passed ✅
-[✅] Tests ejecutados:
-      [✅] test_database_connection
-      [✅] test_repositories_instantiate
-      [✅] test_user_repository_create
-      [✅] test_user_repository_get_or_create
-      [✅] test_event_repository_create
-      [✅] test_event_repository_get_upcoming
-      [✅] test_note_repository_create
-      [✅] test_note_repository_search
-      [✅] test_conversation_repository_get_or_create
-      [✅] test_conversation_repository_update_state
-      [✅] test_message_history_repository_add_message
-      [✅] test_multi_tenant_isolation
+ FSM states
 
-⏱️ Tiempo: 49 min (16:25 - 17:14)
-✅ COMPLETADO
+ Multi-tenant strategy
 
-### 2.2 Tests Adapter (32 min)
-[✅] mkdir -p src/theaia/tests/adapters
-[✅] touch src/theaia/tests/adapters/__init__.py
-[✅] Crear test_telegram_adapter.py (190 líneas)
-[✅] Correcciones aplicadas:
-      [✅] Imports: telegram_adapter.py (no bot.py)
-      [✅] Métodos: start_command, help_command, reset_command
-      [✅] Instanciación: TelegramAdapter(token='test_token_12345')
-      [✅] Eliminar patches AsyncSessionLocal
-[✅] pytest src/theaia/tests/adapters/test_telegram_adapter.py -v
-[✅] Resultado: 10/10 passed ✅
-[✅] Tests ejecutados:
-      [✅] test_adapter_initialization
-      [✅] test_adapter_has_tenant_id
-      [✅] test_start_command_response
-      [✅] test_help_command_shows_commands
-      [✅] test_reset_command_confirmation
-      [✅] test_message_handler_responds
-      [✅] test_empty_message_handling
-      [✅] test_database_error_graceful_handling
-      [✅] test_none_message_handling
-      [✅] test_user_data_extraction
+Completado: 11 Nov 2025
 
-⏱️ Tiempo: 36 min (17:14 - 17:50)
-✅ COMPLETADO
+✅ FASE 1: Core FSM & ML - COMPLETADO
+H01.1: FSM Core ✅
+ StateMachine class
 
-### 2.3 Tests Integration
-[⏸️] APLAZADO (ya hay tests integration existentes)
-[⏸️] No requerido para H02 mínimo viable
+ State definitions
 
-**Resumen FASE 2:**
-- ✅ Total tests: 22/22 passed (100%)
-- ✅ Coverage: 20% (mejora desde 13%)
-- ✅ Coverage Adapter: 39%
-- ✅ Duración total: 1h 25min (16:25 - 17:50)
+ Transitions
 
-⏱️ Tiempo real FASE 2: 1h 25min
-✅ FASE 2 COMPLETADA (17:50 CET)
+ ConversationManager
 
----
+ Tests FSM (8 tests)
 
-## 🎯 FASE 3: ESCALABILIDAD (35 min)
+H01.2: Intent Detection ML ✅
+ IntentDetector class
 
-### 3.1 PgBouncer / Pooling (15 min)
-[ ] Configurar variables .env para pooling
-[ ] Configurar asyncpg connection pooling
-[ ] Validar pool_size y max_overflow
+ Training pipeline
 
-### 3.2 Índices Compuestos (15 min)
-[ ] alembic revision -m "h02_add_composite_indexes"
-[ ] Añadir índices:
-    [ ] (tenant_id, user_id) en conversations
-    [ ] (tenant_id, created_at) en events
-    [ ] (tenant_id, telegram_user_id) en users
+ scikit-learn model
 
-### 3.3 Validación (5 min)
-[ ] pytest stress test básico
-[ ] Verificar performance queries
+ Accuracy >80%
 
-⏱️ Tiempo estimado: 35 min
-⏳ FASE 3 PENDIENTE
+ Tests ML (5 tests)
 
----
+H01.3: Router & Registry ✅
+ CoreRouter
 
-## 🎯 FASE 4: CONTEXT MANAGER (40 min)
-[ ] Crear/revisar: src/theaia/core/context_manager.py
-[ ] Implementar context window management
-[ ] Tests context manager
+ Agent registry
 
-⏱️ Tiempo estimado: 40 min
-⏳ FASE 4 PENDIENTE
+ Intent mapping
 
----
+ Fallback agent
 
-## 🎯 FASE 5: STRESS TESTING (30 min)
-[ ] Crear script: src/theaia/tests/stress/concurrent_operations.py
-[ ] Ejecutar stress test
-[ ] Generar reporte
+ Tests router (4 tests)
 
-⏱️ Tiempo estimado: 30 min
-⏳ FASE 5 PENDIENTE
+Completado: 13 Nov 2025
+Tests: 17/17 PASSED ✅
 
----
+✅ FASE 2: PostgreSQL Database - COMPLETADO
+✅ H02.1: Schema & Migrations (14 Nov)
+ Alembic configurado
 
-## 🎯 FASE 6: SEGURIDAD (si tiempo: 2-3 horas)
-⏳ FASE OPCIONAL - Pendiente
+ Migration inicial (e0a17d850507)
 
----
+ Migration constraints (dbc963a8ddad)
 
-## 🎯 FASE 7: MONITORING (si tiempo: 45 min)
-⏳ FASE OPCIONAL - Pendiente
+ Models multi-tenant
 
----
+ Unique constraints
 
-## 🎯 FASE 8: DOCUMENTACIÓN (45 min)
+ Foreign keys CASCADE
 
-[✅] Crear diary15noviembre.md (sesión 15 Nov)
-[✅] Actualizar checklist-h02-final-15nov.md
-[ ] Actualizar README.md
-[ ] Actualizar docs/roadmap/milestones/H02.md
-[ ] Actualizar ADRs si necesario
+ JSONB context_data
 
-⏱️ Tiempo parcial: 10 min (documentation in progress)
-⏳ FASE 8 EN PROGRESO
-
----
-
-## 🎯 FASE 9: GIT FINAL + PUSH (25 min)
-
-[✅] git add -f src/theaia/tests/adapters/test_telegram_adapter.py
-[✅] git commit -m "test(H02): Restaurar 22 tests completos" (5001c35a)
-[✅] git push origin main
-[ ] Commit documentación final
-[ ] git tag H02-partial (si aplica)
-
-⏱️ Tiempo parcial: 5 min
-⏳ FASE 9 PARCIALMENTE COMPLETADA
-
----
-
-## 📊 RESUMEN SESIÓN (17:55 CET)
-
-### **Completado:**
-- ✅ **Migraciones:** 1 aplicada (dbc963a8ddad)
-- ✅ **Tests Database:** 12/12 passed
-- ✅ **Tests Adapter:** 10/10 passed
-- ✅ **Total Tests:** 22/22 passed (100%)
-- ✅ **Coverage:** 20% (mejora +7 puntos)
-- ✅ **Coverage Adapter:** 39%
-- ✅ **Git:** 2 commits + push exitosos
-
-### **Pendiente:**
-- [ ] Escalabilidad (índices + pooling)
-- [ ] Context Manager
-- [ ] Stress Testing
-- [ ] Documentación final
-- [ ] Railway deployment
-
-### **Métricas:**
-Tests ejecutados: 22/22 ✅
-Coverage total: 20%
-Coverage adapter: 39%
-Commits: 2 (71ea9ed0, 5001c35a)
+Archivos:
 
 text
+database/
+├── models/
+│   ├── user.py
+│   ├── conversation.py
+│   ├── message_history.py
+│   ├── note.py
+│   └── event.py
+├── migrations/versions/
+│   ├── e0a17d850507_initial_schema.py
+│   └── dbc963a8ddad_h02_fix_constraints.py
+└── connection.py
+✅ H02.2: Repository Pattern (14 Nov)
+ BaseRepository CRUD async
 
-### **Tiempo Invertido:**
-Pre-sesión: 43 min
-FASE 1 (Migración): 55 min
-FASE 2 (Tests): 1h 25min
-FASE 8 (Docs): 10 min
+ UserRepository (get_or_create_from_telegram)
 
-TOTAL: 2h 53min (16:13 - 17:55 CET)
+ ConversationRepository (get_or_create)
+
+ MessageHistoryRepository
+
+ NoteRepository
+
+ EventRepository
+
+ Multi-tenant isolation
+
+Archivos:
 
 text
+repositories/
+├── base_repository.py
+├── user_repository.py
+├── conversation_repository.py
+├── message_history_repository.py
+├── note_repository.py
+└── event_repository.py
+Métodos clave:
 
----
+python
+# UserRepository
+user, created = await user_repo.get_or_create_from_telegram(
+    telegram_data={"id": 123, ...},
+    tenant_id="tenant_001"
+)
 
-## 🚀 H02 ESTADO ACTUALIZADO
+# ConversationRepository
+conv, created = await conv_repo.get_or_create(
+    user_id=user.id,
+    tenant_id="tenant_001",
+    session_id="session_123",
+    initial_state="idle"
+)
+✅ H02.3: Integration Tests (15 Nov)
+ 14/14 Integration tests PASSED ✅
 
-**Progreso:** [████████████░░░░░░░░] **60% COMPLETADO**
+ Database connection
 
-### **Completado:**
-1. ✅ Migración Alembic multi-tenant
-2. ✅ Tests Database (12/12)
-3. ✅ Tests Adapter (10/10)
-4. ✅ Git commits (2)
+ Repository CRUD
 
-### **Próxima Sesión:**
-1. FASE 3: Escalabilidad (índices + pooling) - 35 min
-2. FASE 4: Context Manager - 40 min  
-3. FASE 8: Documentación final - 30 min
-4. FASE 9: Git final + tag - 20 min
+ Context persistence
 
-**Estimación completar H02:** 2-3 sesiones más (≈4-6 horas)
+ Router/FSM integration
 
----
+ Multi-tenant isolation
 
-## 💪 **HIGHLIGHTS DEL DÍA**
+ Coverage 33%
 
-### **Momento Clave:**
-> **17:50 CET** - ¡10/10 tests adapter pasando después de 6 iteraciones! 🎉
+Tests Database (6/6):
 
-### **Lecciones Aprendidas:**
-1. Verificar estructura real antes de crear tests
-2. No mockear imports que no existen
-3. Importancia de no rendirse ante errores consecutivos
+ test_database_connection
 
-### **Frase del Día:**
-> "No nos rendimos hasta completar todo el checklist."
+ test_user_repository_create
 
----
+ test_conversation_repository_create
 
-**Última actualización:** 15 Noviembre 2025, 17:55 CET  
-**Estado:** ✅ FASE 2 COMPLETADA - 60% H02  
-**Siguiente objetivo:** FASE 3 Escalabilidad + FASE 8 Documentación
+ test_message_repository_create
+
+ test_integration_full_flow
+
+ test_context_persistence_across_agents
+
+Tests Router/FSM (5/5):
+7. [x] test_conversation_flow_with_fsm
+8. [x] test_disambiguation_flow
+9. [x] test_conversation_context_persistence
+10. [x] test_switch_between_agents
+11. [x] test_full_agenda_conversation_flow
+
+Tests Core Integration (3/3):
+12. [x] test_smart_intent_delegation
+13. [x] test_simple_intent_delegation
+14. [x] test_context_persistence_between_messages
+
+Refactorizaciones realizadas:
+
+✅ test_telegram_database.py (get_or_create, message_id)
+
+✅ test_context_persistence.py (get_by_session_id)
+
+✅ test_conversation_flow.py (router.handle firma)
+
+✅ test_router_switches.py (router.handle firma)
+
+Completado: 15 Nov 2025, 19:00 CET
+Tests: 14/14 PASSED ✅
+Coverage: 33% (Database 92%+)
+
+🔵 FASE 3: Agents Configuration (Pendiente)
+H03.1: Agent Base Implementation 🔵
+ BaseAgent refactorizado
+
+ Handler interface
+
+ AgentConfig class
+
+ Agent lifecycle management
+
+ Tests agent base (5 tests)
+
+H03.2: AgendaAgent Complete 🔵
+ Agenda FSM completo
+
+ Date/time extraction
+
+ Event creation/editing
+
+ Event listing
+
+ Tests E2E agenda (8 tests)
+
+H03.3: NoteAgent Complete 🔵
+ Note FSM completo
+
+ Note creation/editing
+
+ Note search
+
+ Categories/tags
+
+ Tests E2E note (6 tests)
+
+H03.4: ReminderAgent Complete 🔵
+ Reminder FSM
+
+ Time-based reminders
+
+ Location-based reminders
+
+ Notifications
+
+ Tests E2E reminder (5 tests)
+
+H03.5: Entity Extraction Enhancement 🔵
+ Advanced NER (spaCy/transformers)
+
+ Date/time parsing (dateutil)
+
+ Location extraction
+
+ Person name extraction
+
+ Tests entity extraction (8 tests)
+
+Estimación: 2-3 días (16-18 Nov)
+Target tests: 30+ E2E tests PASSED
+Target coverage: >50%
+
+🔵 FASE 4: Deployment & Features (Pendiente)
+H04.1: FastAPI Integration 🔵
+ API endpoints
+
+ Authentication
+
+ Rate limiting
+
+ Swagger docs
+
+ Tests API (10 tests)
+
+H04.2: Telegram Enhancement 🔵
+ Webhook mode
+
+ Inline keyboards
+
+ Message formatting
+
+ Media handling
+
+ Tests adapter (8 tests)
+
+H04.3: Background Tasks 🔵
+ Celery setup
+
+ Scheduled reminders
+
+ Notifications
+
+ Task queue
+
+ Tests tasks (6 tests)
+
+H04.4: Deployment 🔵
+ Docker Compose
+
+ CI/CD (GitHub Actions)
+
+ Production config
+
+ Monitoring
+
+ Health checks
+
+H04.5: Documentation 🔵
+ API docs
+
+ User guide
+
+ Developer guide
+
+ Architecture diagrams
+
+ Deployment guide
+
+Estimación: 3-4 días (19-22 Nov)
+Target tests: 25+ tests
+Target coverage: >60%
+
+📊 MÉTRICAS PROYECTO
+Tests:
+text
+Unit tests (Fase 1): 17/17 PASSED ✅
+Integration tests (Fase 2): 14/14 PASSED ✅
+E2E tests (Fase 3): 0/30 Pendiente 🔵
+API tests (Fase 4): 0/25 Pendiente 🔵
+
+TOTAL: 31/86 PASSED (36%)
+Coverage:
+text
+Fase 1: 15%
+Fase 2: 33% ✅
+Fase 3: Target >50%
+Fase 4: Target >60%
+Componentes:
+text
+✅ Core FSM: 100%
+✅ Intent Detection: 100%
+✅ Router: 100%
+✅ Database: 100%
+✅ Repository Pattern: 100%
+🔵 Agents Config: 0%
+🔵 Entity Extraction: 30%
+🔵 API Layer: 0%
+🔵 Background Tasks: 0%
+🎯 PRÓXIMA SESIÓN (16 Nov)
+Tareas Inmediatas:
+ Revisar Fase 3 objectives
+
+ Implementar BaseAgent refactorizado
+
+ AgendaAgent FSM completo
+
+ Date/time extraction básica
+
+ Primeros 5 E2E tests agenda
+
+Target Sesión:
+Tests: 5 E2E tests PASSED
+
+Coverage: 35%+
+
+AgendaAgent funcionando básico
+
+Archivos a Crear:
+text
+src/theaia/agents/
+├── base_agent.py (refactor)
+├── agenda_agent/
+│   ├── handler.py (complete)
+│   └── fsm.py (complete)
+└── tests/e2e/
+    └── test_agenda_agent_e2e.py (new)
+📝 NOTAS TÉCNICAS
+Multi-tenant:
+sql
+CONSTRAINT uq_user_tenant_telegram 
+UNIQUE (tenant_id, telegram_id)
+Repository get_or_create:
+python
+# Previene race conditions
+user, created = await repo.get_or_create_from_telegram(...)
+Router handle:
+python
+# Context manejado internamente
+result = router.handle(user_id, message)
+📅 TIMELINE
+text
+Semana 1 (10-17 Nov):
+✅ Fase 0 (10-11 Nov)
+✅ Fase 1 (12-13 Nov)
+✅ Fase 2 (14-15 Nov)
+🔵 Fase 3 inicio (16-17 Nov)
+
+Semana 2 (18-24 Nov):
+🔵 Fase 3 completo (18-19 Nov)
+🔵 Fase 4 inicio (20-22 Nov)
+🔵 Deployment (23-24 Nov)
+
+Semana 3 (25 Nov - 1 Dic):
+🔵 Testing final
+🔵 Documentación
+🔵 Release v1.0.0
+🏆 HITOS COMPLETADOS
+✅ H00: Setup (11 Nov)
+
+✅ H01: FSM & ML (13 Nov)
+
+✅ H02.1: Schema (14 Nov)
+
+✅ H02.2: Repositories (14 Nov)
+
+✅ H02.3: Tests (15 Nov)
+
+Total: 5/12 hitos (42%)
+
+🎉 ESTADO ACTUAL
+Fecha: 15 Nov 2025, 19:07 CET
+Fase: Fase 2 COMPLETADA ✅
+Siguiente: H03 Agents Configuration
+Progreso: 60% (3/5 fases)
+Tests: 31/86 (36%)
+Coverage: 33%
+
+Estado: 🟢 ON TRACK
+
+📋 QUICK CHECKLIST
+Fase 2 - Completado:
+
+ H02.1 Schema & Migrations ✅
+
+ H02.2 Repository Pattern ✅
+
+ H02.3 Integration Tests ✅
+
+Fase 3 - Próximo:
+
+ H03.1 BaseAgent
+
+ H03.2 AgendaAgent
+
+ H03.3 NoteAgent
+
+ H03.4 ReminderAgent
+
+ H03.5 Entity Extraction
+
+Fase 4 - Futuro:
+
+ H04.1 FastAPI
+
+ H04.2 Telegram
+
+ H04.3 Background Tasks
+
+ H04.4 Deployment
+
+ H04.5 Documentation
+
+¡DESCANSA! Todo documentado y listo para continuar. 💪
+
+Próxima sesión: 16 Nov 2025 - H03.1 BaseAgent
+
+Actualizado: 15 Nov 2025, 19:07 CET
