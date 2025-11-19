@@ -3,13 +3,13 @@ Event Repository para THEA IA
 Gestión de eventos y recordatorios con multi-tenant
 
 Autor: Álvaro Fernández Mota
-Fecha: 12 Nov 2025
-Hito: H02 - Database Layer
+Fecha: 19 Nov 2025 (H02 PHASE 2 FINAL)
+Hito: H02 - Database Layer PHASE 2
 """
 
 from typing import Optional, List
 from datetime import datetime, timedelta, timezone
-from sqlalchemy import select, and_, or_
+from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from src.theaia.database.repositories.base_repository import BaseRepository
@@ -252,9 +252,11 @@ class EventRepository(BaseRepository[Event]):
         """
         Obtiene eventos que necesitan recordatorio próximamente.
         
-        Busca eventos:
+        ENTERPRISE GRADE: Triple protección contra defaults inesperados.
+        
+        Filtra eventos:
         - Con status "pending"
-        - Que tengan reminder_minutes configurado
+        - Que tengan reminder_minutes válido (NOT NULL, NOT 0, > 0)
         - Cuyo recordatorio debe enviarse en los próximos X minutos
         
         Args:
@@ -269,28 +271,50 @@ class EventRepository(BaseRepository[Event]):
             pending = await event_repo.get_pending_reminders("default", minutes_ahead=30)
             
             for event in pending:
-                # Enviar notificación al usuario
                 await send_reminder(event.user_id, event.title)
         """
         now = datetime.now(timezone.utc)
         check_until = now + timedelta(minutes=minutes_ahead)
         
+        # Buscar eventos pending con start_datetime en el futuro
         stmt = select(Event).where(
             and_(
                 Event.tenant_id == tenant_id,
                 Event.status == "pending",
-                Event.reminder_minutes.isnot(None),
                 Event.start_datetime > now
             )
-        )
+        ).order_by(Event.start_datetime.asc())
         
         result = await self.session.execute(stmt)
         all_events = list(result.scalars().all())
         
-        # Filtrar eventos cuyo recordatorio debe enviarse ahora
+        # ✅ TRIPLE PROTECCIÓN empresarial
         pending_reminders = []
+        
         for event in all_events:
-            reminder_time = event.start_datetime - timedelta(minutes=event.reminder_minutes)
+            # 🛡️ BARRERA 1: reminder_minutes debe existir (not None)
+            if event.reminder_minutes is None:
+                continue
+            
+            # 🛡️ BARRERA 2: reminder_minutes NO debe ser 0 (sin recordatorio explícito)
+            if event.reminder_minutes == 0:
+                continue
+            
+            # 🛡️ BARRERA 3: reminder_minutes debe ser numérico positivo
+            try:
+                reminder_value = float(event.reminder_minutes)
+                if reminder_value <= 0:
+                    continue
+            except (TypeError, ValueError):
+                continue
+            
+            # ✅ Calcular reminder_time con validación
+            try:
+                reminder_time = event.start_datetime - timedelta(minutes=reminder_value)
+            except (TypeError, ValueError, OverflowError):
+                continue
+            
+            # ✅ Verificar ventana de recordatorio
             if now <= reminder_time <= check_until:
                 pending_reminders.append(event)
         
