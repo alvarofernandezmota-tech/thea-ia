@@ -1,16 +1,1 @@
-{
-  "src/theaia/tests/unit/test_router.py::test_handle_simple_agenda": true,
-  "src/theaia/tests/unit/test_router.py::test_handle_fallback": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_can_handle_note_intent": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_create_note_basic": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_create_note_with_content": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_create_note_with_tags": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_list_notes_empty": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_list_notes_with_data": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_search_notes": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_handle_message_with_context_persistence": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_agent_status": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_agent_cleanup": true,
-  "src/theaia/tests/integration/test_connection_pool.py::test_concurrent_queries": true,
-  "src/theaia/tests/integration/test_connection_pool.py::test_pool_handles_multiple_sessions": true
-}
+{}
