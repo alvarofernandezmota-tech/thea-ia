@@ -3,8 +3,9 @@ from typing import Dict, Any, List, Optional, Tuple
 from transitions import Machine
 import logging
 
-# H03 FASE 1 - BLOQUE 1.2 - Import CallbacksMixin
+# H03 FASE 1 - BLOQUE 1.2 - Imports
 from src.theaia.core.fsm.callbacks_mixin import CallbacksMixin
+from src.theaia.core.fsm.context_merging import ContextMergingEngine
 
 logger = logging.getLogger(__name__)
 
@@ -93,7 +94,7 @@ class BaseStateMachine(ABC):
 
 
 # ============================================================
-#  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03 Callbacks
+#  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03
 # ============================================================
 class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
     """
@@ -103,15 +104,17 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
     - Hereda de CallbacksMixin para callbacks avanzados
     - Pre/Post/Error callbacks disponibles
     - Context injection en callbacks
+    - ContextMergingEngine para merge strategies
     """
 
     def __init__(self, user_id: str):
         self.pending_message = None
         self.candidate_intents = []
         self.active_agent = None
+        self.context_merging_engine = ContextMergingEngine(max_history=10)  # H03 NUEVO
         super().__init__(user_id, "initial")
         
-        # H03: Registrar callbacks de ejemplo (opcional, puedes comentar)
+        # H03: Registrar callbacks
         self._register_h03_callbacks()
 
     def get_states(self) -> List[str]:
@@ -158,7 +161,35 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
             after="_on_timeout"
         )
 
-    # ----------------- CALLBACKS LEGACY -----------------
+    # ==================== H03 CONTEXT MERGING ====================
+    
+    def merge_context(self, new_context: Dict[str, Any], strategy: str = "merge") -> Dict[str, Any]:
+        """
+        Merges nuevo context con el actual usando estrategia especificada.
+        
+        Args:
+            new_context: Nuevo context a mergear
+            strategy: Estrategia ("overwrite", "append", "merge", "windowing")
+            
+        Returns:
+            Context mergeado
+        """
+        merged = self.context_merging_engine.merge(self.context, new_context, strategy)
+        self.context = merged
+        logger.debug(f"[{self.user_id}] Context merged using strategy '{strategy}'")
+        return merged
+
+    def get_context_stats(self) -> Dict[str, Any]:
+        """Retorna estadísticas del context actual."""
+        return self.context_merging_engine.get_context_stats(self.context)
+
+    def prune_context(self, keep_keys: List[str]):
+        """Poda context manteniendo solo keys especificadas."""
+        self.context = self.context_merging_engine.prune_context(self.context, keep_keys)
+        logger.debug(f"[{self.user_id}] Context pruned")
+
+    # ==================== CALLBACKS LEGACY ====================
+    
     def _after_disambiguation(self, event):
         self.update_context(disambiguation_started=True)
 
@@ -176,7 +207,8 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
         logger.warning(f"[{self.user_id}] Sesión expirada.")
         self.clear_context()
 
-    # ----------------- H03 CALLBACKS REGISTRATION -----------------
+    # ==================== H03 CALLBACKS REGISTRATION ====================
+    
     def _register_h03_callbacks(self):
         """
         Registra callbacks H03 de ejemplo.
@@ -204,7 +236,8 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
         """Error-callback H03: Log errores."""
         logger.error(f"[H03 Error-Callback] {self.user_id}: Error en transición {from_state} → {to_state}: {error}")
 
-    # ----------------- GESTIÓN PENDIENTES -----------------
+    # ==================== GESTIÓN PENDIENTES ====================
+    
     def set_pending_message(self, message: str, intents: List[str]):
         self.pending_message = message
         self.candidate_intents = intents
