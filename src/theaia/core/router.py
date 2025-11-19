@@ -8,6 +8,7 @@ H03 FASE 1 Improvements:
 - Pipeline estructurado: preprocess → intent → entities → routing
 - Performance tracking (<100ms target)
 - Dataclasses tipadas (Message, ProcessedMessage)
+- Entity extraction con EntityExtractionPipeline
 - Error handling robusto con fallback
 - Logging estructurado
 """
@@ -50,6 +51,7 @@ class ProcessedMessage:
 
 from src.theaia.core.session_manager import SessionManager
 from src.theaia.ml.intent_detector.inference import IntentDetector
+from src.theaia.ml.entity_extractor.pipeline import EntityExtractionPipeline
 from src.theaia.agents.note_agent.handler import NoteAgent
 from src.theaia.agents.help_agent import HelpAgent
 from src.theaia.agents.event_agent.handler import EventAgent
@@ -105,12 +107,13 @@ class TheaRouter:
     H03 Improvements:
     - Pipeline estructurado
     - Performance tracking
-    - Entity extraction ready
+    - Entity extraction con EntityExtractionPipeline
     """
     
     def __init__(self):
         self.session_manager = SessionManager()
         self.intent_detector = IntentDetector()
+        self.entity_extractor = EntityExtractionPipeline()  # NUEVO H03 TAREA 1.1.2
         self.fallback_agent = FallbackAgent("global")
         self.agent_registry = {
             "nota": NoteAgent,
@@ -127,7 +130,7 @@ class TheaRouter:
         Pipeline mejorado H03:
         1. Preprocess → limpieza y normalización
         2. Intent Detection → clasificación
-        3. Entity Extraction → extracción (placeholder FASE 1)
+        3. Entity Extraction → extracción con EntityExtractionPipeline (H03 NUEVO)
         4. Agent Routing → selección de agente
         5. FSM + Context → mantenimiento de estado
         6. Performance Tracking → métricas <100ms
@@ -141,10 +144,10 @@ class TheaRouter:
         """
         start_time = datetime.now(timezone.utc)
         
-        # --- 1. PREPROCESSING (H03 nuevo) ---
+        # --- 1. PREPROCESSING (H03) ---
         cleaned_message = preprocess_text(message)
         
-        # --- 2. INTENT DETECTION (mejorado con logging) ---
+        # --- 2. INTENT DETECTION (H03 mejorado) ---
         try:
             raw = self.intent_detector.detect(cleaned_message)
             # Normalización defensiva
@@ -161,26 +164,43 @@ class TheaRouter:
             intents = []
             confidence = 0.0
         
-        # --- 3. ENTITY EXTRACTION (placeholder FASE 1.2) ---
-        # TODO: Implementar en BLOQUE 1.2 con EntityExtractionPipeline
-        entities = {}
+        # Determine current intent antes de agent selection
+        if intents and intents[0] in self.agent_registry:
+            current_intent = intents[0]
+        elif intents and intents[0] == "ayuda":
+            current_intent = "ayuda"
+        else:
+            current_intent = "fallback"
+            confidence = 0.0
+        
+        # --- 3. ENTITY EXTRACTION (H03 NUEVO - TAREA 1.1.2) ---
+        try:
+            # Sync wrapper para el método async
+            import asyncio
+            try:
+                loop = asyncio.get_event_loop()
+            except RuntimeError:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+            
+            entities = loop.run_until_complete(
+                self.entity_extractor.extract(cleaned_message, current_intent)
+            )
+        except Exception as e:
+            print(f"[EntityExtractor ERROR]: {e}")
+            entities = {}
         
         # --- 4. AGENT SELECTION ---
         if intents and intents[0] in self.agent_registry:
-            current_intent = intents[0]
             AgentClass = self.agent_registry[current_intent]
             agent = AgentClass(user_id)
             agent_name = AgentClass.__name__
         elif intents and intents[0] == "ayuda":
-            current_intent = "ayuda"
             agent = self.agent_registry["ayuda"](user_id)
             agent_name = "HelpAgent"
         else:
-            # Sin intent claro o vacío: fallback
-            current_intent = "fallback"
             agent = self.fallback_agent
             agent_name = "FallbackAgent"
-            confidence = 0.0
         
         # --- 5. FSM + CONTEXT MANAGEMENT ---
         context = self.session_manager.get_context(user_id)
@@ -204,7 +224,7 @@ class TheaRouter:
         updated_context["last_intent"] = current_intent
         self.session_manager.update_context(user_id, updated_context)
         
-        # --- 6. PERFORMANCE TRACKING (H03 nuevo) ---
+        # --- 6. PERFORMANCE TRACKING (H03) ---
         end_time = datetime.now(timezone.utc)
         processing_time_ms = int((end_time - start_time).total_seconds() * 1000)
         
@@ -221,7 +241,7 @@ class TheaRouter:
             "intent": current_intent,
             "confidence": confidence,
             "agent": agent_name,
-            "entities": entities,
+            "entities": entities,  # AHORA CON DATOS REALES
             "processing_time_ms": processing_time_ms,
             "original_text": message,
             "cleaned_text": cleaned_message,
