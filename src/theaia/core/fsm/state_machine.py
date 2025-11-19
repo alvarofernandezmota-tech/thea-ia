@@ -3,13 +3,17 @@ from typing import Dict, Any, List, Optional, Tuple
 from transitions import Machine
 import logging
 
+# H03 FASE 1 - BLOQUE 1.2 - Import CallbacksMixin
+from src.theaia.core.fsm.callbacks_mixin import CallbacksMixin
+
 logger = logging.getLogger(__name__)
 
+
 # ============================================================
-#  BASE FSM — Thea IA 3.0
+#  BASE FSM — Thea IA 3.0
 # ============================================================
 class BaseStateMachine(ABC):
-    """Clase base abstracta para todas las máquinas de estado en Thea IA 3.0"""
+    """Clase base abstracta para todas las máquinas de estado en Thea IA 3.0"""
 
     def __init__(self, user_id: str, initial_state: str = "initial"):
         self.user_id = user_id
@@ -69,7 +73,7 @@ class BaseStateMachine(ABC):
 
     def update_context(self, **kwargs):
         self.context.update(kwargs)
-        logger.debug(f"[Thea FSM] Contexto actualizado: {kwargs}")
+        logger.debug(f"[Thea FSM] Contexto actualizado: {kwargs}")
 
     def clear_context(self):
         essentials = {k: v for k, v in self.context.items() if k in ("user_id", "session_id")}
@@ -81,24 +85,34 @@ class BaseStateMachine(ABC):
 
     # ----------------- CALLBACKS -----------------
     def _on_reset(self, event):
-        logger.info(f"[Thea FSM] Máquina reseteada para {self.user_id}")
+        logger.info(f"[Thea FSM] Máquina reseteada para {self.user_id}")
         self.clear_context()
 
     def _on_error(self, event):
-        logger.error(f"[Thea FSM] Error en FSM de {self.user_id}: {event}")
+        logger.error(f"[Thea FSM] Error en FSM de {self.user_id}: {event}")
 
 
 # ============================================================
-#  CONVERSATION FSM — FSM central de Thea IA 3.0
+#  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03 Callbacks
 # ============================================================
-class ConversationStateMachine(BaseStateMachine):
-    """Máquina de estados central para el manejo conversacional."""
+class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
+    """
+    Máquina de estados central para el manejo conversacional.
+    
+    H03 Improvements:
+    - Hereda de CallbacksMixin para callbacks avanzados
+    - Pre/Post/Error callbacks disponibles
+    - Context injection en callbacks
+    """
 
     def __init__(self, user_id: str):
         self.pending_message = None
         self.candidate_intents = []
         self.active_agent = None
         super().__init__(user_id, "initial")
+        
+        # H03: Registrar callbacks de ejemplo (opcional, puedes comentar)
+        self._register_h03_callbacks()
 
     def get_states(self) -> List[str]:
         """Los 5 estados principales del núcleo FSM."""
@@ -144,7 +158,7 @@ class ConversationStateMachine(BaseStateMachine):
             after="_on_timeout"
         )
 
-    # ----------------- CALLBACKS -----------------
+    # ----------------- CALLBACKS LEGACY -----------------
     def _after_disambiguation(self, event):
         self.update_context(disambiguation_started=True)
 
@@ -161,6 +175,34 @@ class ConversationStateMachine(BaseStateMachine):
     def _on_timeout(self, event):
         logger.warning(f"[{self.user_id}] Sesión expirada.")
         self.clear_context()
+
+    # ----------------- H03 CALLBACKS REGISTRATION -----------------
+    def _register_h03_callbacks(self):
+        """
+        Registra callbacks H03 de ejemplo.
+        Puedes comentar/descomentar según necesites.
+        """
+        # Ejemplo: Log antes de cada transición
+        self.register_universal_pre_callback(self._h03_log_before_transition)
+        
+        # Ejemplo: Log después de cada transición exitosa
+        self.register_universal_post_callback(self._h03_log_after_transition)
+        
+        # Ejemplo: Log errores en transiciones
+        self.register_universal_error_callback(self._h03_log_transition_error)
+    
+    def _h03_log_before_transition(self, from_state: str, to_state: str, context: Dict[str, Any]) -> bool:
+        """Pre-callback H03: Log antes de transición."""
+        logger.info(f"[H03 Pre-Callback] {self.user_id}: {from_state} → {to_state}")
+        return True  # Permitir transición
+    
+    def _h03_log_after_transition(self, from_state: str, to_state: str, context: Dict[str, Any]):
+        """Post-callback H03: Log después de transición exitosa."""
+        logger.info(f"[H03 Post-Callback] {self.user_id}: Transición completada: {from_state} → {to_state}")
+    
+    def _h03_log_transition_error(self, from_state: str, to_state: str, error: Exception, context: Dict[str, Any]):
+        """Error-callback H03: Log errores."""
+        logger.error(f"[H03 Error-Callback] {self.user_id}: Error en transición {from_state} → {to_state}: {error}")
 
     # ----------------- GESTIÓN PENDIENTES -----------------
     def set_pending_message(self, message: str, intents: List[str]):
@@ -197,7 +239,6 @@ class ConversationStateMachine(BaseStateMachine):
     def _test_resolve_disambiguation(self, intent: str) -> str:
         """Simula resolución de ambigüedad usada por tests E2E y unitarios."""
         if intent not in ["agenda", "notas"]:
-            # Corregido: literal exacto esperado por tests
             return "Por favor, elige una opción válida entre 'agenda' o 'notas'."
         self.delegate_to_agent()
         return f"Procesando tu solicitud como {intent}"
