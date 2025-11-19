@@ -1,56 +1,49 @@
 """
-Base Model para todos los modelos de la base de datos.
-Incluye campos comunes: id, tenant_id, created_at, updated_at
-
-IMPORTANTE: created_at y updated_at son timezone-aware (UTC).
+BaseModel - Modelo base para todas las entidades
+Autor: Álvaro Fernández Mota
+Fecha: 12 Nov 2025 (Actualizado: 19 Nov 2025)
+Hito: H02 - Database Layer
 """
-from datetime import datetime, timezone
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
 
+from datetime import datetime, timezone
+from sqlalchemy import Column, Integer, DateTime, String
+from sqlalchemy.ext.declarative import declarative_base
 
 Base = declarative_base()
 
 
 class BaseModel(Base):
     """
-    Modelo base del que heredan todos los modelos.
+    Clase base abstracta para todos los modelos.
     
-    Campos comunes:
-    - id: Primary key autoincremental
-    - tenant_id: Identificador de tenant para multi-tenancy
-    - created_at: Timestamp de creación (timezone-aware UTC)
-    - updated_at: Timestamp de última actualización (timezone-aware UTC)
+    Proporciona:
+    - ID autoincremental
+    - Tenant ID (multi-tenant obligatorio)
+    - Timestamps automáticos (created_at, updated_at)
     
-    NOTA CRÍTICA:
-    - DateTime(timezone=True) almacena TIMESTAMPTZ en PostgreSQL
-    - lambda: datetime.now(timezone.utc) garantiza timezone-aware
-    - Evita comparaciones naive vs aware datetime
+    Todos los modelos deben heredar de esta clase.
     """
     __abstract__ = True
     
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    tenant_id = Column(String(50), nullable=False, default='default', index=True)
+    # Primary key
+    id = Column(Integer, primary_key=True, index=True, autoincrement=True)
     
-    # ✅ TIMEZONE-AWARE: DateTime(timezone=True) + lambda datetime.now(timezone.utc)
+    # Multi-tenant (obligatorio en TODAS las tablas)
+    tenant_id = Column(String(100), nullable=False, index=True)
+    
+    # ✅ FIX CRÍTICO: default Python con lambda funciona con async
     created_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        nullable=False
-    )
-    updated_at = Column(
-        DateTime(timezone=True), 
-        default=lambda: datetime.now(timezone.utc), 
-        onupdate=lambda: datetime.now(timezone.utc), 
-        nullable=False
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc)
     )
     
-    def to_dict(self):
-        """Convierte el modelo a diccionario."""
-        return {
-            column.name: getattr(self, column.name)
-            for column in self.__table__.columns
-        }
+    updated_at = Column(
+        DateTime(timezone=True),
+        nullable=False,
+        default=lambda: datetime.now(timezone.utc),
+        onupdate=lambda: datetime.now(timezone.utc)
+    )
     
     def __repr__(self):
-        return f"<{self.__class__.__name__}(id={self.id}, tenant_id={self.tenant_id})>"
+        return f"<{self.__class__.__name__}(id={self.id})>"
