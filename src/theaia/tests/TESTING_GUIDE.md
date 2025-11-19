@@ -323,5 +323,7 @@ pytest --ff
 
 # New tests first
 pytest --nf
-Última actualización: 11 Nov 2025
-Responsable: Álvaro Fernández Mota
+**Last Updated:** 16 Nov 2025, 00:17 CET  
+**Version:** 0.3.0  
+**Status:** Phase 3 Complete - 173 tests, 50% coverage ✅  
+**Maintainer:** Álvaro Fernández Mota

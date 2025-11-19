@@ -1,245 +1,295 @@
-e2e/ - End-to-End Tests
-Tests end-to-end (10% de la suite)
+# e2e/ - End-to-End Tests
 
-📋 Overview
-Tests de flujos completos de usuario:
+Tests de flujos completos end-to-end de usuario.
 
-🎭 Flujos reales usuario completos
+---
 
-🌐 Todo el stack (Telegram → DB → Response)
+## 📋 Overview
 
-🐌 Lentos (~1-5 segundos por test)
+Tests de flujos completos con características:
 
-🎯 Pocos pero críticos (10% total)
+- 🎭 **Flujos reales** de usuario completos
+- 🌐 **Todo el stack** (entrada → procesamiento → salida)
+- 🐌 **Lentos** (~1-5 segundos por test)
+- 🎯 **Críticos** (10% del total, pero esenciales)
 
-📁 Estructura
-text
+---
+
+## 📁 Estructura
+
 e2e/
-├── test_user_journey/
-│   ├── test_new_user_onboarding.py
-│   ├── test_reminder_lifecycle.py
-│   ├── test_note_lifecycle.py
-│   └── test_multi_agent_flow.py
-├── test_telegram_bot_complete.py
-└── test_subscription_flow.py       # (H05)
-🚀 Quick Start
-bash
-# Ejecutar E2E tests
-pytest src/tests/e2e/ -v
+├── test_agenda_agent_e2e.py # ✅ AgendaAgent (17 tests)
+├── test_note_agent_e2e.py # ✅ NoteAgent (14 tests)
+├── test_reminder_agent_e2e.py # ✅ ReminderAgent (15 tests)
+├── test_context_flow.py # ✅ Context persistence (1 test)
+├── test_core_flow.py # ✅ Core flow (1 test)
+├── test_fsm_disambiguation.py # ✅ FSM disambiguation (1 test)
+└── test_notas_flow.py # ✅ Notes flow (1 test)
 
-# Solo user journeys
-pytest src/tests/e2e/test_user_journey/ -v
+text
 
-# Skip E2E (lentos)
+**Total E2E Tests: 50 tests**
+
+---
+
+## 🚀 Quick Start
+
+Ejecutar todos los E2E tests
+pytest src/theaia/tests/e2e/ -v
+
+Solo AgendaAgent
+pytest src/theaia/tests/e2e/test_agenda_agent_e2e.py -v
+
+Con markers específicos
+pytest -m e2e -v
+
+Skip E2E (son lentos)
 pytest -m "not e2e" -v
-💡 Ejemplo
-python
-# test_user_journey/test_reminder_lifecycle.py
+
+text
+
+---
+
+## ✅ Tests Implementados
+
+### **📅 AgendaAgent E2E (17 tests)**
+`test_agenda_agent_e2e.py` - Flujos completos de eventos:
+
+#### Creation & Listing
+- ✅ `test_create_event_basic` - Crear evento simple
+- ✅ `test_create_event_with_time` - Evento con hora
+- ✅ `test_create_event_with_location` - Evento con ubicación
+- ✅ `test_list_events_empty` - Lista vacía de eventos
+- ✅ `test_list_events_with_items` - Lista con eventos
+
+#### Complex Flows
+- ✅ `test_create_multiple_events` - Crear múltiples eventos
+- ✅ `test_agenda_view_flow` - Flujo completo de visualización
+- ✅ `test_event_with_reminder` - Evento con recordatorio
+- ✅ `test_recurring_event` - Evento recurrente
+
+#### Edge Cases
+- ✅ `test_create_event_invalid_date` - Fecha inválida
+- ✅ `test_event_conflict_detection` - Detección conflictos
+- ✅ `test_cancel_event` - Cancelar evento
+- ✅ `test_edit_event` - Editar evento existente
+
+#### Integration
+- ✅ `test_agenda_context_persistence` - Persistencia contexto
+- ✅ `test_agenda_error_recovery` - Recuperación de errores
+- ✅ `test_multiple_users` - Múltiples usuarios
+- ✅ `test_full_agenda_workflow` - Flujo completo inicio a fin
+
+---
+
+### **📝 NoteAgent E2E (14 tests)**
+`test_note_agent_e2e.py` - Flujos completos de notas:
+
+#### CRUD Operations
+- ✅ `test_create_note_basic` - Crear nota simple
+- ✅ `test_create_note_with_category` - Nota con categoría
+- ✅ `test_create_note_with_tags` - Nota con tags
+- ✅ `test_list_notes` - Listar todas las notas
+- ✅ `test_view_note_detail` - Ver detalle nota
+- ✅ `test_edit_note` - Editar nota existente
+- ✅ `test_delete_note` - Eliminar nota
+
+#### Advanced Features
+- ✅ `test_search_notes` - Búsqueda de notas
+- ✅ `test_pin_note` - Fijar nota importante
+- ✅ `test_categorize_notes` - Organizar por categorías
+- ✅ `test_tag_filtering` - Filtrar por tags
+
+#### Complete Flows
+- ✅ `test_note_full_lifecycle` - Ciclo vida completo
+- ✅ `test_multiple_notes_management` - Gestión múltiples notas
+- ✅ `test_note_context_switching` - Cambio contexto
+
+---
+
+### **⏰ ReminderAgent E2E (15 tests)**
+`test_reminder_agent_e2e.py` - Flujos completos de recordatorios:
+
+#### Time-based Reminders
+- ✅ `test_create_reminder_basic` - Recordatorio simple
+- ✅ `test_create_reminder_tomorrow` - "Mañana"
+- ✅ `test_create_reminder_specific_time` - Hora específica
+- ✅ `test_create_reminder_relative` - "En 3 días"
+- ✅ `test_create_reminder_weekday` - "El lunes"
+
+#### Management
+- ✅ `test_list_reminders` - Listar recordatorios
+- ✅ `test_edit_reminder` - Editar recordatorio
+- ✅ `test_complete_reminder` - Completar recordatorio
+- ✅ `test_delete_reminder` - Eliminar recordatorio
+- ✅ `test_snooze_reminder` - Posponer recordatorio
+
+#### Advanced
+- ✅ `test_reminder_with_location` - Con ubicación
+- ✅ `test_recurring_reminder` - Recordatorio recurrente
+- ✅ `test_priority_reminders` - Prioridades
+
+#### Complete Flows
+- ✅ `test_reminder_full_lifecycle` - Ciclo completo
+- ✅ `test_multiple_reminders_workflow` - Múltiples recordatorios
+
+---
+
+### **🔄 Context & FSM Flows (4 tests)**
+- ✅ `test_context_flow.py` - Persistencia de contexto
+- ✅ `test_core_flow.py` - Flujo core del sistema
+- ✅ `test_fsm_disambiguation.py` - Desambiguación FSM
+- ✅ `test_notas_flow.py` - Flujo completo notas
+
+---
+
+## 💡 Ejemplo E2E Test
+
+test_agenda_agent_e2e.py
 import pytest
+from src.theaia.agents.agenda_agent.handler import AgendaAgentHandler
 
-@pytest.mark.e2e
 @pytest.mark.asyncio
-async def test_user_creates_views_completes_reminder(
-    telegram_client,
-    db_session
-):
-    """
-    Flujo completo usuario:
-    1. Usuario nuevo envía /start
-    2. Crea reminder
-    3. Ve sus reminders
-    4. Completa reminder
-    5. Ve historial
-    """
-    # Step 1: Onboarding
-    await telegram_client.send_message("/start")
-    response = await telegram_client.get_last_message()
-    assert "Bienvenido a THEA IA" in response.text
-    
-    # Step 2: Crear reminder
-    await telegram_client.send_message("Recuérdame reunión mañana 15:00")
-    response = await telegram_client.get_last_message()
-    assert "✅ Recordatorio creado" in response.text
-    assert "Reunión" in response.text
-    assert "Mañana 15:00" in response.text
-    
-    # Verificar en database
-    from src.database.models import Reminder
-    reminders = await db_session.execute(
-        select(Reminder).where(Reminder.user_id == telegram_client.user_id)
-    )
-    reminders = list(reminders.scalars())
-    assert len(reminders) == 1
-    assert "reunión" in reminders.title.lower()
-    
-    # Step 3: Ver reminders
-    await telegram_client.send_message("Ver mis recordatorios")
-    response = await telegram_client.get_last_message()
-    assert "📅 Reunión" in response.text
-    assert "Mañana 15:00" in response.text
-    
-    # Step 4: Completar reminder
-    await telegram_client.click_button("Completar")
-    response = await telegram_client.get_last_message()
-    assert "✅ Completado" in response.text
-    
-    # Verificar completed en DB
-    await db_session.refresh(reminders)
-    assert reminders.completed is True
-    assert reminders.completed_at is not None
-    
-    # Step 5: Ver historial
-    await telegram_client.send_message("Ver completados")
-    response = await telegram_client.get_last_message()
-    assert "✅ Reunión" in response.text
-    assert "Completado" in response.text
-✅ Características
-✅ Debe:
-Simular usuario real completo
+async def test_create_event_with_time(db_session, mock_user):
+"""
+E2E: Usuario crea evento con fecha y hora específica.
 
-Testear happy paths críticos
+text
+Flow:
+1. Usuario dice "Reunión con cliente mañana 15:00"
+2. Sistema extrae: fecha (mañana), hora (15:00), título (Reunión con cliente)
+3. Sistema crea evento en DB
+4. Sistema confirma al usuario
+"""
+# Arrange
+handler = AgendaAgentHandler(db_session)
+user_message = "Reunión con cliente mañana 15:00"
 
-Verificar UI + DB consistency
+# Act
+response = await handler.handle_message(
+    user_id=mock_user.id,
+    message=user_message
+)
 
-Cubrir journey completo (start → finish)
+# Assert - Response
+assert response["status"] == "success"
+assert "evento creado" in response["message"].lower()
+assert "Reunión con cliente" in response["message"]
+assert "mañana" in response["message"].lower()
+assert "15:00" in response["message"]
 
-❌ NO debe:
-Testear todos los edge cases (unit tests)
+# Assert - Database
+from src.theaia.database.models import Event
+events = await db_session.execute(
+    select(Event).where(Event.user_id == mock_user.id)
+)
+events = list(events.scalars())
 
-Depender de servicios externos reales
+assert len(events) == 1
+event = events
+assert "cliente" in event.title.lower()
+assert event.datetime.hour == 15
+assert event.datetime.minute == 0
+text
 
-Tardar >10 segundos por test
+---
 
-Tener más de 10-15 E2E tests totales
+## ✅ Características E2E
 
-🎭 Mock Telegram Client
-python
-# conftest.py
-@pytest.fixture
-async def telegram_client(db_session):
-    """Mock Telegram client para E2E"""
-    from tests.mocks import MockTelegramClient
-    
-    client = MockTelegramClient(
-        user_id=123456,
-        username="test_user"
-    )
-    
-    # Setup user en DB
-    user = await create_test_user(db_session, telegram_user_id=123456)
-    client.db_user = user
-    
-    yield client
-    
-    # Cleanup
-    await cleanup_test_user(db_session, user.id)
-🎯 Coverage Target
->70% en E2E tests
+**✅ Debe:**
+- Simular flujo de usuario real completo
+- Testear happy paths críticos
+- Verificar DB + lógica + respuesta
+- Cubrir journey completo (start → finish)
 
-Foco en:
+**❌ NO debe:**
+- Testear todos los edge cases (→ unit tests)
+- Depender de servicios externos reales
+- Tardar >10 segundos por test
+- Duplicar cobertura de unit tests
 
-User journeys críticos
+---
 
-Happy paths principales
+## 📊 Coverage Stats (15 Nov 2025)
 
-Features core (reminder, note)
+| Agent/Component | E2E Tests | Status |
+|-----------------|-----------|--------|
+| AgendaAgent | 17 | ✅ Complete |
+| NoteAgent | 14 | ✅ Complete |
+| ReminderAgent | 15 | ✅ Complete |
+| Context/FSM | 4 | ✅ Complete |
+| **TOTAL E2E** | **50** | ✅ |
 
-Onboarding + offboarding
+**E2E Coverage:** ~30% de casos de uso críticos  
+**Execution Time:** ~15-20 segundos total
 
-📊 Tests por Journey
-test_new_user_onboarding.py:
-/start → welcome message
+---
 
-User profile creado en DB
+## 🎯 Test Patterns
 
-Primera interacción funciona
+### AAA Pattern
+async def test_example():
+# Arrange - Setup
+handler = AgentHandler(db_session)
+user_message = "crear nota importante"
 
-Settings default aplicados
+text
+# Act - Execute
+response = await handler.handle(user_id, user_message)
 
-test_reminder_lifecycle.py:
-Create → View → Update → Complete → Archive
+# Assert - Verify
+assert response["status"] == "success"
+# ... verify DB, response, etc.
+text
 
-Notificaciones enviadas
+### Database Verification
+Always verify DB consistency
+notes = await db_session.execute(
+select(Note).where(Note.user_id == user.id)
+)
+notes = list(notes.scalars())
+assert len(notes) == 1
+assert notes.title == "importante"
 
-Database consistency
+text
 
-UI responde correctamente
+### Context Verification
+Verify context is maintained
+assert "context" in response
+assert response["context"]["state"] == "awaiting_confirmation"
 
-test_note_lifecycle.py:
-Create → View → Edit → Delete
+text
 
-Tags funcionan
+---
 
-Search funciona
+## 🐌 Performance
 
-Pinned notes
+E2E tests son inherentemente más lentos:
 
-test_multi_agent_flow.py:
-Usuario usa múltiples agentes
+- **Target:** <5 segundos por test
+- **Total suite:** <30 segundos
+- **Optimizations:**
+  - Mock external services
+  - Database fixtures rápidos
+  - Parallel execution donde posible
 
-Context switching funciona
+---
 
-Agents no interfieren
+## 🎯 Next Steps (Phase 4+)
 
-test_telegram_bot_complete.py:
-Bot responde a todos comandos
+**Additional E2E Tests:**
+- [ ] Multi-agent workflows
+- [ ] Error recovery scenarios
+- [ ] Performance under load
+- [ ] Telegram integration tests (con mock)
 
-Error handling correcto
+**Improvements:**
+- [ ] Faster DB fixtures
+- [ ] Better test data factories
+- [ ] Parallel test execution
+- [ ] CI/CD integration optimizations
 
-Performance aceptable
+---
 
-🐌 Performance
-E2E tests son lentos:
-
-Target: <5 segundos por test
-
-Total E2E suite: <2 minutos
-
-Optimizaciones:
-
-Parallel execution donde posible
-
-Mock external services (Telegram API)
-
-Database fixtures rápidos
-
-Skip en CI fast mode
-
-📚 Por Implementar
-H07 (29-30 Nov)
-
-Orden implementación:
-
-Setup mock Telegram client
-
-test_new_user_onboarding.py
-
-test_reminder_lifecycle.py
-
-test_note_lifecycle.py
-
-test_multi_agent_flow.py
-
-test_telegram_bot_complete.py
-
-🎯 Prioridad E2E Tests
-Must Have (H07):
-✅ New user onboarding
-
-✅ Reminder lifecycle
-
-✅ Note lifecycle
-
-✅ Bot responde
-
-Nice to Have (H09+):
-Multi-agent flow
-
-Error recovery
-
-Subscription flow (H05+)
-
-Long-running sessions
-
-Implementar en: H07 (29-30 Nov)
-Última actualización: 11 Nov 2025
+**Implementado:** H03 (15-16 Nov 2025)  
+**Última actualización:** 15 Nov 2025, 23:56 CET
