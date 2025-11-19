@@ -10,5 +10,7 @@
   "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_search_notes": true,
   "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_handle_message_with_context_persistence": true,
   "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_agent_status": true,
-  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_agent_cleanup": true
+  "src/theaia/tests/e2e/test_note_agent_e2e.py::TestNoteAgentE2E::test_agent_cleanup": true,
+  "src/theaia/tests/integration/test_connection_pool.py::test_concurrent_queries": true,
+  "src/theaia/tests/integration/test_connection_pool.py::test_pool_handles_multiple_sessions": true
 }
