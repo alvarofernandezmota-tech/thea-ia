@@ -7,6 +7,7 @@ from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import relationship
 from .base import BaseModel
 
+
 class Event(BaseModel):
     """
     Evento/Recordatorio de la agenda.
@@ -18,8 +19,8 @@ class Event(BaseModel):
     - end_datetime: Fecha/hora fin (opcional)
     - location: Ubicación del evento
     - event_type: Tipo (personal, work, medical, etc)
-    - status: Estado (active, cancelled, completed)
-    - reminder_minutes: Minutos antes para recordatorio
+    - status: Estado (pending, completed, cancelled)
+    - reminder_minutes: Minutos antes para recordatorio (None = sin recordatorio)
     - recurrence_rule: Regla de recurrencia (formato RRULE)
     - external_id: ID externo (Google Calendar, etc)
     """
@@ -39,10 +40,11 @@ class Event(BaseModel):
     # Detalles
     location = Column(String(500))
     event_type = Column(String(50), default='personal')
-    status = Column(String(20), default='active', index=True)
+    status = Column(String(20), default='pending', index=True)
     
     # Recordatorios
-    reminder_minutes = Column(Integer, default=30)
+    # ✅ CRÍTICO: Sin default Python para respetar None explícito
+    reminder_minutes = Column(Integer, nullable=True)
     
     # Recurrencia
     recurrence_rule = Column(String(200))
@@ -52,7 +54,6 @@ class Event(BaseModel):
     
     # Metadatos adicionales
     extra_data = Column(JSONB, default={})
-
     
     # Relaciones
     user = relationship("User", back_populates="events")
