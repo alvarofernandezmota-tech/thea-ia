@@ -3,8 +3,8 @@ MessageHistory Repository para THEA IA
 Auditoría de mensajes y análisis ML (intent, entities)
 
 Autor: Álvaro Fernández Mota
-Fecha: 12 Nov 2025
-Hito: H02 - Database Layer
+Fecha: 12 Nov 2025 | Actualizado: 19 Nov 2025 (FASE 7.3)
+Hito: H02 - Database Layer + Context Window Management
 """
 
 from typing import Optional, List, Dict, Any
@@ -15,6 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.theaia.database.repositories.base_repository import BaseRepository
 from src.theaia.database.models.message_history import MessageHistory
 
+# FASE 7.3: Context Window Management
+MAX_CONTEXT_MESSAGES = 50  # Límite de mensajes por conversación
+
 
 class MessageHistoryRepository(BaseRepository[MessageHistory]):
     """
@@ -22,7 +25,9 @@ class MessageHistoryRepository(BaseRepository[MessageHistory]):
     
     Extiende BaseRepository con métodos específicos para historial:
     - add_message(): Crear registro de mensaje
+    - add_message_with_prune(): Crear con auto-limpieza (FASE 7.3)
     - get_recent(): Mensajes recientes de conversación
+    - get_context_window(): Últimos N mensajes (FASE 7.3)
     - get_conversation_history(): Todo el historial de conversación
     - get_by_intent(): Filtrar por intent detectado
     - get_statistics(): Estadísticas ML (intents, confidence)
@@ -31,9 +36,10 @@ class MessageHistoryRepository(BaseRepository[MessageHistory]):
     Example:
         async with get_db() as session:
             msg_repo = MessageHistoryRepository(session)
-            await msg_repo.add_message(
+            await msg_repo.add_message_with_prune(
                 conversation_id=1,
                 tenant_id="default",
+                message_id="msg_123",
                 user_message="Quiero crear un evento",
                 intent_detected="create_event"
             )
@@ -101,6 +107,121 @@ class MessageHistoryRepository(BaseRepository[MessageHistory]):
             confidence_score=confidence_score,
             processing_time_ms=processing_time_ms
         )
+    
+    async def add_message_with_prune(
+        self,
+        conversation_id: int,
+        tenant_id: str,
+        message_id: str,
+        user_message: Optional[str] = None,
+        bot_response: Optional[str] = None,
+        intent_detected: Optional[str] = None,
+        entities_extracted: Optional[Dict[str, Any]] = None,
+        confidence_score: Optional[float] = None,
+        processing_time_ms: Optional[int] = None
+    ) -> MessageHistory:
+        """
+        Crea un mensaje con auto-pruning (FASE 7.3: Context Window).
+        
+        Si la conversación supera MAX_CONTEXT_MESSAGES, elimina
+        automáticamente el mensaje más antiguo.
+        
+        Args:
+            (Igual que add_message)
+        
+        Returns:
+            MessageHistory creado
+        
+        Example:
+            # Automáticamente mantiene ventana de 50 mensajes
+            msg = await msg_repo.add_message_with_prune(
+                conversation_id=1,
+                tenant_id="default",
+                message_id="msg_999",
+                user_message="Nuevo mensaje"
+            )
+        """
+        # 1. Crear mensaje normalmente
+        new_message = await self.create(
+            conversation_id=conversation_id,
+            tenant_id=tenant_id,
+            message_id=message_id,
+            user_message=user_message,
+            bot_response=bot_response,
+            intent_detected=intent_detected,
+            entities_extracted=entities_extracted,
+            confidence_score=confidence_score,
+            processing_time_ms=processing_time_ms
+        )
+        
+        # 2. Contar mensajes actuales para este tenant + conversación
+        count_stmt = select(func.count()).select_from(MessageHistory).where(
+            and_(
+                MessageHistory.tenant_id == tenant_id,
+                MessageHistory.conversation_id == conversation_id
+            )
+        )
+        result = await self.session.execute(count_stmt)
+        count = result.scalar_one()
+        
+        # 3. Si supera límite, borrar el más antiguo
+        if count > MAX_CONTEXT_MESSAGES:
+            oldest_stmt = select(MessageHistory).where(
+                and_(
+                    MessageHistory.tenant_id == tenant_id,
+                    MessageHistory.conversation_id == conversation_id
+                )
+            ).order_by(MessageHistory.created_at.asc()).limit(1)
+            
+            oldest_result = await self.session.execute(oldest_stmt)
+            oldest_msg = oldest_result.scalar_one_or_none()
+            
+            if oldest_msg:
+                await self.session.delete(oldest_msg)
+                await self.session.commit()
+        
+        return new_message
+    
+    async def get_context_window(
+        self,
+        conversation_id: int,
+        tenant_id: str,
+        limit: int = MAX_CONTEXT_MESSAGES
+    ) -> List[MessageHistory]:
+        """
+        Obtiene la ventana de contexto (últimos N mensajes) (FASE 7.3).
+        
+        Devuelve solo los mensajes más recientes, limitado por MAX_CONTEXT_MESSAGES.
+        Útil para ML/LLM que solo necesita contexto relevante.
+        
+        Args:
+            conversation_id: ID de la conversación
+            tenant_id: ID del tenant
+            limit: Tamaño de ventana (default MAX_CONTEXT_MESSAGES)
+        
+        Returns:
+            Lista de mensajes ordenados cronológicamente (más antiguo primero)
+        
+        Example:
+            # Obtener ventana de contexto para LLM
+            window = await msg_repo.get_context_window(1, "default")
+            context = "\n".join([
+                f"User: {m.user_message}\nBot: {m.bot_response}"
+                for m in window
+            ])
+        """
+        stmt = select(MessageHistory).where(
+            and_(
+                MessageHistory.tenant_id == tenant_id,
+                MessageHistory.conversation_id == conversation_id
+            )
+        ).order_by(MessageHistory.created_at.desc()).limit(limit)
+        
+        result = await self.session.execute(stmt)
+        messages = list(result.scalars().all())
+        
+        # Devolver en orden cronológico (más antiguo primero)
+        return list(reversed(messages))
     
     async def get_recent(
         self,
