@@ -1,122 +1,218 @@
-Changelog - src/tests/
-Cambios en la suite de tests de THEA IA.
+# Changelog - Testing Suite
 
-[Unreleased]
-Planificado H07 (27 Nov - 01 Dic)
-Integration tests completos
+Changes to the THEA_IA testing suite.
 
-E2E tests críticos
+---
 
-CI/CD pipeline completo
+## [Unreleased]
 
-[0.7.0] - 2025-12-01 (H07 Target)
-Added
-Integration Tests:
+**Planned for H07 (27 Nov - 01 Dic)**
+- Complete integration test suite
+- Critical E2E test scenarios
+- Full CI/CD pipeline integration
 
-test_telegram_flow.py (Telegram → DB)
+---
 
-test_database_flow.py (Repo → Model → DB)
+## [0.3.0] - 2025-11-16 (H03 - Phase 3)
 
-test_agent_flow.py (Agent CRUD completo)
+### 🎉 Phase 3 Complete - Agent Configuration & Entity Extraction
 
-test_adapter_agent.py (Adapter ↔ Agent)
+#### Added
 
-test_core_agents.py (CoreManager routing)
+**AgentConfig System**
+- `test_agent_config.py`: AgentConfig class tests (15 tests, 100% coverage)
+  - Config creation and management
+  - Intent add/remove/check
+  - Serialization (to_dict/from_dict)
+  - Predefined configs for 6 agents
+  - Config registry tests
 
-E2E Tests:
+**Entity Extraction Tests (48 tests total)**
+- `test_date_parser.py`: DateTimeExtractor tests (15 tests, 91% coverage)
+  - Relative dates: "mañana", "hoy", "en N días"
+  - Weekdays: "lunes", "martes", etc.
+  - Time formats: "10:30", "15h"
+  - Complex expressions
+  - Invalid input handling
 
-test_user_journey/ (onboarding, lifecycles)
+- `test_entity_extraction.py`: Location & Person extraction (18 tests, 99% avg)
+  - **LocationExtractor** (100% coverage):
+    - 35+ Spanish cities recognition
+    - Location types (oficina, casa, etc.)
+    - Preposition patterns (en, a, desde)
+    - Accent handling
+  - **PersonNameExtractor** (98% coverage):
+    - 35+ common Spanish names
+    - Title recognition (Dr., Sr., Prof.)
+    - Preposition patterns (con, de, para)
+    - Complex sentences
 
-test_telegram_bot_complete.py
+**E2E Test Suites (46 tests total)**
+- `test_agenda_agent_e2e.py`: AgendaAgent workflows (17 tests)
+  - Event creation (basic, with time, location)
+  - Event listing and viewing
+  - Event editing and cancellation
+  - Recurring events and conflict detection
+  - Complete lifecycle testing
 
-test_reminder_lifecycle.py
+- `test_note_agent_e2e.py`: NoteAgent workflows (14 tests)
+  - Note CRUD operations
+  - Category and tag management
+  - Search functionality
+  - Pin/unpin notes
+  - Full lifecycle testing
 
-test_note_lifecycle.py
+- `test_reminder_agent_e2e.py`: ReminderAgent workflows (15 tests)
+  - Time-based reminders (all formats)
+  - Weekday-based reminders
+  - Reminder management (list, edit, complete, delete)
+  - Location-based reminders
+  - Recurring reminders
 
-test_multi_agent_flow.py
+**Test Documentation**
+- Updated `README.md` in all test directories:
+  - `src/theaia/tests/README.md`: Complete overview (173 tests)
+  - `unit/README.md`: Unit tests guide (77 tests)
+  - `e2e/README.md`: E2E tests guide (50 tests)
+  - `integration/README.md`: Integration guide (14 tests)
+  - `adapters/README.md`: Adapter tests guide (10 tests)
+  - `core/README.md`: Core tests guide (22 tests)
 
-Coverage
-Integration: >80%
+#### Stats
 
-E2E: >70%
+**Test Count:**
+- Unit: 77 tests (45% of suite)
+- E2E: 50 tests (29% of suite)
+- Integration: 14 tests (8% of suite)
+- Adapters: 10 tests (6% of suite)
+- Core: 22 tests (12% of suite)
+- **Total: 173 tests** (+86 new tests)
 
-Total: >85%
+**Coverage:**
+- Overall: 50% (target reached! ✅)
+- AgentConfig: 100%
+- LocationExtractor: 100%
+- PersonNameExtractor: 98%
+- DateTimeExtractor: 91%
+- BaseAgent: 93%
 
-[0.2.0] - 2025-11-16 (H02 Target)
-Added
-Test Infrastructure:
+**Performance:**
+- Execution time: ~8 seconds (all 173 tests)
+- Pass rate: 100% (0 failures, 0 skips)
+- Warnings: 18 (deprecation warnings only)
 
-pytest.ini configurado
+#### Files Added
+src/theaia/tests/unit/test_agent_config.py
+src/theaia/tests/unit/test_date_parser.py
+src/theaia/tests/unit/test_entity_extraction.py
+src/theaia/tests/e2e/test_agenda_agent_e2e.py
+src/theaia/tests/e2e/test_note_agent_e2e.py
+src/theaia/tests/e2e/test_reminder_agent_e2e.py
 
-conftest.py con fixtures globales
+text
 
-fixtures/ (database, user, telegram, datetime)
+#### Documentation Updated
+src/theaia/tests/README.md
+src/theaia/tests/unit/README.md
+src/theaia/tests/e2e/README.md
+src/theaia/tests/integration/README.md
+src/theaia/tests/adapters/README.md (new)
+src/theaia/tests/core/README.md
+docs/testing/README.md
+docs/testing/changelog.md (this file)
 
-Unit Tests:
+text
 
-test_config/ (settings, logging, constants)
+---
 
-test_database/test_connection.py
+## [0.7.0] - 2025-12-01 (H07 Target)
 
-test_database/test_models/ (6 models)
+### Added
 
-test_database/test_repositories/ (6 repositories)
+**Integration Tests:**
+- `test_telegram_flow.py` (Telegram → DB)
+- `test_database_flow.py` (Repo → Model → DB)
+- `test_agent_flow.py` (Agent CRUD completo)
+- `test_adapter_agent.py` (Adapter ↔ Agent)
+- `test_core_agents.py` (CoreManager routing)
 
-test_models/ (Pydantic schemas - 7 módulos)
+**E2E Tests:**
+- `test_user_journey/` (onboarding, lifecycles)
+- `test_telegram_bot_complete.py`
+- `test_reminder_lifecycle.py`
+- `test_note_lifecycle.py`
+- `test_multi_agent_flow.py`
 
-test_adapters/test_telegram_adapter.py
+### Coverage
+- Integration: >80%
+- E2E: >70%
+- Total: >85%
 
-test_agents/ (5 agents)
+---
 
-test_core/test_thea_manager.py
+## [0.2.0] - 2025-11-16 (H02 Target)
 
-test_utils/ (datetime, text, validators, formatters)
+### Added
 
-Coverage
-Unit: >90%
+**Test Infrastructure:**
+- `pytest.ini` configurado
+- `conftest.py` con fixtures globales
+- `fixtures/` (database, user, telegram, datetime)
 
-Total: >85%
+**Unit Tests:**
+- `test_config/` (settings, logging, constants)
+- `test_database/test_connection.py`
+- `test_database/test_models/` (6 models)
+- `test_database/test_repositories/` (6 repositories)
+- `test_models/` (Pydantic schemas - 7 módulos)
+- `test_adapters/test_telegram_adapter.py`
+- `test_agents/` (5 agents)
+- `test_core/test_thea_manager.py`
+- `test_utils/` (datetime, text, validators, formatters)
 
-CI/CD
-GitHub Actions ejecuta tests automáticamente
+### Coverage
+- Unit: >90%
+- Total: >85%
 
-Coverage report en CI
+### CI/CD
+- GitHub Actions ejecuta tests automáticamente
+- Coverage report en CI
+- Fail si coverage <85%
 
-Fail si coverage <85%
+---
 
-[0.1.0] - 2025-11-03 (H01)
-Added
-Estructura inicial tests/
+## [0.1.0] - 2025-11-03 (H01)
 
-Documentación:
+### Added
 
-README.md
+**Estructura inicial tests/**
+- Documentación:
+  - `README.md`
+  - `ROADMAP.md`
+  - `CHANGELOG.md`
+  - `STRUCTURE.md`
+  - `DEPENDENCIES.md`
+  - `TESTING_GUIDE.md`
+- Estrategia testing (70/20/10 pirámide)
 
-ROADMAP.md
+---
 
-CHANGELOG.md
+## Test Markers
 
-STRUCTURE.md
+### v0.3.0 (Current):
+- `@pytest.mark.unit`
+- `@pytest.mark.e2e`
+- `@pytest.mark.integration`
+- `@pytest.mark.database`
+- `@pytest.mark.slow`
 
-DEPENDENCIES.md
+### v0.7.0 (Planned):
+- `@pytest.mark.telegram`
+- `@pytest.mark.ml`
+- `@pytest.mark.payment`
 
-TESTING_GUIDE.md
+---
 
-Estrategia testing (70/20/10 pirámide)
-
-Test Markers
-v0.2.0:
-@pytest.mark.unit
-
-@pytest.mark.database
-
-@pytest.mark.slow
-
-v0.7.0:
-@pytest.mark.integration
-
-@pytest.mark.e2e
-
-@pytest.mark.telegram
-
-Última actualización: 11 Nov 2025
+**Last Updated:** 16 Nov 2025, 00:16 CET  
+**Version:** 0.3.0  
+**Maintainer:** Álvaro Fernández Mota

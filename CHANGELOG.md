@@ -1,13 +1,288 @@
 CHANGELOG — THEA IA (Raíz)
 Proyecto: THEA IA
 Actualizado por: Álvaro Fernández Mota (CEO THEA IA)
-Última actualización: 2025-11-14 17:12 CET
+Última actualización: 2025-11-16 00:20 CET
 
-IMPORTANTE
-
+⚠️ IMPORTANTE
 Cada carpeta (core, agents, adapters, tests, docs) tiene su propio CHANGELOG.md local para registro de cambios y auditoría en pequeño.
 
 Este archivo refleja TODOS los cambios y hitos de la raíz y del proyecto global, versión y milestone tras milestone, tareas estructurales y avances transversales por equipo y fase.
+
+v0.16.0 — 2025-11-16 (H03 Phase 3 Completado - Agent Config & Entity Extraction)
+Sesión: 2025-11-15 17:00 CET ~ 2025-11-16 00:20 CET
+Duración: 7h 20min
+Hito: H03 — Agent Configuration & Entity Extraction (100% COMPLETADO)
+
+🎉 Logro Principal
+Phase 3 Complete: 173 tests, 50% coverage achieved!
+
+AgentConfig system implemented (100% coverage)
+
+3 Entity extractors (Spanish NLP) implemented
+
+46 E2E tests for all 3 core agents
+
+Test suite documentation complete
+
+✅ Completado durante esta sesión
+17:00-18:30 — FASE 1: AgentConfig System (1h 30min)
+
+src/theaia/agents/agent_config.py created (38 statements)
+
+Centralized configuration for all 6 agents
+
+Intent management (add/remove/check)
+
+Serialization support (to_dict/from_dict)
+
+Predefined configs: Agenda, Note, Reminder, Query, Help, Fallback
+
+15 unit tests, 100% coverage
+
+18:30-20:00 — FASE 2: Entity Extraction Suite (1h 30min)
+
+DateTimeExtractor (date_parser.py, 75 statements):
+
+Relative dates: "mañana", "hoy", "en N días"
+
+Weekdays: "lunes", "martes", etc.
+
+Time formats: "10:30", "15h"
+
+Complex expressions: "el próximo viernes 18:00"
+
+15 tests, 91% coverage
+
+LocationExtractor (location_extractor.py, 39 statements):
+
+35+ Spanish cities recognition
+
+Location types: oficina, casa, trabajo
+
+Preposition patterns: en, a, desde, hasta
+
+Accent handling (Málaga, Cáceres)
+
+18 tests, 100% coverage
+
+PersonNameExtractor (person_name_extractor.py, 48 statements):
+
+35+ common Spanish names
+
+Title recognition: Dr., Sr., Prof., Ing.
+
+Preposition patterns: con, de, para
+
+Context-aware extraction
+
+18 tests, 98% coverage
+
+20:00-22:30 — FASE 3: E2E Test Suites (2h 30min)
+
+AgendaAgent E2E (17 tests):
+
+Event creation (basic, with time, location)
+
+Event listing and viewing
+
+Event editing and cancellation
+
+Recurring events, conflict detection
+
+Complete lifecycle testing
+
+NoteAgent E2E (14 tests):
+
+Note CRUD operations
+
+Category and tag management
+
+Search functionality
+
+Pin/unpin notes
+
+Full lifecycle testing
+
+ReminderAgent E2E (15 tests):
+
+Time-based reminders (all formats)
+
+Weekday-based reminders
+
+Reminder management (list, edit, complete, delete)
+
+Location-based reminders
+
+Recurring reminders
+
+22:30-23:30 — FASE 4: Test Documentation (1h)
+
+Updated 6 test README files:
+
+src/theaia/tests/README.md (complete overview - 173 tests)
+
+unit/README.md (77 tests)
+
+e2e/README.md (50 tests)
+
+integration/README.md (14 tests)
+
+adapters/README.md (10 tests - created)
+
+core/README.md (22 tests)
+
+23:30-00:20 — FASE 5: Project Documentation (50min)
+
+Updated docs/testing/README.md
+
+Updated docs/testing/changelog.md
+
+Updated docs/testing/testing_guide.md
+
+Updated CHANGELOG.md (this file)
+
+Git commits prepared
+
+Added
+Agent Configuration System
+
+text
+src/theaia/agents/agent_config.py (38 statements, 100% coverage)
+src/theaia/tests/unit/test_agent_config.py (15 tests)
+Entity Extraction Suite
+
+text
+src/theaia/ml/entity_extractor/date_parser.py (75 statements, 91%)
+src/theaia/ml/entity_extractor/location_extractor.py (39 statements, 100%)
+src/theaia/ml/entity_extractor/person_name_extractor.py (48 statements, 98%)
+src/theaia/tests/unit/test_date_parser.py (15 tests)
+src/theaia/tests/unit/test_entity_extraction.py (18 tests)
+E2E Test Suites
+
+text
+src/theaia/tests/e2e/test_agenda_agent_e2e.py (17 tests)
+src/theaia/tests/e2e/test_note_agent_e2e.py (14 tests)
+src/theaia/tests/e2e/test_reminder_agent_e2e.py (15 tests)
+Documentation
+
+text
+src/theaia/tests/README.md (updated - 173 tests overview)
+src/theaia/tests/unit/README.md (updated)
+src/theaia/tests/e2e/README.md (updated)
+src/theaia/tests/integration/README.md (updated)
+src/theaia/tests/adapters/README.md (created)
+src/theaia/tests/core/README.md (updated)
+docs/testing/README.md (updated)
+docs/testing/changelog.md (updated)
+docs/testing/testing_guide.md (updated)
+Métricas
+Test Stats:
+
+Total tests: 173 (+86 new tests)
+
+Unit: 77 tests (45%)
+
+E2E: 50 tests (29%)
+
+Core: 22 tests (12%)
+
+Integration: 14 tests (8%)
+
+Adapters: 10 tests (6%)
+
+Coverage: 50% ✅ (target reached!)
+
+Pass rate: 100% (0 failures, 0 skips)
+
+Execution time: ~8 seconds (all tests)
+
+Code Stats:
+
+LOC production: ~200 (AgentConfig + extractors)
+
+LOC tests: ~1,400 (unit + E2E)
+
+Total: ~1,600 LOC
+
+Files added: 10 files
+
+Coverage by Module:
+
+AgentConfig: 100%
+
+LocationExtractor: 100%
+
+PersonNameExtractor: 98%
+
+DateTimeExtractor: 91%
+
+BaseAgent: 93%
+
+Changed
+Test Suite Organization:
+
+Complete test documentation structure
+
+All test directories have comprehensive READMEs
+
+Test guide updated with Phase 3 achievements
+
+Entity Extraction:
+
+Spanish NLP support fully functional
+
+35+ cities, 35+ names recognized
+
+Complex date/time expressions supported
+
+Fixed
+Test Coverage:
+
+Increased from 37% → 50% (+13%)
+
+All critical agent paths tested
+
+Documentation:
+
+Test suite fully documented
+
+All README files updated
+
+Changelog synchronized
+
+Docs
+Test Documentation:
+
+6 test README files updated/created
+
+Complete test suite overview (173 tests)
+
+Testing guide updated
+
+Project Documentation:
+
+docs/testing/ updated (3 files)
+
+CHANGELOG.md updated (this file)
+
+Ready for ROADMAP.md update
+
+Estado Hitos
+H03: COMPLETADO 100% ✅ (15-16 Nov 2025)
+
+AgentConfig: ✅ Complete
+
+Entity Extraction: ✅ Complete (3 extractors)
+
+E2E Tests: ✅ Complete (46 tests)
+
+Documentation: ✅ Complete
+
+Siguiente: H04 — API Optimization & Services
+
+Última actualización: 16 Nov 2025, 00:20 CET
+Responsable: Álvaro Fernández Mota (CEO THEA IA)
+Versión actual: v0.16.0 (H03 Complete)
 
 v0.15.0 — 2025-11-12 (H02 Core Completado - Database & Telegram)
 Sesión: 2025-11-12 14:20 CET ~ 2025-11-12 18:47 CET
@@ -527,12 +802,11 @@ Mejoras en onboarding de módulos.
 Actualización de dependencias base.
 
 📊 Auditoría por Sesión
-|| Fecha | Hora | Hito | Versión | Duración | Estado |
-|-------|------|------|---------|----------|--------|
-| 2025-11-12 | 14:20-18:47 | H02 | v0.15.0 | 4h 17min | ✅ Core Completado |
-| 2025-10-31 | 00:14-01:17 | H01 | v0.14.0 | 1h 3min | ✅ Completado |
-| 2025-10-20 | - | Previo | v0.13.0 | - | ✅ Completado |
-
+Fecha	Hora	Hito	Versión	Duración	Estado
+2025-11-16	17:00-00:20	H03	v0.16.0	7h 20min	✅ Complete
+2025-11-12	14:20-18:47	H02	v0.15.0	4h 17min	✅ Core Completado
+2025-10-31	00:14-01:17	H01	v0.14.0	1h 3min	✅ Completado
+2025-10-20	-	Previo	v0.13.0	-	✅ Completado
 🔗 Enlaces Relacionados
 ROADMAP.md — Roadmap completo del proyecto
 
@@ -542,13 +816,14 @@ CONTRIBUTING.md — Guía de contribución
 
 SECURITY.md — Política de seguridad
 
-docs/roadmap/milestones/H02.md — Detalle H02
+docs/roadmap/milestones/H03.md — Detalle H03
 
-docs/diary/diarynoviembre.md — Diario noviembre
+docs/diary/ — Diarios de desarrollo
 
 Debe mantenerse actualizado por el CEO y responsables técnicos tras cada milestone, refactor crítico o release.
+
 Garantiza trazabilidad, transparencia y orquestación para equipos grandes y auditoría integral.
 
-Última actualización: 2025-11-14 17:12 CET
+Última actualización: 16 Nov 2025, 00:20 CET
 Responsable: Álvaro Fernández Mota (CEO THEA IA)
-Versión actual: v0.15.0 (H02 Core Completado)
+Versión actual: v0.16.0 (H03 Complete)
