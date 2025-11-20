@@ -1,339 +1,537 @@
-🗺️ Roadmap Overview — THEA IA
-Versión: v0.15.0
-Última actualización: 2025-11-14 16:50 CET (Sesión 9 - Auditoría Post-H02)
-Responsable: Álvaro Fernández Mota (CEO THEA IA)
-Estado: ✅ Activo
+🚀 DEPLOYMENT STRATEGY & THEA IA PHILOSOPHY
+Documento: Guía maestro de despliegue y filosofía del proyecto
+Versión: v1.0.0
+Creado: 19 Noviembre 2025, 22:45 CET
+Responsable: Álvaro Fernández Mota (CEO THEA-IA)
 
-📋 Propósito
-Visión estratégica complementaria del roadmap THEA IA. Para detalles operativos y tracking real, ver:
+🎯 TABLA DE CONTENIDOS
+THEA IA Philosophy - Principios fundamentales
 
-Roadmap Maestro — Plan operativo H01-H17 (tracking de sesiones)
+Diferencia: Hitos vs Fases vs Checklists - Estructura clara
 
-Milestones — Detalle por hito (H01, H02, etc.)
+Deployment Strategy - Cómo llevar a producción
 
-🎯 Visión & Misión
-Visión
-"Democratizar la IA conversacional enterprise para todas las empresas, permitiendo automatizar conversaciones complejas con seguridad, escalabilidad y observabilidad de nivel mundial."
+Escalado por Fase - Cómo escalar H03→H04→...→H17
 
-Misión
-Proveer una plataforma open-source de agentes conversacionales que:
-
-Entienden contexto y mantienen estado conversacional
-
-Escalan horizontalmente sin intervención manual
-
-Cumplen estándares enterprise (GDPR, SOC 2, CCPA)
-
-Son extensibles, customizables y auditables
-
-🏗️ Arquitectura Evolutiva (4 Fases)
+🛡️ PARTE 1: THEA IA PHILOSOPHY
+Core Principle: "100x100"
 text
-Fase 1: Core & FSM (H01)
-  └─ FSM básico, tests, documentación raíz
-  └─ Status: ✅ COMPLETADA (2025-10-31)
-  └─ Duración real: 53.3 horas en 15 sesiones
-
-Fase 2: Multi-agentes & Adapters (H02-H07)
-  └─ Database, Telegram, Web, multi-agentes, ML pipelines
-  └─ Status: 🔄 EN CURSO (12% - H02 core completado)
-  └─ Deadline: 2025-12-15
-  └─ Avance: H02 Database + Telegram funcional (12 nov)
-
-Fase 3: Infra, Observabilidad & Seguridad (H08-H14)
-  └─ Multi-tenancy, K8s, Prometheus, RBAC, hardening
-  └─ Status: ⏳ PRÓXIMA (0%)
-  └─ Deadline: 2026-04-01
-  └─ Nota: Multi-tenant base ya implementado en H02
-
-Fase 4: Escalabilidad & Release (H15-H17)
-  └─ Performance, plugins, go-live
-  └─ Status: ⏳ FUTURA (0%)
-  └─ Deadline: 2026-06-01
-```
-
----
-
-## 📅 17 Hitos (H01-H17)
-
-Para detalles operativos y fechas exactas, ver [master.md](./master.md)
-
-### ✅ Completados
-
-|| Hito | Nombre | Período | Estado | Detalles |
-|------|--------|---------|--------|----------|
-| H01 | Organización & Tests | 2025-10-08 ~ 10-31 | ✅ 100% | 53.3h, 15 sesiones |
-
-### ✅ Parcialmente Completados
-
-| H| Hito | Nombre | Período | Estado | Completado |
-|------|--------|---------|--------|------------|
-| H02 | Database & Telegram | 2025-11-12 | ✅ Core 70% | Database + Telegram funcional |
-
-**H02 - Componentes completados:**
-- ✅ PostgreSQL Database Layer (7 modelos, 6 repos, 12 tests)
-- ✅ TelegramAdapter funcional con persistencia
-- ✅ Primera conversación real (Usuario Entu, 12 nov 17:02)
-- ✅ Multi-tenant architecture implementada
-
-**H02 - Componentes aplazados:**
-- ⏸️ Web Client → Post-H05
-- ⏸️ OAuth2/JWT → H08
-- ⏸️ Tests E2E completos → H07
-
-### 🔄 En Curso / Próximos
-
-| Hito || Hito | Nombre | Período | Deadline | Estado |
-|------|--------|---------|----------|--------|
-| H03 | FSM Avanzado & CoreRouter | 2025-11-15 ~ 11-20 | 2025-11-20 | ⏳ Próximo |
-| H04 | Persistencia Avanzada | 2025-11-21 ~ 11-25 | 2025-11-25 | ⏸️ ~50% en H02 |
-| H05 | Agentes Verticales + LLM | 2025-11-26 ~ 12-01 | 2025-12-01 | ⏳ Planificado |
-| H06 | ML/NLP Hybrid Architecture | 2025-12-02 ~ 12-10 | 2025-12-10 | ⏳ Planificado |
-| H07 | E2E Tests & QA | 2025-12-11 ~ 12-15 | 2025-12-15 | ⏳ Planificado |
-
-**Nota H04:** Database base completado en H02. H04 se enfoca en optimizaciones y features avanzadas.
-
-**Nota H05-H06:** Integrarán arquitectura híbrida LLM (Reglas + spaCy + LLM) según análisis del 14 nov.
-
-### ⏳ Planificados (Fase 3-4)
-
-| Hito || Hito | Nombre | Período (aprox) | Fase |
-|------|--------|-----------------|------|
-| H08 | Multi-empresa RBAC + Web | 2026-01-10 | 3 |
-| H09 | Docker/K8s & CI/CD | 2026-01-20 | 3 |
-| H10 | WhatsApp & REST API | 2026-02-01 | 3 |
-| H11 | Observabilidad | 2026-02-15 | 3 |
-| H12 | Integraciones Externas | 2026-03-01 | 3 |
-| H13 | Seguridad & Hardening | 2026-03-15 | 3 |
-| H14 | Onboarding Profesional | 2026-04-01 | 3 |
-| H15 | Performance & Stress Testing | 2026-04-20 | 4 |
-| H16 | Plugins & Customización | 2026-05-10 | 4 |
-| H17 | Auditoría Final & Go-Live | 2026-06-01 | 4 |
-
-→ Ver [master.md](./master.md) para detalles operativos de cada hito
-
----
-
-## 📊 Auditoría de Documentación
-
-**Plan maestro auditoría:** [PLAN-AUDITORIA-updated.md](../audit/PLAN-AUDITORIA-updated.md)
-
-### Estado Auditoría docs/ (Actualizado 14 Nov)
-
-| Carpeta || Carpeta | Archivos | Status | % | Notas |
-|---------|----------|--------|---|-------|
-| Security | 7 | ✅ COMPLETADA | 100% | Sesión 37 |
-| Guides | 9 | ✅ COMPLETADA | 100% | Sesión 37 |
-| Roadmap | 4 | 🔄 ACTUALIZANDO | 90% | Sesión 9 (14 nov) |
-| Audit | 3 | ✅ COMPLETADA | 100% | S40 |
-| Diary | 3 | 🔄 ACTUALIZANDO | 95% | En curso |
-| **TOTAL** | **26** | **🔄 EN PROGRESO** | **95%** | Casi completo |
-
-**Meta:** 100% auditoría docs/ completada  
-**Estado global:** 95% (actualizado 14 nov post-H02)
-
-→ Ver [PLAN-AUDITORIA-updated.md](../audit/PLAN-AUDITORIA-updated.md) para metodología y tracking detallado
-
----
-
-## 📈 Métricas de Éxito
-
-### Adopción
-
-| Métrica | v0.| Métrica | v0.15 (Actual) | v1.0 (Q2 2026) | v2.0 (Q1 2027) |
-|---------|----------------|----------------|----------------|
-| Usuarios activos | 1 | 100 | 1,000 |
-| Conversaciones/día | 10 (real) | 500 | 5,000 |
-| Agentes funcionales | 8 (base) | 12+ (inteligentes) | 20+ |
-| Contributors | 1 | 10 | 50 |
-
-**Nota:** Primera conversación real persistida el 12 nov 2025 (Usuario Entu, Telegram).
-
-### Performance
-
-| Métrica | v0| Métrica | v0.15 | v1.0 | v2.0 |
-|---------|-------|------|------|
-| Latencia p95 | <200ms | <100ms | <50ms |
-| Uptime | 95% | 99% | 99.9% |
-| Throughput | 10 req/s | 100 req/s | 1k req/s |
-| Database queries | <50ms | <20ms | <10ms |
-
-### Documentation & Quality
-
-| Métrica || Métrica | v0.15 | v1.0 | v2.0 |
-|---------|-------|------|------|
-| Cobertura docs | 95% | 98% | 100% |
-| Test coverage | 80% (core) | 90% | 95% |
-| Security score | 7/10 | 9/10 | 10/10 |
-| Database coverage | 40% | 85% | 95% |
-
----
-
-## 🎯 Hitos Estratégicos Clave
-
-### Hito 1: MVP Conversacional (✅ Completado)
-
-**Fecha:** 2025-10-31  
-**Objetivo:** FSM funcional + estructura profesional + tests básicos
-
-**Logros:**
-- ✅ FSM engine operativo
-- ✅ Estructura profesional raíz
-- ✅ Documentación inicial completa
-- ✅ Tests unitarios ≥80%
-- ✅ Docker básico implementado
-
-**Entrega:** H01 - Organización & Tests  
-**Duración real:** 53.3 horas en 15 sesiones
-
----
-
-### Hito 2: Persistencia & Conversaciones Reales (✅ Core Completado)
-
-**Fecha:** 2025-11-12  
-**Objetivo:** Database funcional + Telegram persistente + primera conversación real
-
-**Logros:**
-- ✅ PostgreSQL Database Layer completo (7 modelos, 6 repos)
-- ✅ Multi-tenant architecture desde el inicio
-- ✅ TelegramAdapter funcional con persistencia
-- ✅ Primera conversación real guardada (Usuario Entu, 12 nov 17:02)
-- ✅ 12/12 tests database pasando
-- ✅ ~4,000 LOC en 4h 17min
-- ⏸️ Web Client aplazado a H05-H08
-
-**Entrega:** H02 Core - Database & Telegram  
-**Duración real:** 4h 17min (3h 57min core)
-
-**Decisión estratégica:** Database adelantado de H04 a H02 para establecer multi-tenancy desde el principio.
-
----
-
-### Hito 3: Multi-Agent Inteligente (🔄 En progreso)
-
-**Fecha objetivo:** 2025-12-15  
-**Objetivo:** Agentes inteligentes con NLP/LLM + CoreRouter + ML pipelines
-
-**Avance:**
-- ✅ H02 Database + Telegram (base completada)
-- ⏳ H03 FSM avanzado + CoreRouter (próximo)
-- ⏳ H04 Optimizaciones database
-- ⏳ H05 Agentes verticales con LLM
-- ⏳ H06 ML/NLP arquitectura híbrida
-- ⏳ H07 E2E Tests completos
-
-**Arquitectura propuesta (14 nov):**
-- **Nivel 1:** Reglas simples (rápido, <10ms)
-- **Nivel 2:** spaCy NLP (moderado, <100ms)
-- **Nivel 3:** LLM (complejo, ~1s, caching inteligente)
-
-**Tracking:** [master.md](./master.md) - H02-H07
-
----
-
-### Hito 4: Enterprise Infrastructure (⏳ Planificado)
-
-**Fecha objetivo:** 2026-04-01  
-**Objetivo:** Multi-tenancy completo, K8s, observabilidad, seguridad
-
-**Incluye:**
-- Multi-tenant RBAC completo (base ya en H02)
-- Kubernetes orchestration
-- Prometheus + Grafana + Loki + Jaeger
-- Security audit + hardening
-- Compliance GDPR/SOC2
-- Web Client + OAuth2 (de H02)
-
-**Tracking:** [master.md](./master.md) - H08-H14
-
----
-
-### Hito 5: Scale & Release (⏳ Futuro)
-
-**Fecha objetivo:** 2026-06-01  
-**Objetivo:** Performance, plugins, go-live profesional
-
-**Incluye:**
-- Stress testing + optimizaciones
-- Plugin system
-- Advanced customization
-- Production go-live
-- Enterprise onboarding
-
-**Tracking:** [master.md](./master.md) - H15-H17
-
----
-
-## 🔗 Recursos Clave
-
-### Planificación Operativa
-
-- [Roadmap Maestro (master.md)](./master.md) — Tracking real por sesión, H01-H17
-- [Carpeta Milestones](./milestones/) — Detalle operativo cada hito
-- [H02 Detallado](./milestones/H02.md) — Estado real post-implementación
-- [Plan Auditoría Docs](../audit/PLAN-AUDITORIA-updated.md) — Auditoría completa
-
-### Documentación Actual
-
-- [Guides (docs/guides/)](../guides/) — Guías para usuarios (9 archivos)
-- [Security (docs/security/)](../security/) — Seguridad & compliance (7 archivos)
-- [Architecture (docs/architecture/)](../architecture/) — Diseño técnico
-- [Agents (docs/agents/)](../agents/) — Agentes especializados
-- [Adapters (docs/adapters/)](../adapters/) — Integraciones
-- [Diary (docs/diary/)](../diary/) — Registro de sesiones
-
-### Decisiones Técnicas Clave
-
-- [Análisis Inteligencia Agentes (14 nov)](../architecture/agents-intelligence-analysis.md) — Propuesta arquitectura híbrida LLM
-- [Database Architecture](../architecture/database-design.md) — Multi-tenant PostgreSQL design
-
----
-
-## 🚀 Decisiones Estratégicas Recientes
-
-### 1. Adelanto Database Layer (11 nov 2025)
-**Decisión:** Implementar PostgreSQL en H02 en lugar de H04  
-**Razón:** Establecer arquitectura multi-tenant desde el principio  
-**Impacto:** Adelanta 2 hitos la persistencia empresarial  
-**Estado:** ✅ Completado 12 nov
-
-### 2. Aplazamiento Web Client (12 nov 2025)
-**Decisión:** Posponer Web Client y OAuth2 de H02 a H05-H08  
-**Razón:** Priorizar conversaciones funcionales vía Telegram  
-**Impacto:** H02 cierra como "Core 70%" con componentes documentados  
-**Estado:** ✅ Documentado y planificado
-
-### 3. Arquitectura Híbrida LLM (14 nov 2025)
-**Decisión:** Integrar 3 niveles (Reglas + spaCy + LLM) en H05-H06  
-**Razón:** Agentes actuales carecen de inteligencia competitiva  
-**Impacto:** H06 incluirá LangChain, RAG, caching LLM  
-**Costo estimado:** $100-200/mes  
-**Experiencia:** 8.5/10  
-**Estado:** 🔄 En planificación detallada
-
----
-
-## 📌 Meta-información
-
-|| Campo | Valor |
-|-------|-------|
-| Archivo | docs/roadmap/deployment.md |
-| Versión | v0.15.0 |
-| Última revisión | 2025-11-14 16:50 CET (Sesión 9) |
-| Responsable | CEO THEA IA |
-| Estado | ✅ Activo |
-| Alineación | master.md + milestones/ + PLAN-AUDITORIA |
-| Cambios principales | Actualización post-H02, decisión LLM, ajuste Fase 2 |
-
----
-
-## 🚀 Próximos Pasos
-
-→ [Roadmap Maestro](./master.md) (Tracking Operativo Detallado)  
-→ [H02 Milestone](./milestones/H02.md) (Estado Real Post-Implementación)  
-→ [H03 Milestone](./milestones/H03.md) (Próximo: CoreRouter + FSM)  
-→ [Auditoría Documentación](../audit/) (95% completado)
-
----
-
-**Última actualización:** 2025-11-14 16:50 CET (Sesión 9 - Auditoría Post-H02)  
-**Próxima actualización:** Post-H03 o cambios estratégicos significativos
+"No decimos 'completado' hasta que TODO esté 100% hecho"
+
+NO ES:
+❌ 99% y decimos "casi completo"
+❌ Templates ready y decimos "implementado"
+❌ Un repo testeado y decimos "hito completo"
+❌ Cobertura en 5 de 6 y decimos "OK"
+
+ES:
+✅ 100% completo o decimos "en progreso"
+✅ Cada línea de código tiene propósito
+✅ Cada test valida comportamiento
+✅ Cada decisión está justificada
+✅ Trazabilidad total desde día 1
+5 Pilares THEA IA
+1️⃣ Excelencia
+text
+✅ Código profesional production-ready
+✅ Tests exhaustivos (no superficiales)
+✅ Documentación que explica decisiones
+✅ Performance benchmarks
+✅ Zero technical debt mentality
+2️⃣ Transparencia
+text
+✅ Documentación en-tiempo-real
+✅ Decisiones trazables
+✅ Histórico completo (DIARY)
+✅ Estado del proyecto visible
+✅ Changelog detallado
+3️⃣ Escalabilidad
+text
+✅ Arquitectura multi-tenant desde inicio
+✅ Database layer production-ready
+✅ Async/await en TODO
+✅ Caching y optimization layers
+✅ Preparado para K8s
+4️⃣ Inteligencia
+text
+✅ NLP integrado desde H03
+✅ Arquitectura híbrida (3 niveles)
+✅ LLM como fallback (no primary)
+✅ ML models versionados
+✅ Constante learning & optimization
+5️⃣ Profesionalismo
+text
+✅ Seguridad desde día 1
+✅ Compliance-ready (SOC 2, GDPR)
+✅ Auditoría profesional (H13)
+✅ Onboarding profesional (H14)
+✅ Enterprise-grade todo
+Filosofía por Etapa
+Fase 1: Foundation
+text
+"Hacer bien lo básico"
+
+✅ Estructura profesional
+✅ Documentación exhaustiva
+✅ Tests desde inicio
+✅ Base sólida para el resto
+Fase 2: Funcionalidad
+text
+"Conversaciones inteligentes que funcionan"
+
+✅ Database multi-tenant operativa
+✅ Telegram adaptador funcional
+✅ NLP básico funcionando
+✅ Agentes inteligentes
+✅ E2E tests completos
+Fase 3: Operaciones
+text
+"Sistema listo para producción"
+
+✅ RBAC y seguridad
+✅ Multiple adapters (WhatsApp, REST)
+✅ Observabilidad completa
+✅ CI/CD automatizado
+✅ Múltiples integraciones
+Fase 4: Escalabilidad
+text
+"Pasar de MVP a SaaS"
+
+✅ Performance optimizado
+✅ Plugin system
+✅ Customización para clientes
+✅ Go-live en producción
+✅ Post-launch monitoring
+📊 PARTE 2: Hitos vs Fases vs Checklists
+Diferencia Fundamental
+text
+HITOS (17)
+│
+├─ QUÉ: Unidad de trabajo independiente
+├─ ESCALA: ~50-70 horas cada uno
+├─ DURACIÓN: 3-7 días de trabajo intensivo
+├─ EJEMPLO: H03, H05, H08
+│
+├─ CARACTERÍSTICAS:
+│  ✅ Entregables claros
+│  ✅ Tests específicos
+│  ✅ Fecha deadline
+│  ✅ Criterios de done
+│  ✅ Documentación README
+│
+└─ EN PROYECTO:
+   - 17 hitos totales
+   - 1 hito en progreso (H02)
+   - 1 hito documentado (H03)
+   - 15 hitos planificados (H04-H17)
+
+
+FASES (4)
+│
+├─ QUÉ: Agrupación estratégica de hitos
+├─ ESCALA: 50-500 horas
+├─ DURACIÓN: 1-5 meses
+├─ EJEMPLO: Fase 2 (Nov-Dic 2025)
+│
+├─ CARACTERÍSTICAS:
+│  ✅ Objetivo empresarial claro
+│  ✅ Múltiples hitos relacionados
+│  ✅ Métrica de progreso global
+│  ✅ Impacto visible en producto
+│
+└─ EN PROYECTO:
+   Fase 1: Oct 2025 (53.3h) ✅ 100%
+   Fase 2: Nov-Dic 2025 (304h) 🔄 12%
+   Fase 3: Dic 2025-Abr 2026 (470h) ⏳ 0%
+   Fase 4: Abr-Jun 2026 (140h) ⏳ 0%
+
+
+CHECKLISTS (17)
+│
+├─ QUÉ: Desglose operacional de cada hito
+├─ ESCALA: Horas específicas + tests
+├─ DURACIÓN: Checklist para todo el hito
+├─ EJEMPLO: CHECKLIST_MASTER_H03.md
+│
+├─ CARACTERÍSTICAS:
+│  ✅ Micro-recompensas (2-7)
+│  ✅ Tests específicos
+│  ✅ Timeline diario
+│  ✅ Checkpoints validación
+│  ✅ Dependencias claras
+│
+└─ EN PROYECTO:
+   - 1 checklist por hito
+   - 17 checklists totales
+   - Creado ANTES de iniciar hito
+   - Actualizado EN-TIEMPO-REAL durante hito
+Relación entre Niveles
+text
+ESTRUCTURA JERÁRQUICA:
+
+Roadmap Maestro
+├─ FASE 1: Core & Foundation (Oct 2025)
+│  └─ H01: Setup & Architecture
+│     └─ CHECKLIST_MASTER_H01.md
+│        ├─ Micro-recompensa 1: README
+│        │  ├─ Tarea específica
+│        │  ├─ Horas: 4h
+│        │  ├─ Tests: 3
+│        │  └─ Deliverable: README.md
+│        │
+│        ├─ Micro-recompensa 2: ROADMAP
+│        │  └─ ...
+│        │
+│        └─ ...
+│
+├─ FASE 2: Multi-agente & Adapters (Nov-Dic 2025)
+│  ├─ H02: Database & Telegram
+│  │  └─ CHECKLIST_MASTER_H02.md (implícito - H02 completado)
+│  │
+│  ├─ H03: FSM Avanzado & CoreRouter
+│  │  └─ CHECKLIST_MASTER_H03.md ✅ NUEVO
+│  │     ├─ FASE 1: CoreRouter (12h, 8 tests)
+│  │     ├─ FASE 2: FSM Engine v2 (10h, 6 tests)
+│  │     ├─ FASE 3: Intent Detector (12h, 10 tests)
+│  │     ├─ FASE 4: Entity Extractor (10h, 8 tests)
+│  │     ├─ FASE 5: Context Manager (8h, 6 tests)
+│  │     ├─ FASE 6: Integration tests (8h, 12 tests)
+│  │     └─ FASE 7: Primera conversación NLP (6h)
+│  │
+│  ├─ H04-H07: (checklists TBD)
+│  │  └─ ...
+│
+└─ FASE 3-4: (checklists TBD)
+   └─ ...
+Cómo Escalar
+text
+PATRÓN REPETIBLE:
+
+Pre-Hito (5 días antes):
+1. Crear CHECKLIST_MASTER_HXX.md
+2. Desglosar en micro-recompensas
+3. Estimar horas + tests
+4. Revisar dependencias
+5. Preparar ambiente
+
+Durante Hito:
+1. Ejecutar checklist
+2. Actualizar en-tiempo-real
+3. Documentar decisiones
+4. Track horas reales
+5. Registrar en DIARY
+
+Post-Hito:
+1. Validar criterios de done
+2. Crear README final
+3. Actualizar ROADMAP maestro
+4. Registrar lessons learned
+5. Preparar siguiente hito
+
+Resultado: Consistencia 100% en todos los hitos
+🚀 PARTE 3: DEPLOYMENT STRATEGY
+Estrategia de Lanzamiento (por Fase)
+Fase 1 → Fase 2 (Oct-Nov 2025)
+text
+Transition: Foundation → Funcionalidad
+
+MVP Focus: Conversaciones inteligentes vía Telegram
+
+Infraestructura:
+├─ Database PostgreSQL (local + cloud-ready)
+├─ TelegramAdapter funcional
+├─ NLP básico (spaCy)
+└─ Tests exhaustivos
+
+Go/No-Go:
+✅ 65/65 tests PASSING
+✅ 83.5% coverage
+✅ Primera conversación real guardada
+✅ Multi-tenant operativo
+
+Status: ✅ READY (H02 completado, H03 documentado)
+Fase 2 → Fase 3 (Dic 2025 - Ene 2026)
+text
+Transition: Funcionalidad → Operaciones
+
+Infrastructure Focus: Pasar de prototipo a sistema operacional
+
+Infraestructura:
+├─ RBAC y seguridad (H08)
+├─ Múltiples adapters (H10 - WhatsApp, REST API)
+├─ Observabilidad (H11 - Prometheus, Grafana, Loki, Jaeger)
+├─ CI/CD automatizado (H09 - GitHub Actions, K8s)
+└─ Integraciones externas (H12 - Slack, Teams, Calendar, Notion)
+
+Go/No-Go:
+✅ Todos los tests de Fase 2 PASSING
+✅ Coverage ≥90%
+✅ Security audit passed
+✅ Performance benchmarks achieved
+
+Timeline: Dic 2025 - Abr 2026 (16 semanas)
+Fase 3 → Fase 4 (Abr-Jun 2026)
+text
+Transition: Operaciones → Escalabilidad & Release
+
+SaaS Focus: Sistema listo para múltiples clientes
+
+Infraestructura:
+├─ Plugin system (H16)
+├─ Performance optimizado (H15)
+├─ Customización por cliente
+└─ Enterprise-grade everything
+
+Go/No-Go:
+✅ Auditoría final passed (H17)
+✅ SOC 2 compliance
+✅ Load testing: 1000+ concurrent users
+✅ All documentation complete
+
+Timeline: Abr - Jun 2026 (8 semanas)
+
+RESULTADO: THEA IA v1.0 en producción 🚀
+Deployment Checklist por Fase
+Pre-Deployment (Siempre)
+text
+SEGURIDAD:
+- [ ] Security audit completado
+- [ ] Vulnerabilities fixed
+- [ ] OWASP Top 10 checked
+- [ ] Secrets management verificado
+- [ ] SSL/TLS configurado
+
+PERFORMANCE:
+- [ ] Load testing completed (1000+ users)
+- [ ] Response time <500ms (p99)
+- [ ] Database queries optimized
+- [ ] Caching estrategies implemented
+- [ ] CDN configured (si aplica)
+
+OPERACIONES:
+- [ ] Monitoring set up (Prometheus, Grafana)
+- [ ] Alerting configured
+- [ ] Backup strategy tested
+- [ ] Disaster recovery plan ready
+- [ ] Documentation complete
+
+TESTING:
+- [ ] Coverage ≥90%
+- [ ] E2E tests all PASSING
+- [ ] Stress tests completed
+- [ ] Regression tests run
+- [ ] Performance benchmarks met
+Deployment Proceso
+text
+STEP 1: Preparación (1 día antes)
+├─ Final security scan
+├─ Database backup
+├─ Rollback plan ready
+└─ Team briefing
+
+STEP 2: Deployment (durante ventana de mantenimiento)
+├─ Blue-green deployment
+├─ Health checks
+├─ Smoke tests
+└─ Monitoring active
+
+STEP 3: Validación (post-deployment)
+├─ API health checks
+├─ Database integrity
+├─ User flow testing
+└─ Performance monitoring
+
+STEP 4: Post-Deployment (24-48h)
+├─ Monitor error rates
+├─ Check performance metrics
+├─ User feedback collection
+└─ Documentation update
+Rollback Strategy
+text
+IF issues detected:
+
+CRITICAL (data loss, security):
+├─ Immediate rollback
+├─ Notify all users
+├─ Root cause analysis
+└─ Fix before re-deploy
+
+MAJOR (feature broken, >10% error rate):
+├─ Rollback within 15 min
+├─ Investigate root cause
+├─ Fix in dev environment
+└─ Re-deploy next window
+
+MINOR (UI issue, <1% error rate):
+├─ Monitor closely
+├─ No immediate rollback
+├─ Fix in next release
+└─ Patch if critical UX issue
+📈 PARTE 4: CÓMO ESCALAR H03→H04→...→H17
+Patrón Repetible (Pro)
+text
+CADA HITO SIGUE ESTE PATRÓN:
+
+PRE-HITO (3-5 días antes):
+├─ 1. Crear CHECKLIST_MASTER_HXX.md
+├─ 2. Desglosar en 2-7 micro-recompensas
+├─ 3. Asignar horas + tests específicos
+├─ 4. Identificar dependencias
+├─ 5. Setup ambiente (librerías, branches)
+├─ 6. Preparar documentación templates
+└─ 7. Team briefing & planning
+
+DURANTE HITO (3-7 días):
+├─ 1. Seguir checklist al pie de la letra
+├─ 2. Hacer commits por micro-recompensa
+├─ 3. Tests run continuamente (TDD)
+├─ 4. Documentar decisiones en-tiempo-real
+├─ 5. Track horas reales vs. estimadas
+├─ 6. Daily standup + DIARY update
+├─ 7. Checkpoints validación (PASS/FAIL)
+└─ 8. Coverage validation (≥80% before next)
+
+POST-HITO (1 día):
+├─ 1. Validar criterios de done
+├─ 2. Final coverage report
+├─ 3. README completado
+├─ 4. Merge a main branch
+├─ 5. Tag release (vX.Y.Z)
+├─ 6. Changelog entry
+├─ 7. Lessons learned session
+└─ 8. Preparar siguiente checklist
+
+RESULTADO: Consistencia perfecta H01→H17
+Timeline Escala (Example)
+text
+FASE 2 COMPLETA (Nov-Dic 2025):
+
+H02: Nov 12-19 (3h 15min core + 26h H04 adelantado)
+  └─ DAY 1-2: Completar repositorios + tests
+  └─ DAY 3: Documentar + cerrar
+
+H03: Nov 20-25 (66h, 4 días intensivos)
+  └─ DAY 1: FASE 1-2 (CoreRouter + FSM) - 22h
+  └─ DAY 2: FASE 3-4 (Intent + Entity) - 22h
+  └─ DAY 3: FASE 5-6 (Context + Integration) - 14h
+  └─ DAY 4: FASE 7 + Docs - 8h
+
+H04: Nov 26-30 (40h, 3 días)
+  └─ DAY 1: Modelos + Migraciones - 14h
+  └─ DAY 2: Fallback JSON + Optimizaciones - 14h
+  └─ DAY 3: Tests coverage ≥85% + Docs - 12h
+
+H05: Dic 1-5 (78h, 4 días)
+  └─ Similar pattern...
+
+PATRÓN: Hito cada 3-7 días = 9-10 meses para 17 hitos ✅
+Cómo Mantener Momentum
+text
+1. RITUAL DIARIO
+   ├─ Morning standup (15min)
+   ├─ Code + tests (4-6h)
+   ├─ Evening review (30min)
+   └─ DIARY update (15min)
+
+2. CHECKPOINTS
+   ├─ Cada micro-recompensa = PASS/FAIL
+   ├─ Cada 12h = Coverage check
+   ├─ Cada día = Standup actualización
+   └─ Cada hito = Full validation
+
+3. MOTIVACIÓN
+   ├─ Micro-recompensas visibles
+   ├─ Tests PASSING incrementales
+   ├─ Progreso visual (ROADMAP)
+   ├─ Celebraciones por hito
+   └─ Demostración de valor (demo)
+
+4. DOCUMENTACIÓN
+   ├─ DIARY en-tiempo-real
+   ├─ README por hito
+   ├─ Lessons learned post-hito
+   ├─ Portfolio actualizado
+   └─ Timeline real vs. estimado
+
+RESULTADO: Sostenibilidad 9 meses ✅
+🎖️ EJEMPLOS PRÁCTICOS
+H03 (Next Hito - En Ejecución)
+text
+PRE-HITO (Nov 15-19):
+✅ Crear CHECKLIST_MASTER_H03.md (DONE)
+✅ 7 micro-recompensas definidas
+✅ 66h totales estimadas
+✅ spaCy setup preparado
+✅ README template creado
+
+DURANTE HITO (Nov 20-25):
+- DAY 1: CoreRouter (12h) → 8 tests PASSING
+- DAY 2: FSM Engine (10h) → 6 tests PASSING
+- DAY 3: Intent (12h) → 10 tests PASSING
+- DAY 4: Entity (10h) → 8 tests PASSING
+- DAY 5: Context (8h) → 6 tests PASSING
+- DAY 6: Integration (8h) → 12 tests PASSING
+- DAY 7: Demo + Docs (6h) → README final
+
+POST-HITO (Nov 26):
+✅ H03 README completado
+✅ 50+ tests PASSING (100%)
+✅ Coverage ≥80%
+✅ Lessons learned registered
+✅ CHECKLIST_MASTER_H04.md creado
+
+RESULTADO: H03 100% listo para H04
+H08 (Ejemplo Fase 3)
+text
+PRE-HITO (Dic 25):
+- Crear CHECKLIST_MASTER_H08.md
+- Definir RBAC schema
+- Setup OAuth providers (Google, GitHub)
+- Web Client scaffold preparado
+
+DURANTE HITO (Ene 1-10):
+- D1-2: RBAC model (16h)
+- D3: Tenant isolation (8h)
+- D4-5: Auth middleware (12h)
+- D6-7: Web Client (14h)
+- D8-9: OAuth2/JWT (16h)
+- D10: Tests + Docs
+
+RESULTADO: Multi-tenant RBAC + Web Client + OAuth2
+✅ CONCLUSIÓN
+Diferenciación Clara
+text
+HITOS: Unidades de trabajo independientes (H01-H17)
+FASES: Agrupación estratégica (Fase 1-4)
+CHECKLISTS: Desglose operacional por hito (CHECKLIST_MASTER_HXX.md)
+
+RELACIÓN: Roadmap Maestro → Fase → Hito → Checklist
+Deployment Strategy
+text
+PROTOTIPO (Fase 2): Database + Telegram + NLP básico
+PRODUCCIÓN (Fase 3): Multi-adapter + RBAC + Observabilidad
+ESCALADO (Fase 4): Plugin system + SaaS + Go-live
+THEA IA Philosophy
+text
+100x100: No decimos "completado" hasta que TODO esté 100%
+5 Pilares: Excelencia, Transparencia, Escalabilidad, Inteligencia, Profesionalismo
+Patrón: Repetible, consistente, verificable en todos los 17 hitos
+🚀 PRÓXIMOS PASOS
+Fase 2 Timeline:
+
+text
+NOW (19 Nov):    H02 ✅ + H03 📋 LISTO
+SOON (20 Nov):   Iniciar H03 DAY 1
+SEMANA 1 (20-25): H03 Ejecución completa
+SEMANA 2 (26-30): H04 Optimizaciones
+SEMANA 3 (1-5 Dic): H05 Agentes Inteligentes
+SEMANA 4 (6-10): H06 ML/NLP Pipelines
+SEMANA 5 (11-15): H07 E2E Tests + QA
+
+META: Fase 2 completada antes del 15 Dic 2025
+Creado: 19 Noviembre 2025, 22:45 CET
+Versión: v1.0.0
+Status: ✅ OFICIAL - GUÍA MAESTRO DE DEPLOYMENT
+Próximo: Iniciar H03 cuando esté listo
+
+🚀 THEA IA READY FOR SCALE
