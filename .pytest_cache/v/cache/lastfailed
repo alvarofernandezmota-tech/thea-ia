@@ -1,1 +1,3 @@
-{}
+{
+  "src/theaia/tests/unit/ml/test_router_integration.py::TestNLPPipeline": true
+}
