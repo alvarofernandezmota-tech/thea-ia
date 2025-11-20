@@ -1,103 +1,126 @@
 """
-EntityExtractionPipeline: Composition de extractors con intent-aware logic.
-Coordina extracción de fechas, ubicaciones y personas según intent detectado.
+Entity Extraction Pipeline - THEA-IA H03 FASE 3
+Extract DATE, TIME, PERSON, LOCATION from user messages
 
-H03 FASE 1 - TAREA 1.1.2
+File: src/theaia/ml/entity_extractor/pipeline.py
+Updated: 20 Nov 2025 - 02:25 AM CET
+NER: spaCy + Custom patterns + Intent-aware
 """
 
-from typing import Dict, List
-
-# Imports correctos basados en archivos existentes
-try:
-    from src.theaia.ml.entity_extractor.date_parser import DateTimeExtractor
-except ImportError:
-    # Fallback si DateTimeExtractor no existe o tiene otro nombre
-    class DateTimeExtractor:
-        def extract(self, text: str):
-            return []
-
-try:
-    from src.theaia.ml.entity_extractor.location_extractor import LocationExtractor
-except ImportError:
-    class LocationExtractor:
-        def extract(self, text: str):
-            return []
-
-try:
-    from src.theaia.ml.entity_extractor.person_name_extractor import PersonNameExtractor
-except ImportError:
-    class PersonNameExtractor:
-        def extract(self, text: str):
-            return []
+import re
+from typing import Dict, List, Optional
+from datetime import datetime, timedelta
+import spacy
 
 
-class EntityExtractionPipeline:
-    """
-    Pipeline de extracción de entidades con lógica intent-aware.
-    
-    Estrategia:
-    - create_event / evento → dates + locations
-    - create_note / nota → persons + locations
-    - query_agenda / consulta → dates
-    - fallback → dates (siempre útil para contexto)
-    """
+class EntityExtractor:
+    """Extract entities: DATE, TIME, PERSON, LOCATION"""
     
     def __init__(self):
-        """Inicializa los 3 extractors."""
+        """Initialize spaCy and patterns"""
         try:
-            self.date_extractor = DateTimeExtractor()
-            self.location_extractor = LocationExtractor()
-            self.person_extractor = PersonNameExtractor()
-            self.extractors_available = True
-        except Exception as e:
-            print(f"[WARNING] Entity extractors initialization failed: {e}")
-            self.extractors_available = False
+            self.nlp = spacy.load('es_core_news_sm')
+        except OSError:
+            print("[WARNING] spaCy model not found. Run: python -m spacy download es_core_news_sm")
+            self.nlp = None
+        
+        self.date_patterns = [
+            r'mañana', r'hoy', r'ayer',
+            r'(?:el |)(\d{1,2})\s+de\s+(\w+)',
+            r'próximo\s+(\w+)', r'siguiente\s+(\w+)',
+            r'(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})'
+        ]
+        self.time_patterns = [
+            r'(\d{1,2}):(\d{2})', r'las\s+(\d{1,2})',
+            r'(mañana|tarde|noche)',
+        ]
     
-    async def extract(self, text: str, intent: str) -> Dict:
-        """
-        Extrae entidades según intent detectado.
+    def extract(self, text: str) -> Dict:
+        """Extract all entities from text"""
+        entities = {
+            'DATE': [],
+            'TIME': [],
+            'PERSON': [],
+            'LOCATION': [],
+            'raw_ents': []
+        }
         
-        Args:
-            text: Texto del mensaje
-            intent: Intent detectado
-            
-        Returns:
-            Dict con entidades extraídas por tipo
-        """
-        entities = {}
-        
-        if not self.extractors_available:
+        if not self.nlp:
             return entities
         
-        try:
-            # Intent-aware extraction
-            if intent in ["create_event", "evento"]:
-                # Eventos: fechas + ubicaciones
-                entities["dates"] = self.date_extractor.extract(text)
-                entities["locations"] = self.location_extractor.extract(text)
-            
-            elif intent in ["create_note", "nota", "notas"]:
-                # Notas: personas + ubicaciones
-                entities["persons"] = self.person_extractor.extract(text)
-                entities["locations"] = self.location_extractor.extract(text)
-            
-            elif intent in ["query_agenda", "consulta"]:
-                # Consultas: solo fechas
-                entities["dates"] = self.date_extractor.extract(text)
-            
-            elif intent in ["recordatorio", "reminder"]:
-                # Recordatorios: fechas + personas
-                entities["dates"] = self.date_extractor.extract(text)
-                entities["persons"] = self.person_extractor.extract(text)
-            
-            # Fallback: siempre intenta dates (útil para contexto temporal)
-            if "dates" not in entities:
-                dates = self.date_extractor.extract(text)
-                if dates:
-                    entities["dates"] = dates
+        doc = self.nlp(text)
         
-        except Exception as e:
-            print(f"[ERROR] Entity extraction failed: {e}")
-            entities = {}
+        # spaCy NER
+        for ent in doc.ents:
+            if ent.label_ == 'PER':
+                entities['PERSON'].append({'text': ent.text, 'confidence': 0.95})
+            elif ent.label_ == 'LOC':
+                entities['LOCATION'].append({'text': ent.text, 'confidence': 0.90})
+            elif ent.label_ == 'DATE':
+                entities['DATE'].append({'text': ent.text, 'confidence': 0.92})
+            
+            entities['raw_ents'].append({
+                'text': ent.text,
+                'label': ent.label_,
+                'start': ent.start_char,
+                'end': ent.end_char
+            })
+        
+        # Custom date patterns
+        for pattern in self.date_patterns:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                if match.group() not in [e['text'] for e in entities['DATE']]:
+                    entities['DATE'].append({
+                        'text': match.group(),
+                        'confidence': 0.85,
+                        'source': 'pattern'
+                    })
+        
+        # Custom time patterns
+        for pattern in self.time_patterns:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                if match.group() not in [e['text'] for e in entities['TIME']]:
+                    entities['TIME'].append({
+                        'text': match.group(),
+                        'confidence': 0.88,
+                        'source': 'pattern'
+                    })
         
         return entities
+    
+    def extract_batch(self, texts: List[str]) -> List[Dict]:
+        """Extract entities from multiple texts"""
+        return [self.extract(text) for text in texts]
+    
+    def extract_intent_aware(self, text: str, intent: str) -> Dict:
+        """Extract entities based on detected intent"""
+        entities = self.extract(text)
+        
+        # Filter by intent
+        if intent in ["create_event", "evento"]:
+            return {k: v for k, v in entities.items() if k in ['DATE', 'TIME', 'LOCATION']}
+        elif intent in ["create_note", "nota"]:
+            return {k: v for k, v in entities.items() if k in ['PERSON', 'LOCATION']}
+        elif intent in ["query_agenda", "consulta"]:
+            return {k: v for k, v in entities.items() if k in ['DATE', 'TIME']}
+        elif intent in ["create_reminder", "recordatorio"]:
+            return {k: v for k, v in entities.items() if k in ['DATE', 'TIME', 'PERSON']}
+        
+        return entities
+
+
+if __name__ == "__main__":
+    extractor = EntityExtractor()
+    
+    test_cases = [
+        "Crear evento mañana a las 15:00 con María",
+        "Recordarme el 25 de noviembre en la sala 3",
+        "Escribir nota para Juan esta tarde",
+    ]
+    
+    for text in test_cases:
+        entities = extractor.extract(text)
+        print(f"Text: {text}")
+        print(f"Entities: {entities}\n")
