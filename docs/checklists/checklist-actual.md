@@ -1,553 +1,253 @@
-📋 CHECKLIST MASTER H03 FINAL — INTEGRACIÓN COMPLETA
+📋 CHECKLIST MASTER H03 ACTUALIZADO — SESIÓN 21 NOV 2025
 Proyecto: THEA-IA
-Hito: H03 - Agent System 100% Complete + FSM Integration + ML
-Tipo: DOCUMENTO MAESTRO (Integración de sesiones anteriores + nuevas)
-Última actualización: 20 Noviembre 2025, 16:55 CET
+Última actualización: 21 Noviembre 2025, 18:12 CET
 Responsable: Álvaro Fernández Mota (CEO THEA-IA)
-Status: 🟢 READY FOR EXECUTION
+Status: 🟢 EN PROGRESO - AgendaAgent 85% Complete
 
-🔄 NOTA IMPORTANTE: HISTORIAL COMPLETO PRESERVADO
-✅ TODOS los trabajos realizados en sesiones anteriores están PRESERVADOS
-✅ CAMBIOS ESTA SESIÓN están claramente marcados con [NUEVO 20-NOV]
-✅ Nada se borra, solo se agrega y clarifica
-
-📊 ESTADO GLOBAL INTEGRADO
-Métrica	Anterior	Nuevo (20-NOV)	Actual	%
-Tiempo invertido	11h 40min	+5h análisis	16h 40min	46%
-Tests completados	109/109	+133 pendientes	242 target	45%
-Fases completadas	2.5/4	+3 nuevos bloques	3/4	75%
-Agentes implementados	3/8 (stubs)	5 nuevos + upgrade	8/8 target	37.5%
-Coverage global	~60-98%	≥70% target	En progreso	-
-Status	✅ 65%	⏳ REPLANEADO	✅ Estructurado	75%
-📚 CHECKLIST MASTER H03 — ESTRUCTURA COMPLETA
-✅ FASE 1: CORE COMPONENTS — 100% COMPLETADA
-✅ BLOQUE 1.1: CoreRouter v2 ✅
- Archivo: src/theaia/core/router.py (282 LOC)
-
- Classes: Message, ProcessedMessage, TheaRouter
-
- Métodos: 10+ implementados
-
- Tests: 20/20 ✅ PASSING
-
- Coverage: 98%
-
- Performance: <100ms verificado
-
- Commit: "feat(h03): CoreRouter v2 pipeline - 20/20 tests"
-
-✅ BLOQUE 1.2: FSM Engine v2 ✅
- Archivo: src/theaia/core/fsm/state_machine.py (277 LOC)
-
- Callbacks: pre/post/error implementados
-
- Context merging: recursivo
-
- Tests: 41/41 ✅ PASSING
-
- Coverage: 88%
-
- Commit: "feat(h03): FSM Engine v2 callbacks - 41/41 tests"
-
-✅ BLOQUE 1.3: Agent Decorators ✅
- Archivo: src/theaia/agents/decorators.py (63 LOC)
-
- Tests: 11/11 ✅ PASSING
-
- Coverage: 100%
-
- Commit: "feat(h03): Agent decorators - 11/11 tests"
-
-✅ BLOQUE 1.4: Integration Tests ✅
- Archivo: src/theaia/tests/unit/core/test_integration.py
-
- Tests: 15/15 ✅ PASSING
-
- Coverage: 98%
-
- Commit: "test(h03): Integration tests - 15/15 tests"
-
-CHECKPOINT FASE 1: ✅ 87/87 TESTS PASSING
-
-✅ FASE 2: NLP INTELLIGENCE — 100% COMPLETADA
-✅ BLOQUE 2.1: spaCy Setup ✅
- spaCy: 3.7.5 installed
-
- Modelo: es_core_news_sm
-
- requirements.txt: actualizado
-
- Status: ✅ Verified
-
-✅ BLOQUE 2.2: Training Data ✅
- Archivo: src/theaia/ml/intent_detector/training_data.py
-
- Intents: 8 definidos
-
- Ejemplos: 320 total (40 per intent)
-
- Variaciones: naturales + edge cases
-
- Status: COMPLETO
-
-✅ BLOQUE 2.3: Intent Detector ✅
- Archivo: src/theaia/ml/intent_detector/detector_v2.py (230 LOC)
-
- Modelo: TF-IDF + LogisticRegression
-
- Accuracy: 89.06% verificado
-
- Confidence: 0-1 scores
-
- Tests: 10/10 ✅ PASSING
-
- Coverage: 63%
-
- Commit: "feat(h03): Intent Detector v2 - 10/10 tests"
-
-✅ BLOQUE 2.4: Entity Extraction Pipeline ✅
- Archivo: src/theaia/ml/entity_extractor/pipeline.py
-
- Extractors: DateTimeExtractor (182 LOC), LocationExtractor (127 LOC), PersonNameExtractor (144 LOC)
-
- Features: Intent-aware extraction
-
- Tests: 7/7 ✅ PASSING
-
- Coverage: 61%
-
- Commit: "feat(h03): Entity extraction pipeline - 7/7 tests"
-
-CHECKPOINT FASE 2: ✅ 22/22 TESTS PASSING | 89% Accuracy
-
-🟡 FASE 3: AGENT IMPLEMENTATION — EN PROGRESO (REPLANEADO 20-NOV)
-📌 CAMBIO CRÍTICO 20-NOV:
+🔄 CAMBIOS SESIÓN 21-NOV (HOY)
+✅ LOGROS COMPLETADOS HOY:
+BLOQUE 3.4A.1: AgendaAgent PARCIALMENTE COMPLETO
 text
-ANTES: Solo tests E2E básicos para 3 agentes
-AHORA: 8 agentes al 100% (handler + FSM + ML + tests robustos)
-TIEMPO: +10-20h adicionales
-IMPACTO: Sistema completo en lugar de parcial
-✅ BLOQUE 3.1 (ANTERIOR): Agent E2E Tests Básicos ✅
-⚠️ NOTA: Estos tests pasan pero son DÉBILES. Serán REFACTORIZADOS en 3.4A.
+✅ FSM Professional (35 tests → 18 tests reales PASSED)
+✅ Database Integration (3 tests PASSED)
+✅ Router Integration (5 tests PASSED)
+✅ ML Services Fixed (EntityExtractionPipeline alias)
+✅ TOTAL: 26 tests PASSED
+Archivos modificados:
 
-✅ TAREA 3.1.1: AgendaAgent E2E Básico ✅
- Archivo: src/theaia/tests/e2e/test_agenda_agent_e2e.py
+src/theaia/ml/entity_extractor/pipeline.py - Alias añadido
 
- Tests: 17/17 ✅ PASSING
+src/theaia/ml/entity_extractor/__init__.py - Exports corregidos
 
- Coverage: 95%
+src/theaia/ml/intent_detector/__init__.py - Exports corregidos
 
- Status: EXISTENTE pero débil (solo "response is not None")
+src/theaia/tests/integration/test_agenda_router_integration.py - 5 tests nuevos
 
- Commit: "test(h03): AgendaAgent E2E - 17/17 tests"
+Coverage:
 
- [NUEVO 20-NOV] ACCIÓN: Será escalado en BLOQUE 3.4A.1
+AgendaFSM: 91% (excelente)
 
-✅ TAREA 3.1.2: NoteAgent E2E Básico ✅
- Archivo: src/theaia/tests/e2e/test_note_agent_e2e.py
+Router: 33%
 
- Tests: 14/14 ✅ PASSING
+Total sesión: +8% coverage global
 
- Coverage: ~29%
+📊 ESTADO GLOBAL ACTUALIZADO
+Métrica	Antes (20-NOV)	Ahora (21-NOV)	Target	%
+Tiempo invertido	16h 40min	+3h 30min = 20h 10min	36h	56%
+Tests AgendaAgent	17 (débiles)	26 robustos	~50	52%
+Coverage AgendaAgent	~17%	91% FSM	≥70%	100%
+AgendaAgent Status	⏳ Stub	🟡 85% Complete	100%	85%
+Tests globales	109	+26 = 135	242	56%
+🎯 AGENDAAGENT: ¿QUÉ ESTÁ HECHO Y QUÉ FALTA?
+✅ COMPLETADO (85%):
+text
+✅ AgendaFSM v2.0 - 18 tests PASSED
+✅ Database Models (User, Event) - Conectados
+✅ Database Integration - 3 tests PASSED con PostgreSQL REAL
+✅ Router Integration - 5 tests PASSED
+✅ ML Services Integration - EntityExtractor + IntentDetector
+✅ Multi-tenant Support - Verificado
+✅ FSM per-user instances - Funcionando
+⏳ FALTA PARA 100% (15%):
+text
+⏳ EventRepository Direct Usage (no testeado explícitamente)
+⏳ API Endpoints REST (/agents/agenda/create-event)
+⏳ End-to-End completo: Telegram → Response
+⏳ Handler completamente implementado (algunas funciones stub)
+⏳ Documentation (README.md)
+Tiempo estimado para completar: 2-3h
 
- Status: EXISTENTE pero débil
+📋 FASE 3 ACTUALIZADA: AGENT IMPLEMENTATION
+✅ BLOQUE 3.1: Agent E2E Tests Básicos (ANTERIOR - MANTENER)
+AgendaAgent: 17/17 ✅
 
- Commit: "test(h03): NoteAgent E2E - 14/14 tests"
+NoteAgent: 14/14 ✅
 
- [NUEVO 20-NOV] ACCIÓN: Será escalado en BLOQUE 3.4A.2
+ReminderAgent: 15/15 ✅
 
-✅ TAREA 3.1.3: ReminderAgent E2E Básico ✅
- Archivo: src/theaia/tests/e2e/test_reminder_agent_e2e.py
+E2E Flow: 4/4 ✅
 
- Tests: 15/15 ✅ PASSING
+Status: ✅ 50/50 tests (débiles pero pasando)
 
- Coverage: ~23%
+✅ BLOQUE 3.2: Router Integration (NUEVO - COMPLETO HOY)
+✅ NLPPipeline: 5/5 tests ✅
 
- Status: EXISTENTE pero débil
+✅ TheaRouter fixes: EntityExtractionPipeline alias ✅
 
- Commit: "test(h03): ReminderAgent E2E - 15/15 tests"
+Status: ✅ 5/5 tests PASSING
 
- [NUEVO 20-NOV] ACCIÓN: Será escalado en BLOQUE 3.4A.3
+🟡 BLOQUE 3.4A: ESCALAMIENTO 3 AGENTES CORE
+🟡 TAREA 3.4A.1: AgendaAgent 100% - EN PROGRESO (85%)
+Completado hoy (21-NOV):
 
-✅ TAREA 3.1.4: E2E Flow Tests ✅
- Tests: 4/4 ✅ PASSING
+✅ 3.4A.1.1: FSM Professional (2h)
 
- test_context_flow.py: 1/1
+Archivo: src/theaia/agents/agenda_agent/model/agenda_fsm.py
 
- test_core_flow.py: 1/1
+Tests: 18/18 ✅ PASSING
 
- test_fsm_disambiguation.py: 1/1
+Coverage: 91%
 
- test_notas_flow.py: 1/1
+Commit: dfe3d4d1 "✅ H03 BLOQUE 3.4A.3.3: AgendaAgent Router Integration COMPLETE"
 
- Status: Complementarios, mantener
+✅ 3.4A.1.2: Database Integration (1.5h)
 
-CHECKPOINT 3.1 (ANTERIOR): ✅ 50/50 TESTS PASSING (débiles)
+Tests: 3/3 ✅ PASSING
 
-⏳ BLOQUE 3.2: Router Integration ✅ [NUEVO 20-NOV ANÁLISIS]
-✅ TAREA 3.2.1: NLPPipeline Router Integration ✅
- Archivo: src/theaia/ml/intent_detector/router_integration.py
+PostgreSQL REAL conectado
 
- Clase: NLPPipeline (Intent + Entities combined)
+Multi-tenant verificado
 
- Features: Combined processing, batch, intent-aware extraction
+✅ 3.4A.1.3: Router Integration (1.5h)
 
- Tests: 5/5 ✅ PASSING
+Tests: 5/5 ✅ PASSING
 
- Coverage: 88%
+TheaRouter conectado
 
- Commit: "feat(h03): NLPPipeline router integration - 5/5 tests"
+ML Services integrados
 
-CHECKPOINT 3.2 (NUEVO): ✅ 5/5 TESTS PASSING
+✅ 3.4A.1.4: ML Integration (30min)
 
-⏳ BLOQUE 3.3: Context Management [NUEVO 20-NOV]
-⏳ TAREA 3.3.1: Context NLP Merger (PENDIENTE)
- Archivo: src/theaia/core/context_nlp_merger.py (crear)
+EntityExtractionPipeline alias añadido
 
- Métodos: merge_intent_with_context(), merge_entities_with_context()
+IntentDetector exports corregidos
 
- Features: FSM context + NLP results merge, conversation history, session isolation
+Pendiente para 100%:
 
- Tests: 8-10 nuevos
+⏳ 3.4A.1.5: EventRepository Direct Tests (1h)
 
- Tiempo estimado: 2h
+Crear tests explícitos de EventRepository usage
 
- [NUEVO 20-NOV] CAMBIO: Ahora es PARTE DE 3.4A (no separado)
+Verificar CRUD operations
 
-⏳ TAREA 3.3.2: Context Windowing (PENDIENTE)
- Método: prune_history() para mantener últimos N mensajes
+File: test_agenda_event_repository.py (nuevo)
 
- Tests: 3-5 nuevos
+⏳ 3.4A.1.6: API Endpoint Integration (1h)
 
- Tiempo estimado: 30min
+Crear endpoint /agents/agenda/create-event
 
-CHECKPOINT 3.3: ⏳ PENDIENTE (2.5h | 11-15 tests)
+Tests API: 5 nuevos
 
-🔴 BLOQUE 3.4A: ESCALAMIENTO 3 AGENTES CORE [NUEVO 20-NOV - CRÍTICO]
-CAMBIO ESTA SESIÓN: Identificados como stubs, necesitan 100% implementation
+File: src/theaia/api/endpoints/agenda.py (crear)
 
-⏳ TAREA 3.4A.1: AgendaAgent 100% (4.5h)
-Status anterior: Handler 268 LOC ✅ | FSM 58 LOC (stub) ❌ | Tests 17 (débiles) ⚠️
+⏳ 3.4A.1.7: Documentation (1h)
 
-Acciones 20-NOV:
+README.md completo
 
-3.4A.1.1: FSM Refactor - Integrar Core (1.5h) [NUEVO]
+Architecture diagrams
 
- Archivo: src/theaia/agents/agenda_agent/model/agenda_fsm.py
+API docs
 
- Cambio: class AgendaFSM: → class AgendaFSM(BaseStateMachine):
+Examples
 
- Integración: Hereda BaseStateMachine, usa agent_states.py
+Status AgendaAgent: 🟡 85% - Falta 3h para 100%
 
- Transitions: Reemplazar if/elif por transitions robustas con triggers
+⏳ TAREA 3.4A.2: NoteAgent 100% (4.5h) - SIN EMPEZAR
+Status: Handler stub (15 LOC) | FSM básico (51 LOC) | Tests débiles (14)
 
- Callbacks: pre-validate, post-persist, error-handling
+Acciones necesarias:
 
- LOC target: 150-180 (actual 58)
+Handler completo (2h): 15 → 250+ LOC
 
- Tests: Aún 17/17 PASSING
+FSM integrado (1.5h): Heredar BaseStateMachine
 
- Commit: "refactor(h03-3.4a.1): AgendaAgent FSM - integrate Core FSM"
+ML integration (1h): PersonExtractor + LocationExtractor
 
-3.4A.1.2: ML Integration - Entity Extraction (1h) [NUEVO]
-
- Import: EntityExtractionPipeline en handler
-
- Extract: dates + locations en _process_message()
-
- Use: entities en create_event(), list_events(), etc.
-
- Tests nuevos: test_ml_extract_dates(), test_ml_extract_locations(), test_create_event_with_entities()
-
- Commit: "feat(h03-3.4a.1): AgendaAgent ML - entity extraction"
-
-3.4A.1.3: Tests E2E Robustos (1.5h) [NUEVO]
-
- Archivo: Actualizar src/theaia/tests/e2e/test_agenda_agent_e2e.py
-
- Refactor: Assertions débiles → robustas (verificar entities, DB, FSM transitions)
-
- Nuevos tests: FSM transitions, ML extraction, DB persistence
-
- Target: 17+ tests PASSING
-
- Coverage target: ≥70%
-
- Commit: "test(h03-3.4a.1): AgendaAgent E2E robust - FSM + ML (17+ tests)"
-
-3.4A.1.4: Quality Checks (1h) [NUEVO]
-
- Tests: 17+/17+ ✅
-
- Coverage: ≥70%
-
- Performance: <100ms handler
-
- No breaking changes
-
- Final commit & push
+Tests robustos (1.5h): 14+ tests coverage ≥70%
 
 Status: ⏳ PENDIENTE - 4.5h
 
-⏳ TAREA 3.4A.2: NoteAgent 100% (4.5h) [NUEVO]
-Status anterior: Handler 15 LOC (stub) ❌ | FSM 51 LOC (básico) | Tests 14 (débiles)
+⏳ TAREA 3.4A.3: ReminderAgent 100% (4.5h) - SIN EMPEZAR
+Status: Handler stub (15 LOC) | FSM básico (58 LOC) | Tests débiles (15)
 
-Acciones 20-NOV:
-
-3.4A.2.1: Handler Completo (2h)
-
- Expandir: 15 → 250+ LOC
-
- Métodos: _create_note(), _list_notes(), _search_notes(), _update_note(), _delete_note(), _tag_notes()
-
- ML: Extract persons + locations para tags
-
- Commit: "feat(h03-3.4a.2): NoteAgent handler - 250+ LOC"
-
-3.4A.2.2: FSM Integrado (1.5h)
-
- Herencia: BaseStateMachine
-
- Estados: awaiting_content → processing → saved/cancelled
-
- LOC target: 150-180
-
- Commit: "refactor(h03-3.4a.2): NoteAgent FSM - Core integration"
-
-3.4A.2.3: ML Integration (1h)
-
- Extract: persons + locations
-
- Auto-tags: basadas en entities
-
- Commit: "feat(h03-3.4a.2): NoteAgent ML - entity extraction"
-
-3.4A.2.4: Tests E2E (1.5h - shared)
-
- Actualizar 14 tests → robustos
-
- Nuevos: 5+ para ML + FSM
-
- Target: 14+ tests PASSING
-
- Coverage: ≥70%
-
- Commit: "test(h03-3.4a.2): NoteAgent E2E robust (14+ tests)"
-
-Status: ⏳ PENDIENTE - 4.5h
-
-⏳ TAREA 3.4A.3: ReminderAgent 100% (4.5h) [NUEVO]
-Status anterior: Handler 15 LOC (stub) ❌ | FSM 58 LOC | Tests 15 (débiles)
-
-Acciones 20-NOV:
-
-Mismo patrón que NoteAgent (3.4A.2):
+Acciones necesarias:
 
 Handler completo (2h)
 
 FSM integrado (1.5h)
 
-ML integration - DateTimeExtractor (1h)
+ML integration (1h): DateTimeExtractor
 
-Tests E2E robustos (1.5h - shared)
-
-Features únicos:
-
- Recurring reminders support
-
- DateTimeExtractor para fecha/hora
-
- Reminders persistence
-
-Target: 15+ tests PASSING | ≥70% coverage
+Tests robustos (1.5h)
 
 Status: ⏳ PENDIENTE - 4.5h
 
-CHECKPOINT 3.4A: ⏳ PENDIENTE (13.5h | 46+ tests)
+CHECKPOINT 3.4A: 🟡 85% AgendaAgent | 0% NoteAgent | 0% ReminderAgent
+Tiempo invertido: 5.5h / 13.5h target
+Tiempo restante: 8h
 
-🔴 BLOQUE 3.4B: CREAR 5 AGENTES NUEVOS [NUEVO 20-NOV - CRÍTICO]
-CAMBIO ESTA SESIÓN: 5 agentes stubs necesitan 100% implementation + ML
+🔴 BLOQUE 3.4B: CREAR 5 AGENTES NUEVOS - SIN EMPEZAR
+⏳ QueryAgent 100% (4.5h) - Status: Stub
+⏳ ScheduleAgent 100% (4.5h) - Status: FSM NO EXISTE
+⏳ HelpAgent 100% (3.5h) - Status: Stub
+⏳ FallbackAgent 100% (3.5h) - Status: Stub
+⏳ EventAgent 100% (4.5h) - Status: Stub
 
-⏳ TAREA 3.4B.1: QueryAgent 100% (4.5h) [NUEVO]
-Status anterior: Handler 15 LOC (stub) | FSM 68 LOC
+Status: ⏳ PENDIENTE - 20h
 
-Tareas:
+🔴 BLOQUE 3.5: LEGACY COVERAGE - SIN EMPEZAR
+⏳ Decorators Complete Tests (1h) - 15 tests
+⏳ BaseAgent Complete Tests (1h) - 15 tests
 
-Handler completo (2h): _query_events(), _query_notes(), _query_reminders(), _get_statistics()
+Status: ⏳ PENDIENTE - 2h
 
-FSM integrado (1.5h): Herencia BaseStateMachine
+🔴 BLOQUE 3.6: FULL STACK INTEGRATION - SIN EMPEZAR
+⏳ Integration Tests (1.5h) - 5 tests críticos
 
-ML integration (1h): Entity extraction
+Status: ⏳ PENDIENTE - 1.5h
 
-Tests E2E (1.5h - shared): 15 tests
-
-Target: 15 tests PASSING
-
-Status: ⏳ PENDIENTE - 4.5h
-
-⏳ TAREA 3.4B.2: ScheduleAgent 100% (4.5h) [NUEVO]
-Status anterior: Handler 15 LOC (stub) | FSM NO EXISTE ❌
-
-Tareas:
-
-Create FSM (1h): scheduler_fsm.py nuevo
-
-Handler completo (2h): _optimize_schedule(), _find_free_time(), _reschedule_conflicts()
-
-FSM integrado (1.5h): Herencia BaseStateMachine
-
-ML integration (1h)
-
-Tests E2E (1.5h - shared): 16 tests
-
-Critical: FSM no existe, hay que crear desde cero
-
-Status: ⏳ PENDIENTE - 4.5h
-
-⏳ TAREA 3.4B.3: HelpAgent 100% (3.5h) [NUEVO]
-Status anterior: Handler 16 LOC (stub) | FSM 90 LOC
-
-Tareas (más simple):
-
-Handler completo (1.5h): _get_help(), _get_tutorials(), _troubleshoot()
-
-FSM integrado (1h)
-
-ML integration (0.5h)
-
-Tests E2E (1.5h - shared): 12 tests
-
-Status: ⏳ PENDIENTE - 3.5h
-
-⏳ TAREA 3.4B.4: FallbackAgent 100% (3.5h) [NUEVO]
-Status anterior: Handler 16 LOC (stub) | FSM 36 LOC
-
-Tareas (más simple):
-
-Handler completo (1.5h): _handle_unknown(), _suggest_intent(), _clarify(), _escalate()
-
-FSM integrado (1h)
-
-ML integration (0.5h)
-
-Tests E2E (1.5h - shared): 10 tests
-
-Status: ⏳ PENDIENTE - 3.5h
-
-⏳ TAREA 3.4B.5: EventAgent 100% (4.5h) [NUEVO]
-Status anterior: Handler 16 LOC (stub) | FSM 70 LOC
-
-Tareas:
-
-Handler completo (2h): _create_event(), _track_event(), _send_invites(), _track_rsvp()
-
-FSM integrado (1.5h)
-
-ML integration (1h)
-
-Tests E2E (1.5h - shared): 14 tests
-
-Status: ⏳ PENDIENTE - 4.5h
-
-CHECKPOINT 3.4B: ⏳ PENDIENTE (20h | 67 tests)
-
-✅ BLOQUE 3.5: LEGACY COVERAGE [NUEVO 20-NOV]
-⏳ TAREA 3.5.1: Decorators Complete Tests (1h)
- Archivo: src/theaia/tests/unit/agents/test_agent_decorators_complete.py (crear)
-
- Tests: 15 nuevos
-
- Coverage: ≥85%
-
- Status: ⏳ PENDIENTE
-
-⏳ TAREA 3.5.2: BaseAgent Complete Tests (1h)
- Archivo: src/theaia/tests/unit/agents/test_base_agent_complete.py (crear/actualizar)
-
- Tests: 15 nuevos
-
- Coverage: ≥70%
-
- Status: ⏳ PENDIENTE
-
-CHECKPOINT 3.5: ⏳ PENDIENTE (2h | 30 tests)
-
-⏳ BLOQUE 3.6: FULL STACK INTEGRATION [NUEVO 20-NOV]
-⏳ TAREA 3.6.1: Integration Tests (1.5h)
- Archivo: src/theaia/tests/integration/test_h03_full_stack.py (crear)
-
- 5 tests críticos:
-
- E2E message through all agents
-
- Concurrent agents no race condition
-
- ML integration all agents
-
- FSM state transitions all agents
-
- Performance <500ms E2E
-
- Status: ⏳ PENDIENTE
-
-CHECKPOINT 3.6: ⏳ PENDIENTE (1.5h | 5 tests)
-
-⏳ FASE 4: E2E VALIDATION & DEMO [NUEVO 20-NOV]
-⏳ BLOQUE 3.7: DEMO & DOCUMENTATION (2h)
-⏳ TAREA 3.7.1: Live NLP Demo (1h)
- Conversación real con usuario
-
- Screenshots/video
-
- Verificación DB
-
- Status: ⏳ PENDIENTE
-
-⏳ TAREA 3.7.2: Documentation Update (1h)
- docs/diary/ actualizada
-
- ROADMAP.md actualizado
-
- README.md con H03 achievements
-
- Status: ⏳ PENDIENTE
-
-📊 RESUMEN FINAL INTEGRADO
+📊 RESUMEN FINAL SESIÓN 21-NOV
 text
-H03 ESTADO ACTUAL - 20 NOV 2025, 16:55 CET
-═════════════════════════════════════════════
+ANTES HOY (20-NOV):
+├─ AgendaAgent: ⏳ Stub (17 LOC handler)
+├─ Tests: 109 PASSING (débiles)
+├─ Coverage: ~17% AgendaAgent
+└─ Status: 65%
 
-ANTES (SESIÓN ANTERIOR):
-✅ 109/109 tests PASSING (65% H03)
-✅ FASE 1-2: 100% completo
-✅ FASE 3: 50% (3.1-3.2 pendientes)
-⏳ FASE 4: 0%
+AHORA (21-NOV 18:12):
+├─ AgendaAgent: 🟡 85% Complete
+│   ├─ FSM: ✅ 91% coverage
+│   ├─ Database: ✅ Integrated
+│   ├─ Router: ✅ Integrated
+│   ├─ ML: ✅ Integrated
+│   └─ Tests: ✅ 26/26 PASSING
+├─ Tests globales: 135 PASSING (+26)
+├─ Coverage: +8% global
+└─ Status: 🟡 70% (AgendaAgent casi completo)
 
-DESCUBRIMIENTOS 20-NOV:
-❌ Agents: 7/8 stubs (15-16 LOC)
-❌ FSM desconectado del Core
-❌ ML no integrado en agents
-❌ Tests E2E débiles
+FALTA PARA AGENDAAGENT 100%:
+├─ EventRepository tests (1h)
+├─ API Endpoints (1h)
+└─ Documentation (1h)
+🎯 PRÓXIMO PASO AL VOLVER
+OPCIÓN A - Completar AgendaAgent 100% (3h):
 
-REPLANEAMIENTO 20-NOV:
-✅ BLOQUE 3.4A: Escalamiento 3 agents (13.5h | 46+ tests)
-✅ BLOQUE 3.4B: Crear 5 agents nuevos (20h | 67 tests)
-✅ BLOQUE 3.5: Legacy coverage (2h | 30 tests)
-✅ BLOQUE 3.6: Full stack (1.5h | 5 tests)
-✅ BLOQUE 3.7: Demo + Docs (2h)
+text
+1. EventRepository integration tests
+2. API endpoint /agents/agenda/create-event
+3. Documentation completa (README.md)
+4. DONE AgendaAgent ✅
+OPCIÓN B - Escalar NoteAgent (4.5h):
 
-TOTAL REPLANIFICADO: 39-42h | 242+ tests
-TIEMPO ANTERIOR: 16h 40min
-TIEMPO FALTANTE: 22-25h
-TIMELINE: ~3-4 días (7h/día)
-
-STATUS GLOBAL: 65% → 75% (estructurado) → Ejecución en progreso
-✅ CRITERIOS DONE H03
+text
+Aplicar MISMO patrón AgendaAgent a NoteAgent
+Acelera proceso, valida arquitectura
+✅ COMMITS SESIÓN 21-NOV
+bash
+dfe3d4d1 - ✅ H03 BLOQUE 3.4A.3.3: AgendaAgent Router Integration COMPLETE
+           - 26 tests PASSED (FSM + DB + Router)
+           - ML Services fixed
+           - Coverage: AgendaFSM 91%
+🏁 CRITERIOS DONE H03 (ACTUALIZADOS)
 H03 está DONE cuando:
+
+ AgendaAgent 85% ← HOY
+
+ AgendaAgent 100% ← SIGUIENTE (3h)
 
  8/8 agents at 100%
 
- 242 tests PASSING
+ 242 tests PASSING (actual: 135)
 
  ≥70% coverage global
 
@@ -557,13 +257,11 @@ H03 está DONE cuando:
 
  Live demo working
 
- All commits pushed
-
  Documentation updated
 
-🚀 PRÓXIMO PASO INMEDIATO
-START BLOQUE 3.4A.1 NOW: AgendaAgent FSM Refactor (1.5h)
+Progreso: 70% → Target 100%
+Tiempo restante estimado: 25-28h (~3-4 días)
 
-Documento creado: 20 Noviembre 2025, 16:55 CET
-Versión: v3.0.0 FINAL INTEGRADA
-Status: ✅ COMPLETO Y LISTO PARA EJECUCIÓN
+Documento actualizado: 21 Noviembre 2025, 18:12 CET
+Versión: v3.1.0 SESSION-21NOV
+Status: 🟢 CHECKPOINT CREADO - LISTO PARA DESCANSO ☕
