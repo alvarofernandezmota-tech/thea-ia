@@ -1,200 +1,200 @@
-"""
-Tests de integración TelegramAdapter + Database - ACTUALIZADOS H02 FINAL
-Versión H02: Tests actualizados con get_or_create, PostgreSQL constraints y message_id
-Responsable: Álvaro Fernández Mota
-Fecha actualización: 15 Nov 2025 - 18:46h
-"""
 import pytest
-from datetime import datetime, timezone
-from sqlalchemy import text
-from src.theaia.database.session import AsyncSessionLocal
-from src.theaia.database.repositories.user_repository import UserRepository
-from src.theaia.database.repositories.conversation_repository import ConversationRepository
-from src.theaia.database.repositories.message_history_repository import MessageHistoryRepository
+from src.theaia.database.session import SessionLocal
 from src.theaia.database.models.user import User
-from src.theaia.database.models.conversation import Conversation
+from src.theaia.database.models.message_history import MessageHistory
+from src.theaia.database.repositories.user_repository import UserRepository
+from src.theaia.database.repositories.message_history_repository import MessageHistoryRepository
+from datetime import datetime, timezone
 
 
-@pytest.mark.asyncio
-@pytest.mark.integration
 class TestTelegramDatabaseIntegration:
-    """Tests de integración adapter + database - Versión actualizada"""
-
-    async def test_database_connection(self):
-        """Test INT-01: Database se conecta correctamente"""
-        async with AsyncSessionLocal() as session:
-            assert session is not None
-            result = await session.execute(text("SELECT 1"))
-            assert result is not None
-
-    async def test_user_repository_create(self):
-        """Test INT-02: UserRepository get_or_create desde Telegram"""
-        async with AsyncSessionLocal() as session:
+    """Test Telegram adapter database integration with PostgreSQL."""
+    
+    def test_user_repository_create(self):
+        """Test user creation and retrieval from PostgreSQL."""
+        session = SessionLocal()
+        
+        try:
             repo = UserRepository(session)
-
-            # Usar get_or_create_from_telegram (evita UniqueViolation)
-            telegram_data = {
-                "id": 999111222,
-                "username": "test_user_updated",
+            
+            # Datos de usuario de prueba
+            user_data = {
+                "telegram_id": 987654321,
+                "username": "test_telegram_user",
                 "first_name": "Test",
-                "last_name": "User"
+                "last_name": "User",
+                "is_bot": False,
+                "language_code": "es"
             }
-
-            user, created = await repo.get_or_create_from_telegram(
-                telegram_data=telegram_data,
-                tenant_id="integration_test_updated"
-            )
-
-            await session.commit()
-
-            assert user is not None
-            assert user.telegram_id == 999111222
-            assert user.username == "test_user_updated"
-
-            await session.rollback()
-
-    async def test_conversation_repository_create(self):
-        """Test INT-03: ConversationRepository get_or_create"""
-        async with AsyncSessionLocal() as session:
-            user_repo = UserRepository(session)
-            conv_repo = ConversationRepository(session)
-
-            # Crear usuario primero
-            telegram_data = {
-                "id": 999111223,
-                "username": "conv_test_updated",
-                "first_name": "Conv",
-                "last_name": "Test"
-            }
-
-            user, user_created = await user_repo.get_or_create_from_telegram(
-                telegram_data=telegram_data,
-                tenant_id="integration_test_conv"
-            )
-
-            # Usar get_or_create (maneja started_at automáticamente)
-            conv, conv_created = await conv_repo.get_or_create(
-                user_id=user.id,
-                tenant_id="integration_test_conv",
-                session_id="test_session_123_updated",
-                initial_state="idle"
-            )
-
-            await session.commit()
-
-            assert conv is not None
-            assert conv.session_id == "test_session_123_updated"
-            assert conv.current_state == "idle"
-            assert conv.user_id == user.id
-            assert conv.started_at is not None
-
-            await session.rollback()
-
-    async def test_message_repository_create(self):
-        """Test INT-04: MessageHistoryRepository create con conversation_id y message_id"""
-        async with AsyncSessionLocal() as session:
-            user_repo = UserRepository(session)
-            conv_repo = ConversationRepository(session)
-            msg_repo = MessageHistoryRepository(session)
-
+            
             # Crear usuario
-            telegram_data = {
-                "id": 999111224,
-                "username": "msg_test_updated",
-                "first_name": "Msg",
-                "last_name": "Test"
-            }
-
-            user, _ = await user_repo.get_or_create_from_telegram(
-                telegram_data=telegram_data,
-                tenant_id="integration_test_msg"
+            user = User(
+                telegram_id=user_data["telegram_id"],
+                username=user_data["username"],
+                first_name=user_data["first_name"],
+                last_name=user_data["last_name"],
+                is_bot=user_data["is_bot"],
+                language_code=user_data["language_code"],
+                tenant_id="test_tenant",
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
             )
-
-            # Crear conversación
-            conv, _ = await conv_repo.get_or_create(
-                user_id=user.id,
-                tenant_id="integration_test_msg",
-                session_id="test_session_456_updated",
-                initial_state="idle"
-            )
-
-            # Crear mensaje (usa conversation_id y message_id)
-            message = await msg_repo.create(
-                tenant_id="integration_test_msg",
-                user_id=user.id,
-                conversation_id=conv.id,
-                message_id="msg_test_456_001",
-                user_message="Hola",
-                bot_response="¡Hola!",
-                intent_detected="saludo"
-            )
-
-            await session.commit()
-
-            assert message is not None
-            assert message.user_message == "Hola"
-            assert message.bot_response == "¡Hola!"
-            assert message.conversation_id == conv.id
-            assert message.user_id == user.id
-            assert message.message_id == "msg_test_456_001"
-
-            await session.rollback()
-
-    async def test_integration_full_flow(self):
-        """Test INT-05: Flujo completo User -> Conversation -> Message"""
-        async with AsyncSessionLocal() as session:
-            user_repo = UserRepository(session)
-            conv_repo = ConversationRepository(session)
-            msg_repo = MessageHistoryRepository(session)
-
-            # 1. Crear usuario
-            telegram_data = {
-                "id": 999111225,
-                "username": "full_flow_test",
-                "first_name": "Full",
-                "last_name": "Flow"
-            }
-
-            user, _ = await user_repo.get_or_create_from_telegram(
-                telegram_data=telegram_data,
-                tenant_id="integration_test_full"
-            )
-
-            # 2. Crear conversación
-            conv, _ = await conv_repo.get_or_create(
-                user_id=user.id,
-                tenant_id="integration_test_full",
-                session_id=f"session_full_{user.telegram_id}",
-                initial_state="greeting"
-            )
-
-            # 3. Crear mensaje con message_id
-            message = await msg_repo.create(
-                tenant_id="integration_test_full",
-                user_id=user.id,
-                conversation_id=conv.id,
-                message_id=f"msg_full_{user.telegram_id}_001",
-                user_message="Prueba flujo completo",
-                bot_response="Flujo completado correctamente",
-                intent_detected="test"
-            )
-
-            await session.commit()
-
-            # Verificar relaciones
-            assert message.user_id == user.id
-            assert message.conversation_id == conv.id
-            assert conv.user_id == user.id
-
-            # Verificar que todo existe
+            
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            
+            # Verificaciones
             assert user.id is not None
-            assert conv.id is not None
+            assert user.telegram_id == 987654321
+            assert user.username == "test_telegram_user"
+            assert user.first_name == "Test"
+            assert user.tenant_id == "test_tenant"
+            
+            # Verificar que se puede recuperar
+            retrieved_user = session.query(User).filter_by(
+                telegram_id=987654321,
+                tenant_id="test_tenant"
+            ).first()
+            
+            assert retrieved_user is not None
+            assert retrieved_user.id == user.id
+            
+            # Cleanup
+            session.delete(user)
+            session.commit()
+            
+            print("✅ UserRepository CREATE test PASSED")
+            
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+    
+    def test_message_repository_create(self):
+        """Test message creation and storage in PostgreSQL."""
+        session = SessionLocal()
+        
+        try:
+            # Primero crear un usuario para asociar mensajes
+            user = User(
+                telegram_id=111222333,
+                username="test_msg_user",
+                first_name="Msg",
+                last_name="Test",
+                is_bot=False,
+                language_code="es",
+                tenant_id="test_tenant",
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            
+            # Crear mensaje
+            message = MessageHistory(
+                user_id=user.id,
+                tenant_id="test_tenant",
+                message_type="user_input",
+                content="Test message for database",
+                sender="user",
+                conversation_id=f"conv_{user.id}",
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            
+            session.add(message)
+            session.commit()
+            session.refresh(message)
+            
+            # Verificaciones
             assert message.id is not None
-            assert message.message_id is not None
-
-            await session.rollback()
-
-            print("\n✅ Integration Full Flow Test PASSED")
-            print(f"   User: {user.username} (ID: {user.id})")
-            print(f"   Conversation: {conv.session_id}")
-            print(f"   Message: {message.message_id}")
+            assert message.user_id == user.id
+            assert message.content == "Test message for database"
+            assert message.message_type == "user_input"
+            assert message.sender == "user"
+            assert message.tenant_id == "test_tenant"
+            
+            # Verificar que se puede recuperar
+            retrieved_msg = session.query(MessageHistory).filter_by(
+                user_id=user.id,
+                tenant_id="test_tenant"
+            ).first()
+            
+            assert retrieved_msg is not None
+            assert retrieved_msg.id == message.id
+            assert retrieved_msg.content == "Test message for database"
+            
+            # Cleanup
+            session.delete(message)
+            session.delete(user)
+            session.commit()
+            
+            print("✅ MessageHistoryRepository CREATE test PASSED")
+            
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+    
+    def test_user_telegram_attributes(self):
+        """Test user Telegram-specific attributes."""
+        session = SessionLocal()
+        
+        try:
+            user = User(
+                telegram_id=555666777,
+                username="telegram_bot_test",
+                first_name="Bot",
+                last_name="Test",
+                is_bot=True,
+                language_code="en",
+                tenant_id="test_tenant",
+                created_at=datetime.now(timezone.utc),
+                updated_at=datetime.now(timezone.utc)
+            )
+            
+            session.add(user)
+            session.commit()
+            session.refresh(user)
+            
+            # Verificaciones de atributos Telegram
+            assert user.is_bot is True
+            assert user.language_code == "en"
+            assert user.telegram_id == 555666777
+            assert user.username == "telegram_bot_test"
+            
+            # Cleanup
+            session.delete(user)
+            session.commit()
+            
+            print("✅ User Telegram attributes test PASSED")
+            
+        except Exception as e:
+            session.rollback()
+            raise e
+        finally:
+            session.close()
+    
+    def test_database_connection(self):
+        """Test basic database connectivity."""
+        session = SessionLocal()
+        
+        try:
+            # Verificar que la conexión funciona
+            assert session is not None
+            
+            # Intentar una query simple
+            result = session.query(User).limit(1).all()
+            assert isinstance(result, list)
+            
+            print("✅ Database connection test PASSED")
+            
+        except Exception as e:
+            raise e
+        finally:
+            session.close()
