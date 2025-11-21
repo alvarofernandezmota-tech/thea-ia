@@ -10,7 +10,7 @@ Hito: H03 BLOQUE 3.4A.1.1 - Agent FSM Professional
 
 from typing import Optional, Dict, Any, Callable
 import logging
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.theaia.agents.agenda_agent.model.agent_states import AgendaStates
 
@@ -165,8 +165,11 @@ class AgendaFSM:
             'provide_date': self._store_date,
             'provide_time': self._store_time,
             'provide_location': self._store_location,
+            'skip_location': lambda ctx: None,
             'save_event': self._mark_saved,
             'finish': self._cleanup_draft,
+            'finish_list': lambda ctx: None,
+            'start_list': lambda ctx: None,
             'cancel': self._cleanup_draft,
             'reset': self._cleanup_draft
         }
@@ -221,8 +224,9 @@ class AgendaFSM:
         if trigger in self._callbacks_post:
             try:
                 self._callbacks_post[trigger](context)
+                self.logger.debug(f"Callback POST ejecutado: {trigger}")
             except Exception as e:
-                self.logger.error(f"Callback POST falló: {e}")
+                self.logger.error(f"Callback POST falló para {trigger}: {e}", exc_info=True)
         
         return True
     
@@ -276,7 +280,7 @@ class AgendaFSM:
         self._event_draft = {
             'user_id': context.get('user_id'),
             'tenant_id': context.get('tenant_id'),
-            'created_at': datetime.utcnow().isoformat()
+            'created_at': datetime.now(timezone.utc).isoformat()
         }
         context['event_draft'] = self._event_draft
         self.logger.debug("Borrador inicializado")
