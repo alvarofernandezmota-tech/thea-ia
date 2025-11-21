@@ -3,7 +3,7 @@ Entity Extraction Pipeline - THEA-IA H03 FASE 3
 Extract DATE, TIME, PERSON, LOCATION from user messages
 
 File: src/theaia/ml/entity_extractor/pipeline.py
-Updated: 20 Nov 2025 - 02:25 AM CET
+Updated: 21 Nov 2025 - 05:57 PM CET
 NER: spaCy + Custom patterns + Intent-aware
 """
 
@@ -109,6 +109,12 @@ class EntityExtractor:
             return {k: v for k, v in entities.items() if k in ['DATE', 'TIME', 'PERSON']}
         
         return entities
+
+
+# ============================================
+# ALIAS FOR ROUTER COMPATIBILITY
+# ============================================
+EntityExtractionPipeline = EntityExtractor
 
 
 if __name__ == "__main__":
