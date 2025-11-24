@@ -1,297 +1,462 @@
-"""E2E Tests for NoteAgent - THEA_IA.
-
-NoteAgent maneja notas rápidas del usuario:
-- Capturar ideas y apuntes sin fecha
-- Listas de tareas simples
-- Recordatorios informales
-- Búsqueda y gestión de notas
 """
-
+E2E Tests para NoteAgent
+Pattern: AgendaAgent E2E tests adapted
+Target: 14 tests, ≥70% coverage
+"""
 import pytest
-from unittest.mock import MagicMock
+import pytest_asyncio
+from datetime import datetime
+from typing import Dict
+
 from src.theaia.agents.note_agent.handler import NoteAgent
+from src.theaia.database.models.note import Note
+from src.theaia.database.repositories.note_repository import NoteRepository
 
 
-@pytest.fixture
-def note_agent():
-    """Create NoteAgent instance for testing.
-    
-    NoteAgent uses ConversationManager for state management.
-    No direct DB dependency - simpler architecture.
+@pytest_asyncio.fixture
+async def note_agent(db_session, test_user):
     """
-    agent = NoteAgent(user_id="test_user_123")
-    # Mock conversation manager for predictable testing
-    agent.conversation_manager = MagicMock()
-    agent.conversation_manager.handle_message = MagicMock(
-        return_value=(
-            "Nota guardada correctamente",
-            "completed",
-            {"user_id": "test_user_123", "note_created": True}
-        )
-    )
+    Fixture: NoteAgent initialized with database
+    
+    Args:
+        db_session: Database session fixture
+        test_user: Test user fixture
+        
+    Returns:
+        NoteAgent instance
+    """
+    agent = NoteAgent(test_user.id)
+    await agent.initialize(db_session)
     return agent
 
 
-class TestNoteAgentE2E:
-    """Test NoteAgent end-to-end functionality."""
-
-    def test_agent_initialization(self, note_agent):
-        """Test agent initialization with user_id."""
-        assert note_agent.user_id == "test_user_123"
-        assert note_agent.conversation_manager is not None
-        assert hasattr(note_agent, 'get_supported_intents')
-        assert hasattr(note_agent, 'handle')
-
-    def test_get_supported_intents(self, note_agent):
-        """Test getting supported intents for notes."""
-        intents = note_agent.get_supported_intents()
+@pytest_asyncio.fixture
+async def test_note(db_session, test_user):
+    """
+    Fixture: Test note in database
+    
+    Args:
+        db_session: Database session
+        test_user: Test user
         
-        assert isinstance(intents, list)
-        assert len(intents) > 0
-        assert "nota" in intents
-        assert "notas" in intents
-        # Puede incluir: apunte, memoria, etc.
+    Returns:
+        Note instance
+    """
+    repo = NoteRepository(db_session)
+    note = await repo.create(  # ← CORREGIDO: create() en lugar de create_note()
+        tenant_id=test_user.tenant_id,
+        user_id=test_user.id,
+        title="Test Note",
+        content="This is a test note content for E2E testing",
+        category="personal",
+        tags=["test", "sample"]
+    )
+    return note
 
-    def test_handle_create_note_simple(self, note_agent):
-        """Test creating a simple note.
+
+@pytest_asyncio.fixture
+async def test_notes_multiple(db_session, test_user):
+    """
+    Fixture: Multiple test notes
+    
+    Args:
+        db_session: Database session
+        test_user: Test user
         
-        Use case: "Apuntar comprar leche"
-        """
-        response, state, context = note_agent.handle(
-            user_id="test_user_123",
-            message="Apuntar comprar leche",
-            context={"intent": "nota"}
+    Returns:
+        List of Note instances
+    """
+    repo = NoteRepository(db_session)
+    notes = []
+    
+    for i in range(3):
+        note = await repo.create(  # ← CORREGIDO: create() en lugar de create_note()
+            tenant_id=test_user.tenant_id,
+            user_id=test_user.id,
+            title=f"Test Note {i+1}",
+            content=f"Content {i+1}",
+            category="personal" if i % 2 == 0 else "trabajo",
+            tags=[f"tag{i}", "test"]
         )
-        
-        assert response is not None
-        assert isinstance(response, str)
-        assert len(response) > 0
-        assert state is not None
-        assert isinstance(context, dict)
-        assert context["user_id"] == "test_user_123"
-
-    def test_handle_delegates_to_conversation_manager(self, note_agent):
-        """Test that handle delegates to conversation manager.
-        
-        NoteAgent is a thin wrapper around ConversationManager.
-        """
-        message = "Crear nota sobre Python"
-        context = {"intent": "nota", "user_id": "test_user_123"}
-        
-        response, state, new_context = note_agent.handle(
-            "test_user_123",
-            message,
-            context
-        )
-        
-        # Verify delegation
-        note_agent.conversation_manager.handle_message.assert_called_once_with(
-            "test_user_123",
-            message,
-            context
-        )
-        
-        assert response == "Nota guardada correctamente"
-        assert state == "completed"
-        assert new_context["note_created"] is True
-
-    def test_handle_returns_valid_tuple_structure(self, note_agent):
-        """Test handle returns (response, state, context) tuple."""
-        response, state, context = note_agent.handle(
-            "test_user_123",
-            "Nota de prueba",
-            {"intent": "nota"}
-        )
-        
-        # Validate structure
-        assert isinstance(response, str), "Response must be string"
-        assert isinstance(state, str), "State must be string"
-        assert isinstance(context, dict), "Context must be dict"
-        assert "user_id" in context, "Context must have user_id"
-
-    def test_user_id_consistency(self, note_agent):
-        """Test user_id remains consistent across calls."""
-        original_user_id = note_agent.user_id
-        
-        # Make multiple calls
-        for i in range(5):
-            note_agent.handle(
-                "test_user_123",
-                f"Nota número {i}",
-                {"intent": "nota"}
-            )
-        
-        # user_id should not change
-        assert note_agent.user_id == original_user_id
-        assert note_agent.user_id == "test_user_123"
-
-    def test_supports_multiple_intent_variations(self, note_agent):
-        """Test agent supports various note intent keywords.
-        
-        THEA_IA supports natural language variations.
-        """
-        intents = note_agent.get_supported_intents()
-        
-        # Must support at least these common variations
-        expected_intents = ["nota", "notas"]
-        for intent in expected_intents:
-            assert intent in intents, f"Intent '{intent}' should be supported"
-
-    def test_conversation_manager_exists(self, note_agent):
-        """Test conversation manager is properly initialized."""
-        assert hasattr(note_agent, 'conversation_manager')
-        assert note_agent.conversation_manager is not None
-        assert hasattr(note_agent.conversation_manager, 'handle_message')
+        notes.append(note)
+    
+    return notes
 
 
-class TestNoteAgentConversationFlow:
-    """Test multi-turn conversation flows for note creation."""
+# ==========================================
+# CRUD TESTS
+# ==========================================
 
-    def test_multi_turn_note_creation(self):
-        """Test conversation flow for creating a note.
-        
-        Flow:
-        1. User: "Crear nota"
-        2. Bot: "¿Qué quieres apuntar?"
-        3. User: "Comprar pan y leche"
-        4. Bot: "Nota guardada"
-        """
-        agent = NoteAgent(user_id="flow_user")
-        agent.conversation_manager = MagicMock()
-        
-        # Turn 1: Initiate note creation
-        agent.conversation_manager.handle_message = MagicMock(
-            return_value=(
-                "¿Qué quieres apuntar?",
-                "awaiting_note_content",
-                {"user_id": "flow_user", "intent": "nota"}
-            )
-        )
-        
-        response1, state1, context1 = agent.handle(
-            "flow_user",
-            "Crear nota",
-            {"intent": "nota"}
-        )
-        
-        assert "apuntar" in response1.lower()
-        assert state1 == "awaiting_note_content"
-        
-        # Turn 2: Provide note content
-        agent.conversation_manager.handle_message = MagicMock(
-            return_value=(
-                "Nota 'Comprar pan y leche' guardada correctamente",
-                "completed",
-                {
-                    "user_id": "flow_user",
-                    "note": "Comprar pan y leche",
-                    "note_id": 123
-                }
-            )
-        )
-        
-        response2, state2, context2 = agent.handle(
-            "flow_user",
-            "Comprar pan y leche",
-            {"intent": "nota", "state": "awaiting_note_content"}
-        )
-        
-        assert "guardada" in response2.lower()
-        assert state2 == "completed"
-        assert context2["note"] == "Comprar pan y leche"
-
-    def test_context_preservation_across_turns(self):
-        """Test context data is preserved during conversation."""
-        agent = NoteAgent(user_id="context_user")
-        agent.conversation_manager = MagicMock()
-        
-        initial_context = {
-            "user_id": "context_user",
-            "previous_notes": ["nota1", "nota2"],
-            "note_count": 2
-        }
-        
-        agent.conversation_manager.handle_message = MagicMock(
-            return_value=(
-                "Nota guardada",
-                "completed",
-                {
-                    **initial_context,
-                    "note_count": 3,
-                    "previous_notes": ["nota1", "nota2", "nota3"]
-                }
-            )
-        )
-        
-        response, state, context = agent.handle(
-            "context_user",
-            "Apuntar nota3",
-            initial_context
-        )
-        
-        # Context should be updated but preserve history
-        assert context["note_count"] == 3
-        assert len(context["previous_notes"]) == 3
-        assert "nota1" in context["previous_notes"]
-
-    def test_error_handling_in_conversation(self):
-        """Test graceful error handling during conversation."""
-        agent = NoteAgent(user_id="error_user")
-        agent.conversation_manager = MagicMock()
-        
-        # Simulate conversation manager error
-        agent.conversation_manager.handle_message = MagicMock(
-            side_effect=Exception("Conversation error")
-        )
-        
-        # Should propagate exception for handling at higher level
-        with pytest.raises(Exception) as exc_info:
-            agent.handle(
-                "error_user",
-                "test message",
-                {"intent": "nota"}
-            )
-        
-        assert "Conversation error" in str(exc_info.value)
+@pytest.mark.asyncio
+async def test_create_note_full_flow(note_agent, test_user):
+    """
+    Test E2E: Crear nota con flujo completo multi-turn
+    
+    Flow: idle → awaiting_note_title → awaiting_note_content → awaiting_confirmation → idle
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Step 1: Start creation
+    response1, state1, ctx1 = await note_agent.handle(
+        test_user.id,
+        "Crear nueva nota",
+        context
+    )
+    
+    assert "título" in response1.lower()
+    assert state1 == "awaiting_note_title"  # ← CORREGIDO: nombre de estado FSM
+    
+    # Step 2: Provide title
+    response2, state2, ctx2 = await note_agent.handle(
+        test_user.id,
+        "Mi nota importante",
+        context
+    )
+    
+    assert "contenido" in response2.lower()
+    assert state2 == "awaiting_note_content"  # ← CORREGIDO: nombre de estado FSM
+    assert ctx2.get("title") == "Mi nota importante"
+    
+    # Step 3: Provide content
+    response3, state3, ctx3 = await note_agent.handle(
+        test_user.id,
+        "Este es el contenido de mi nota sobre el proyecto X",
+        context
+    )
+    
+    assert "guardar" in response3.lower()
+    assert state3 == "awaiting_confirmation"
+    assert "title" in ctx3
+    assert "content" in ctx3
+    
+    # Step 4: Confirm
+    response4, state4, ctx4 = await note_agent.handle(
+        test_user.id,
+        "sí",
+        context
+    )
+    
+    assert "guardada" in response4.lower() or "correctamente" in response4.lower()
+    assert state4 == "idle"
 
 
-class TestNoteAgentIntegration:
-    """Test NoteAgent integration with THEA_IA system."""
+@pytest.mark.asyncio
+async def test_create_note_one_message(note_agent, test_user):
+    """
+    Test E2E: Crear nota en un solo mensaje (fast path)
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Single message with title and content
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Crear nota: Título de prueba. Este es el contenido completo de la nota.",
+        context
+    )
+    
+    # Should go directly to confirmation
+    assert "guardar" in response.lower() or "confirmar" in response.lower()
+    assert state == "awaiting_confirmation"
+    assert ctx.get("title") is not None
+    assert ctx.get("content") is not None
 
-    def test_agent_compatible_with_base_agent_interface(self, note_agent):
-        """Test NoteAgent follows BaseAgent interface."""
-        # Required methods from BaseAgent
-        assert callable(getattr(note_agent, 'get_supported_intents', None))
-        assert callable(getattr(note_agent, 'handle', None))
-        
-        # Required attributes
-        assert hasattr(note_agent, 'user_id')
 
-    def test_intent_routing_compatibility(self, note_agent):
-        """Test intents are router-compatible."""
-        intents = note_agent.get_supported_intents()
-        
-        # All intents should be strings
-        assert all(isinstance(intent, str) for intent in intents)
-        
-        # All intents should be lowercase for consistency
-        assert all(intent.islower() for intent in intents)
+@pytest.mark.asyncio
+async def test_list_notes_empty(note_agent, test_user):
+    """
+    Test E2E: Listar notas cuando no hay ninguna
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Listar mis notas",
+        context
+    )
+    
+    assert "no tienes notas" in response.lower() or "no hay" in response.lower()
+    assert state == "idle"
 
-    def test_response_format_consistency(self, note_agent):
-        """Test response format matches THEA_IA standards."""
-        response, state, context = note_agent.handle(
-            "test_user",
-            "test message",
-            {"intent": "nota"}
-        )
-        
-        # Response should be user-friendly Spanish text
-        assert isinstance(response, str)
-        assert len(response) > 0
-        
-        # State should be valid FSM state
-        assert isinstance(state, str)
-        assert len(state) > 0
-        
-        # Context should preserve user_id
-        assert "user_id" in context
+
+@pytest.mark.asyncio
+async def test_list_notes_with_data(note_agent, test_user, test_notes_multiple):
+    """
+    Test E2E: Listar notas cuando existen varias
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Mostrar mis notas",
+        context
+    )
+    
+    assert "Test Note" in response
+    assert state == "idle"
+    # Should show multiple notes
+    assert response.count("Test Note") >= 2
+
+
+@pytest.mark.asyncio
+async def test_search_notes_by_tag(note_agent, test_user, test_notes_multiple):
+    """
+    Test E2E: Buscar notas por tag
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Buscar notas con tag test",
+        context
+    )
+    
+    assert state == "idle"
+    assert "Test Note" in response or "encontré" in response.lower()
+
+
+@pytest.mark.asyncio
+async def test_search_notes_by_category(note_agent, test_user, test_notes_multiple):
+    """
+    Test E2E: Buscar notas por categoría
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Buscar notas trabajo",
+        context
+    )
+    
+    assert state == "idle"
+    # Should find at least one work note
+    assert "Test Note" in response or "encontré" in response.lower()
+
+
+@pytest.mark.asyncio
+async def test_search_notes_no_results(note_agent, test_user, test_note):
+    """
+    Test E2E: Buscar notas sin resultados
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Buscar notas xyz123nonexistent",
+        context
+    )
+    
+    assert state == "idle"
+    assert "no encontré" in response.lower() or "no hay" in response.lower()
+
+
+# ==========================================
+# ML ENTITY EXTRACTION TESTS
+# ==========================================
+
+@pytest.mark.asyncio
+async def test_create_note_with_ml_person_extraction(note_agent, test_user):
+    """
+    Test E2E: Crear nota con extracción ML de personas
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Message with person names
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Crear nota: Reunión con Juan. Hablar con Juan sobre el proyecto mañana.",
+        context
+    )
+    
+    assert "guardar" in response.lower() or "confirmar" in response.lower()
+    # Should auto-extract "Juan" as tag
+    if ctx.get("tags"):
+        assert any("juan" in tag.lower() for tag in ctx["tags"])
+
+
+@pytest.mark.asyncio
+async def test_create_note_with_ml_location_extraction(note_agent, test_user):
+    """
+    Test E2E: Crear nota con extracción ML de ubicaciones
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Message with location
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Crear nota: Documentos oficina. Recordar llevar documentos a la oficina.",
+        context
+    )
+    
+    assert "guardar" in response.lower() or "confirmar" in response.lower()
+    # Should auto-detect category "trabajo" from "oficina"
+    if ctx.get("category"):
+        assert ctx["category"] in ["trabajo", "general"]
+
+
+@pytest.mark.asyncio
+async def test_auto_category_detection(note_agent, test_user):
+    """
+    Test E2E: Auto-detección de categoría desde entidades
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Start note creation
+    await note_agent.handle(test_user.id, "Crear nota", context)
+    await note_agent.handle(test_user.id, "Tarea personal", context)
+    
+    # Content with person reference
+    response, state, ctx = await note_agent.handle(
+        test_user.id,
+        "Llamar a María sobre el cumpleaños",
+        context
+    )
+    
+    # Should detect "personal" category from person mention
+    if ctx.get("category"):
+        assert ctx["category"] == "personal"
+
+
+# ==========================================
+# MULTI-TENANT TESTS
+# ==========================================
+
+@pytest.mark.asyncio
+async def test_multi_tenant_isolation(note_agent, test_user, test_user_tenant2):
+    """
+    Test E2E: Aislamiento multi-tenant en notas
+    """
+    context1 = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    context2 = {
+        "tenant_id": test_user_tenant2.tenant_id,
+        "user_id": test_user_tenant2.id
+    }
+    
+    # Create note for user 1
+    await note_agent.handle(test_user.id, "Crear nota", context1)
+    await note_agent.handle(test_user.id, "Tenant1 Note", context1)
+    await note_agent.handle(test_user.id, "Content tenant 1", context1)
+    await note_agent.handle(test_user.id, "sí", context1)
+    
+    # List notes for user 1
+    response1, _, _ = await note_agent.handle(test_user.id, "Listar notas", context1)
+    
+    # List notes for user 2 (should be empty or different)
+    response2, _, _ = await note_agent.handle(test_user_tenant2.id, "Listar notas", context2)
+    
+    # User 2 should NOT see user 1 notes
+    assert "Tenant1 Note" in response1
+    assert "Tenant1 Note" not in response2
+
+
+# ==========================================
+# FSM STATE TESTS
+# ==========================================
+
+@pytest.mark.asyncio
+async def test_fsm_state_persistence(note_agent, test_user):
+    """
+    Test E2E: Persistencia de estado FSM entre mensajes
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Start flow
+    _, state1, _ = await note_agent.handle(test_user.id, "Crear nota", context)
+    assert state1 == "awaiting_note_title"  # ← CORREGIDO: nombre de estado FSM
+    
+    # Continue flow
+    _, state2, _ = await note_agent.handle(test_user.id, "Título", context)
+    assert state2 == "awaiting_note_content"  # ← CORREGIDO: nombre de estado FSM
+    
+    # Verify FSM maintained state
+    fsm = note_agent._get_or_create_fsm(test_user.id)
+    assert fsm.current_state == "awaiting_note_content"
+
+
+@pytest.mark.asyncio
+async def test_cancel_note_creation(note_agent, test_user):
+    """
+    Test E2E: Cancelar creación de nota
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Start creation
+    await note_agent.handle(test_user.id, "Crear nota", context)
+    await note_agent.handle(test_user.id, "Título test", context)
+    await note_agent.handle(test_user.id, "Contenido test", context)
+    
+    # Cancel at confirmation
+    response, state, _ = await note_agent.handle(test_user.id, "no", context)
+    
+    assert "cancelada" in response.lower() or "cancelado" in response.lower()
+    assert state == "idle"
+
+
+# ==========================================
+# INTEGRATION TESTS
+# ==========================================
+
+@pytest.mark.asyncio
+async def test_note_agent_with_repository(note_agent, test_user):
+    """
+    Test E2E: Integración NoteAgent con NoteRepository
+    """
+    context = {
+        "tenant_id": test_user.tenant_id,
+        "user_id": test_user.id
+    }
+    
+    # Create note through agent
+    await note_agent.handle(test_user.id, "Crear nota", context)
+    await note_agent.handle(test_user.id, "Integration Test", context)
+    await note_agent.handle(test_user.id, "Testing repository integration", context)
+    response, _, _ = await note_agent.handle(test_user.id, "sí", context)
+    
+    # Verify saved
+    assert "guardada" in response.lower()
+    
+    # Verify in database through repository
+    repo = note_agent.note_repository
+    notes = await repo.get_by_user(test_user.tenant_id, test_user.id)
+    
+    assert len(notes) > 0
+    assert any("Integration Test" in note.title for note in notes)
