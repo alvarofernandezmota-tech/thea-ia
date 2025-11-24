@@ -4,7 +4,7 @@ Pattern: AgendaAgent v2.0 adapted for notes
 FSM per-user + ML integration + Database persistence
 """
 from typing import Dict, List, Optional, Tuple
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 import logging
 
 from src.theaia.agents.base_agent import BaseAgent
@@ -27,6 +27,7 @@ class NoteAgent(BaseAgent):
     - CRUD completo (create, read, update, delete)
     - Search (por tags, categoría, contenido)
     - Pin/unpin notes (notas importantes)
+    - Filtros avanzados (fecha, solo fijadas)
     - Multi-tenant isolation
 
     Architecture:
@@ -35,7 +36,7 @@ class NoteAgent(BaseAgent):
     - Repository: NoteRepository (persistence)
     - ML: PersonExtractor, LocationExtractor (entity extraction)
 
-    Coverage target: ≥70%
+    Coverage target: ≥85%
     Pattern: AgendaAgent v2.0 adapted
     """
     def __init__(self, user_id: str):
@@ -98,6 +99,10 @@ class NoteAgent(BaseAgent):
                 return await self._handle_pin_note(user_id, message, context, fsm)
             elif action == "get_note":
                 return await self._handle_get_note(user_id, message, context, fsm)
+            elif action == "list_pinned":
+                return await self._handle_list_pinned_notes(user_id, context, fsm)
+            elif action == "filter_by_date":
+                return await self._handle_filter_by_date(user_id, message, context, fsm)
             else:
                 return self.conversation_manager.handle_message(user_id, message, context)
 
@@ -140,9 +145,31 @@ class NoteAgent(BaseAgent):
     ) -> str:
         msg_lower = message.lower()
 
+        # ✨ FIX CRÍTICO: Si estamos en flujos específicos, continuar con ellos
+        if current_state == "awaiting_edit_content":
+            return "edit_note"
+        
+        if current_state == "awaiting_delete_confirmation":
+            return "delete_note"
+        
+        # Para estados de creación, continuar con create_note
+        if current_state not in ["idle", "awaiting_edit_content", "awaiting_delete_confirmation"]:
+            return "create_note"
+
+        # SOLO detectar acciones cuando estamos en IDLE
         create_keywords = ["crear", "nueva", "apuntar", "anota", "guarda", "escribe", "añade"]
         if any(keyword in msg_lower for keyword in create_keywords):
             return "create_note"
+
+        # Detectar filtros de fecha
+        date_keywords = ["hoy", "esta semana", "este mes", "últimos", "recientes"]
+        if any(keyword in msg_lower for keyword in date_keywords):
+            return "filter_by_date"
+
+        # Detectar lista de notas fijadas
+        pinned_list_keywords = ["fijadas", "pinneadas", "importantes"]
+        if any(keyword in msg_lower for keyword in pinned_list_keywords):
+            return "list_pinned"
 
         list_keywords = ["listar", "mostrar todas", "ver notas", "mis notas", "lista"]
         if any(keyword in msg_lower for keyword in list_keywords):
@@ -161,15 +188,13 @@ class NoteAgent(BaseAgent):
             return "delete_note"
 
         pin_keywords = ["fijar", "pin", "fija"]
-        if any(keyword in msg_lower for keyword in pin_keywords) and current_state == "idle":
+        if any(keyword in msg_lower for keyword in pin_keywords):
             return "pin_note"
 
         get_keywords = ["mostrar nota", "ver nota", "abrir nota"]
         if any(keyword in msg_lower for keyword in get_keywords):
             return "get_note"
 
-        if current_state != "idle":
-            return "create_note"
         return "unknown"
 
     async def _handle_create_note(
@@ -228,6 +253,8 @@ class NoteAgent(BaseAgent):
             else:
                 fsm.reset()
                 response = "❌ Nota cancelada"
+        else:
+            response = "⚙️ Estado no esperado en creación de nota."
 
         return response, fsm.current_state, fsm.context
 
@@ -301,11 +328,7 @@ class NoteAgent(BaseAgent):
         entities: Dict,
         fsm: NoteFSM
     ) -> Tuple[str, str, Dict]:
-        """
-        Handle note editing flow.
-
-        Flow: idle → awaiting_edit_content → idle
-        """
+        """Handle note editing flow."""
         current_state = fsm.current_state
 
         import re
@@ -338,14 +361,17 @@ class NoteAgent(BaseAgent):
         elif current_state == "awaiting_edit_content":
             try:
                 note_id = fsm.context.get("edit_note_id")
-                updated_note = await self.note_repository.update(
-                    note_id,
-                    context["tenant_id"],
-                    {
-                        "content": message.strip(),
-                        "updated_at": datetime.utcnow()
-                    }
-                )
+                # ✨ FIX: Actualizar directamente la instancia (no usar update que toma 3 args)
+                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                if note:
+                    note.content = message.strip()
+                    note.updated_at = datetime.now(timezone.utc)
+                    await self.note_repository.session.commit()
+                    await self.note_repository.session.refresh(note)
+                    updated_note = note
+                else:
+                    updated_note = None
+                
                 fsm.reset()
                 if updated_note:
                     return f"✅ Nota {note_id} actualizada correctamente.", "idle", {}
@@ -365,7 +391,52 @@ class NoteAgent(BaseAgent):
         context: Dict,
         fsm: NoteFSM
     ) -> Tuple[str, str, Dict]:
-        return "⚙️ Funcionalidad de eliminación en desarrollo", "idle", {}
+        """Handle note deletion flow (con confirmación)."""
+        current_state = fsm.current_state
+
+        import re
+
+        if current_state == "idle":
+            match = re.search(r'\d+', message)
+            if match:
+                note_id = int(match.group())
+                try:
+                    note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                    if not note or str(note.user_id) != str(user_id):
+                        return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                    
+                    fsm.context["delete_note_id"] = note_id
+                    fsm.context["delete_note_title"] = note.title
+                    fsm.transition_to("awaiting_delete_confirmation")
+                    
+                    resp = (
+                        f"⚠️ **¿Eliminar nota {note_id}?**\n"
+                        f"**Título:** {note.title}\n\n"
+                        "Responde 'sí' para confirmar o 'no' para cancelar:"
+                    )
+                    return resp, fsm.current_state, fsm.context
+                except Exception as e:
+                    self.logger.error(f"Error buscando nota para eliminar: {e}")
+                    return f"❌ Error buscando nota: {str(e)}", "idle", {}
+            else:
+                return "❌ Debes indicar el ID de la nota a eliminar (ej: 'borrar nota 5')", "idle", {}
+
+        elif current_state == "awaiting_delete_confirmation":
+            if any(word in message.lower() for word in ["sí", "si", "ok", "confirmar", "yes"]):
+                try:
+                    note_id = fsm.context.get("delete_note_id")
+                    await self.note_repository.delete(note_id, context["tenant_id"])
+                    fsm.reset()
+                    return f"✅ Nota {note_id} eliminada correctamente.", "idle", {}
+                except Exception as e:
+                    self.logger.error(f"Error eliminando nota: {e}")
+                    fsm.reset()
+                    return f"❌ Error eliminando nota: {str(e)}", "idle", {}
+            else:
+                fsm.reset()
+                return "❌ Eliminación cancelada.", "idle", {}
+
+        return "⚙️ Estado no soportado para la eliminación de nota.", "idle", {}
 
     async def _handle_pin_note(
         self,
@@ -374,7 +445,30 @@ class NoteAgent(BaseAgent):
         context: Dict,
         fsm: NoteFSM
     ) -> Tuple[str, str, Dict]:
-        return "⚙️ Funcionalidad de fijar notas en desarrollo", "idle", {}
+        """Handle note pinning/unpinning (toggle)."""
+        import re
+
+        match = re.search(r'\d+', message)
+        if match:
+            note_id = int(match.group())
+            try:
+                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                if not note or str(note.user_id) != str(user_id):
+                    return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                
+                updated_note = await self.note_repository.toggle_pin(note_id, context["tenant_id"])
+                
+                if updated_note:
+                    status = "fijada 📌" if updated_note.is_pinned else "desfijada"
+                    return f"✅ Nota {note_id} {status} correctamente.", "idle", {}
+                else:
+                    return "❌ Error cambiando estado de pin.", "idle", {}
+                    
+            except Exception as e:
+                self.logger.error(f"Error en pin/unpin: {e}")
+                return f"❌ Error: {str(e)}", "idle", {}
+        else:
+            return "❌ Debes indicar el ID de la nota a fijar (ej: 'fijar nota 3')", "idle", {}
 
     async def _handle_get_note(
         self,
@@ -383,7 +477,114 @@ class NoteAgent(BaseAgent):
         context: Dict,
         fsm: NoteFSM
     ) -> Tuple[str, str, Dict]:
-        return "⚙️ Funcionalidad de ver nota específica en desarrollo", "idle", {}
+        """Handle getting specific note by ID."""
+        import re
+
+        match = re.search(r'\d+', message)
+        if match:
+            note_id = int(match.group())
+            try:
+                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                if not note or str(note.user_id) != str(user_id):
+                    return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                
+                pin_emoji = "📌 " if note.is_pinned else ""
+                response = f"{pin_emoji}**{note.title}** (ID: {note.id})\n\n"
+                response += f"**Contenido:**\n{note.content}\n\n"
+                
+                if note.category:
+                    response += f"📁 Categoría: {note.category}\n"
+                if note.tags:
+                    response += f"🏷️ Tags: {', '.join(note.tags)}\n"
+                
+                response += f"\n🕐 Creada: {note.created_at.strftime('%Y-%m-%d %H:%M')}"
+                response += f"\n📝 Actualizada: {note.updated_at.strftime('%Y-%m-%d %H:%M')}"
+                
+                return response, "idle", {}
+                    
+            except Exception as e:
+                self.logger.error(f"Error obteniendo nota: {e}")
+                return f"❌ Error obteniendo nota: {str(e)}", "idle", {}
+        else:
+            return "❌ Debes indicar el ID de la nota (ej: 'ver nota 3')", "idle", {}
+
+    async def _handle_list_pinned_notes(
+        self,
+        user_id: str,
+        context: Dict,
+        fsm: NoteFSM
+    ) -> Tuple[str, str, Dict]:
+        """Handle listing only pinned notes."""
+        try:
+            notes = await self.note_repository.get_pinned_notes(
+                tenant_id=context["tenant_id"],
+                user_id=user_id
+            )
+            if not notes:
+                response = "📌 No tienes notas fijadas"
+            else:
+                response = f"📌 **Notas fijadas ({len(notes)}):**\n\n"
+                for note in notes:
+                    response += f"**{note.title}** (ID: {note.id})\n"
+                    content_preview = note.content[:50] + "..." if len(note.content) > 50 else note.content
+                    response += f"_{content_preview}_\n\n"
+            return response, "idle", {}
+
+        except Exception as e:
+            self.logger.error(f"Error listando notas fijadas: {e}")
+            return f"❌ Error: {str(e)}", "idle", {}
+
+    async def _handle_filter_by_date(
+        self,
+        user_id: str,
+        message: str,
+        context: Dict,
+        fsm: NoteFSM
+    ) -> Tuple[str, str, Dict]:
+        """Handle filtering notes by date (today, this week, this month)."""
+        try:
+            all_notes = await self.note_repository.get_by_user(
+                tenant_id=context["tenant_id"],
+                user_id=user_id,
+                limit=100
+            )
+
+            now = datetime.now(timezone.utc)
+            msg_lower = message.lower()
+
+            # Determinar rango de fecha
+            if "hoy" in msg_lower:
+                start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)
+                period_name = "hoy"
+            elif "semana" in msg_lower:
+                start_date = now - timedelta(days=7)
+                period_name = "esta semana"
+            elif "mes" in msg_lower:
+                start_date = now - timedelta(days=30)
+                period_name = "este mes"
+            else:
+                return "❌ Especifica: hoy, esta semana, o este mes", "idle", {}
+
+            # ✨ FIX: Convertir a naive para comparación correcta (ambos sin timezone)
+            filtered_notes = [
+                note for note in all_notes
+                if note.created_at.replace(tzinfo=None) >= start_date.replace(tzinfo=None)
+            ]
+
+            if not filtered_notes:
+                response = f"📅 No hay notas de {period_name}"
+            else:
+                response = f"📅 **Notas de {period_name} ({len(filtered_notes)}):**\n\n"
+                for note in filtered_notes:
+                    pin_emoji = "📌 " if note.is_pinned else ""
+                    response += f"{pin_emoji}**{note.title}** (ID: {note.id})\n"
+                    response += f"_{note.created_at.strftime('%Y-%m-%d %H:%M')}_\n\n"
+
+            return response, "idle", {}
+
+        except Exception as e:
+            self.logger.error(f"Error filtrando por fecha: {e}")
+            return f"❌ Error: {str(e)}", "idle", {}
 
     def _parse_note_from_message(self, message: str, entities: Dict) -> Dict:
         note_data = {}

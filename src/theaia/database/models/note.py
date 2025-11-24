@@ -1,51 +1,42 @@
 """
-Modelo Note - Notas y apuntes del usuario
-Almacena notas, ideas, listas, con categorías y tags
+Note Model — Modelo de nota con timezone-aware datetimes y relationship bidireccional
 """
-from sqlalchemy import Column, Integer, String, ForeignKey, Text, Boolean, DateTime, ARRAY
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy import Column, Integer, String, Text, Boolean, DateTime, ARRAY, ForeignKey
 from sqlalchemy.orm import relationship
-from .base import BaseModel
+from datetime import datetime, timezone
+from src.theaia.database.models.base import Base
 
-class Note(BaseModel):
-    """
-    Nota del usuario.
+
+class Note(Base):
+    __tablename__ = "notes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tenant_id = Column(String, nullable=False, index=True)
     
-    Campos principales:
-    - title: Título de la nota
-    - content: Contenido (texto largo)
-    - category: Categoría (general, work, personal, etc)
-    - tags: Lista de etiquetas
-    - priority: Prioridad (1=baja, 2=media, 3=alta)
-    - is_pinned: Si está fijada
-    - reminder_datetime: Recordatorio asociado (opcional)
-    """
-    __tablename__ = 'notes'
+    # ✨ ForeignKey hacia users.id
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=False, index=True)
     
-    # Relación con usuario
-    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
-    
-    # Contenido
-    title = Column(String(500))
+    title = Column(String(255), nullable=False)
     content = Column(Text, nullable=False)
+    category = Column(String(100), nullable=True)
+    tags = Column(ARRAY(String), nullable=True, default=[])
+    is_pinned = Column(Boolean, default=False, nullable=False)
     
-    # Organización
-    category = Column(String(100), default='general', index=True)
-    tags = Column(ARRAY(Text), default=[])
+    # ✨ timezone=True para datetime aware
+    created_at = Column(
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
+        nullable=False
+    )
+    updated_at = Column(
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
+        onupdate=lambda: datetime.now(timezone.utc), 
+        nullable=False
+    )
     
-    # Prioridad y estado
-    priority = Column(Integer, default=1)
-    is_pinned = Column(Boolean, default=False, index=True)
-    
-    # Recordatorio opcional
-    reminder_datetime = Column(DateTime(timezone=True))
-    
-    # Metadatos adicionales
-    extra_data = Column(JSONB, default={})
-
-    
-    # Relaciones
+    # ✨ CRÍTICO: Relationship bidireccional (faltaba esto!)
     user = relationship("User", back_populates="notes")
-    
+
     def __repr__(self):
-        return f"<Note(id={self.id}, title={self.title}, category={self.category})>"
+        return f"<Note(id={self.id}, title='{self.title}', user_id={self.user_id})>"

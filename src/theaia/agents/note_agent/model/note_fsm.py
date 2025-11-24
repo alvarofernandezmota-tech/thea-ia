@@ -1,7 +1,7 @@
 """
-NoteFSM — Finite State Machine para NoteAgent
+NoteFSM — Finite State Machine para NoteAgent v2.0
 Pattern: AgendaFSM v2.0 adapted for notes
-States: 12 estados (vs 15 AgendaAgent)
+States: 14 estados (incluye edit y delete flows)
 """
 from enum import Enum
 from typing import Dict, Optional, Callable, Any
@@ -20,6 +20,12 @@ class NoteStates(Enum):
     AWAITING_NOTE_TAGS = "awaiting_note_tags"
     AWAITING_CONFIRMATION = "awaiting_confirmation"
     
+    # Edit flow ✨ NEW
+    AWAITING_EDIT_CONTENT = "awaiting_edit_content"
+    
+    # Delete flow ✨ NEW
+    AWAITING_DELETE_CONFIRMATION = "awaiting_delete_confirmation"
+    
     # Management flows
     LISTING_NOTES = "listing_notes"
     SEARCHING_NOTES = "searching_notes"
@@ -35,7 +41,7 @@ class NoteFSM:
     Finite State Machine para NoteAgent
     
     Features:
-    - 12 estados definidos
+    - 14 estados definidos (incluye edit y delete)
     - Callbacks pre/post transition
     - Context JSONB persistence
     - State validation
@@ -43,10 +49,10 @@ class NoteFSM:
     
     Flows:
     1. Create: idle → awaiting_title → awaiting_content → confirmation → idle
-    2. List: idle → listing → idle
-    3. Search: idle → searching → idle
-    4. Edit: idle → editing → awaiting_content → confirmation → idle
-    5. Delete: idle → deleting → confirmation → idle
+    2. Edit: idle → awaiting_edit_content → idle ✨
+    3. Delete: idle → awaiting_delete_confirmation → idle ✨
+    4. List: idle → listing → idle
+    5. Search: idle → searching → idle
     6. Pin: idle → pinning → confirmation → idle
     
     Coverage target: ≥85%
@@ -207,7 +213,9 @@ class NoteFSM:
             NoteStates.SEARCHING_NOTES.value,
             NoteStates.EDITING_NOTE.value,
             NoteStates.DELETING_NOTE.value,
-            NoteStates.PINNING_NOTE.value
+            NoteStates.PINNING_NOTE.value,
+            NoteStates.AWAITING_EDIT_CONTENT.value,           # ✨ NEW
+            NoteStates.AWAITING_DELETE_CONFIRMATION.value     # ✨ NEW
         ]
         return self.current_state in management_states
     
