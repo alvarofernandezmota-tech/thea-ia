@@ -95,5 +95,10 @@
   "src/theaia/agents/agenda_agent/tests/test_handler.py::test_full_flow_success": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::test_full_flow_completed": true,
   "src/theaia/tests/e2e/test_agenda_api_e2e_complete.py": true,
-  "src/theaia/tests/unit/test_note_agent_unit.py::TestFSMEdgeCases::test_fsm_context_persistence": true
+  "src/theaia/tests/unit/test_note_agent_unit.py::TestFSMEdgeCases::test_fsm_context_persistence": true,
+  "src/theaia/tests/integration/test_note_e2e.py::test_note_creation_e2e": true,
+  "src/theaia/tests/integration/test_note_e2e.py::test_note_list_e2e": true,
+  "src/theaia/tests/integration/test_note_e2e.py::test_note_search_e2e": true,
+  "src/theaia/tests/integration/test_note_e2e.py::test_note_pin_e2e": true,
+  "src/theaia/tests/integration/test_note_e2e.py::test_note_delete_e2e": true
 }
