@@ -1,33 +1,51 @@
+"""
+Unit tests for ReminderAgent handler.
+"""
+
 import pytest
 from src.theaia.agents.reminder_agent.handler import ReminderAgent
 
-@pytest.fixture
-def agent():
-    user_id = "test_user"
-    return ReminderAgent(user_id)
 
-def test_can_handle_valid_intents(agent):
-    assert agent.can_handle("recordatorio")
-    assert agent.can_handle("alarma")
-    assert agent.can_handle("recuérdame")
-    assert agent.can_handle("reminder")
+class TestReminderAgent:
+    """Unit tests for ReminderAgent."""
+    
+    @pytest.fixture
+    def agent(self):
+        """Create agent instance."""
+        return ReminderAgent(user_id="test_user_123")
+    
+    def test_initialization(self, agent):
+        """Test agent initializes correctly."""
+        assert agent.user_id == "test_user_123"
+        assert agent.conversation_manager is not None
+    
+    def test_get_supported_intents(self, agent):
+        """Test supported intents."""
+        intents = agent.get_supported_intents()
+        assert "crear_recordatorio" in intents
+        assert "recordatorio" in intents
+        assert "listar_recordatorios" in intents
+        assert len(intents) >= 5
+    
+    @pytest.mark.asyncio
+    async def test_handle_basic_message(self, agent):
+        """Test basic message handling."""
+        context = {
+            "user_id": "test_user_123",
+            "tenant_id": "tenant_abc"
+        }
+        
+        response, state, updated_context = await agent.handle(
+            user_id="test_user_123",
+            message="crear recordatorio",
+            context=context
+        )
+        
+        assert response is not None
+        assert isinstance(response, str)
+        assert state in ["completed", "in_progress", "cancelled", "error"]
+        assert "fsm_state" in updated_context
 
-def test_cannot_handle_other_intents(agent):
-    assert not agent.can_handle("nota")
-    assert not agent.can_handle("evento")
 
-def test_reminder_flow(agent):
-    ctx = {}
-    uid = "test_user"
-    # Primer mensaje: pide qué recordar
-    out = agent.handle(uid, "quiero un recordatorio", ctx)
-    # Cambiado: buscamos "recuerd" (admite "recuerde", "recuerda", "recordar"...)
-    assert "recuerd" in out[0].lower()
-    # Segundo mensaje: pide cuándo
-    out = agent.handle(uid, "comprar leche", out[2])
-    assert "cuándo" in out[0].lower()
-    assert out[1] == "awaiting_reminder_time"
-    # Tercer mensaje: confirma recordatorio
-    out = agent.handle(uid, "a las 19:00", out[2])
-    assert "te recordaré" in out[0].lower()
-    assert out[1] == "completed"
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

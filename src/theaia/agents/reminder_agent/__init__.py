@@ -1,5 +1,7 @@
-# src/theaia/agents/reminder_agent/__init__.py
+"""
+ReminderAgent Package.
+"""
 
 from .handler import ReminderAgent
 
-__all__ = ["ReminderAgent"]
+__all__ = ['ReminderAgent']

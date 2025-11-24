@@ -1,5 +1,10 @@
-# src/theaia/agents/reminder_agent/model/__init__.py
+﻿"""
+Reminder Agent Model Package.
+"""
 
-from .reminder_fsm import ReminderFSM
+from .reminder_fsm import ReminderFSM, ReminderState
 
-__all__ = ["ReminderFSM"]
+__all__ = [
+    'ReminderFSM',
+    'ReminderState'
+]
