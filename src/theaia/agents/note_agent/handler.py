@@ -66,6 +66,10 @@ class NoteAgent(BaseAgent):
             self.user_fsms[user_id] = NoteFSM()
             self.logger.info(f"Created new FSM for user {user_id}")
         return self.user_fsms[user_id]
+    
+    def _get_tenant_id(self, context: Dict) -> str:
+        """✨ FIX: Helper seguro para obtener tenant_id con fallback."""
+        return context.get("tenant_id", "default_tenant")
 
     async def handle(
         self,
@@ -145,7 +149,7 @@ class NoteAgent(BaseAgent):
     ) -> str:
         msg_lower = message.lower()
 
-        # ✨ FIX CRÍTICO: Si estamos en flujos específicos, continuar con ellos
+        # ✨ FIX: Si estamos en flujos específicos, continuar con ellos
         if current_state == "awaiting_edit_content":
             return "edit_note"
         
@@ -236,8 +240,9 @@ class NoteAgent(BaseAgent):
         elif current_state == "awaiting_confirmation":
             if any(word in message.lower() for word in ["sí", "si", "ok", "vale", "confirmar", "guardar", "yes"]):
                 try:
+                    # ✨ FIX: Uso seguro de tenant_id
                     note = await self.note_repository.create(
-                        tenant_id=context["tenant_id"],
+                        tenant_id=self._get_tenant_id(context),
                         user_id=user_id,
                         title=fsm.context.get("title"),
                         content=fsm.context.get("content"),
@@ -265,8 +270,9 @@ class NoteAgent(BaseAgent):
         fsm: NoteFSM
     ) -> Tuple[str, str, Dict]:
         try:
+            # ✨ FIX: Uso seguro de tenant_id
             notes = await self.note_repository.get_by_user(
-                tenant_id=context["tenant_id"],
+                tenant_id=self._get_tenant_id(context),
                 user_id=user_id,
                 limit=10
             )
@@ -295,8 +301,9 @@ class NoteAgent(BaseAgent):
     ) -> Tuple[str, str, Dict]:
         search_term = message.replace("buscar", "").replace("nota", "").replace("notas", "").strip()
         try:
+            # ✨ FIX: Uso seguro de tenant_id
             all_notes = await self.note_repository.get_by_user(
-                tenant_id=context["tenant_id"],
+                tenant_id=self._get_tenant_id(context),
                 user_id=user_id,
                 limit=100
             )
@@ -338,9 +345,10 @@ class NoteAgent(BaseAgent):
             if match:
                 note_id = int(match.group())
                 try:
-                    note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                    # ✨ FIX: Uso seguro de tenant_id
+                    note = await self.note_repository.get_by_id(note_id, self._get_tenant_id(context))
                     if not note or str(note.user_id) != str(user_id):
-                        return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                        return "❌ Nota no encontrada o no te pertenece.", "idle", {}
                     fsm.context["edit_note_id"] = note_id
                     fsm.context["current_title"] = note.title
                     fsm.context["current_content"] = note.content
@@ -361,8 +369,8 @@ class NoteAgent(BaseAgent):
         elif current_state == "awaiting_edit_content":
             try:
                 note_id = fsm.context.get("edit_note_id")
-                # ✨ FIX: Actualizar directamente la instancia (no usar update que toma 3 args)
-                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                # ✨ FIX: Uso seguro de tenant_id
+                note = await self.note_repository.get_by_id(note_id, self._get_tenant_id(context))
                 if note:
                     note.content = message.strip()
                     note.updated_at = datetime.now(timezone.utc)
@@ -401,9 +409,10 @@ class NoteAgent(BaseAgent):
             if match:
                 note_id = int(match.group())
                 try:
-                    note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                    # ✨ FIX: Uso seguro de tenant_id
+                    note = await self.note_repository.get_by_id(note_id, self._get_tenant_id(context))
                     if not note or str(note.user_id) != str(user_id):
-                        return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                        return "❌ Nota no encontrada o no te pertenece.", "idle", {}
                     
                     fsm.context["delete_note_id"] = note_id
                     fsm.context["delete_note_title"] = note.title
@@ -425,7 +434,8 @@ class NoteAgent(BaseAgent):
             if any(word in message.lower() for word in ["sí", "si", "ok", "confirmar", "yes"]):
                 try:
                     note_id = fsm.context.get("delete_note_id")
-                    await self.note_repository.delete(note_id, context["tenant_id"])
+                    # ✨ FIX: Uso seguro de tenant_id
+                    await self.note_repository.delete(note_id, self._get_tenant_id(context))
                     fsm.reset()
                     return f"✅ Nota {note_id} eliminada correctamente.", "idle", {}
                 except Exception as e:
@@ -452,11 +462,12 @@ class NoteAgent(BaseAgent):
         if match:
             note_id = int(match.group())
             try:
-                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                # ✨ FIX: Uso seguro de tenant_id
+                note = await self.note_repository.get_by_id(note_id, self._get_tenant_id(context))
                 if not note or str(note.user_id) != str(user_id):
-                    return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                    return "❌ Nota no encontrada o no te pertenece.", "idle", {}
                 
-                updated_note = await self.note_repository.toggle_pin(note_id, context["tenant_id"])
+                updated_note = await self.note_repository.toggle_pin(note_id, self._get_tenant_id(context))
                 
                 if updated_note:
                     status = "fijada 📌" if updated_note.is_pinned else "desfijada"
@@ -484,9 +495,10 @@ class NoteAgent(BaseAgent):
         if match:
             note_id = int(match.group())
             try:
-                note = await self.note_repository.get_by_id(note_id, context["tenant_id"])
+                # ✨ FIX: Uso seguro de tenant_id
+                note = await self.note_repository.get_by_id(note_id, self._get_tenant_id(context))
                 if not note or str(note.user_id) != str(user_id):
-                    return ("❌ Nota no encontrada o no te pertenece.", "idle", {})
+                    return "❌ Nota no encontrada o no te pertenece.", "idle", {}
                 
                 pin_emoji = "📌 " if note.is_pinned else ""
                 response = f"{pin_emoji}**{note.title}** (ID: {note.id})\n\n"
@@ -516,8 +528,9 @@ class NoteAgent(BaseAgent):
     ) -> Tuple[str, str, Dict]:
         """Handle listing only pinned notes."""
         try:
+            # ✨ FIX: Uso seguro de tenant_id
             notes = await self.note_repository.get_pinned_notes(
-                tenant_id=context["tenant_id"],
+                tenant_id=self._get_tenant_id(context),
                 user_id=user_id
             )
             if not notes:
@@ -543,8 +556,9 @@ class NoteAgent(BaseAgent):
     ) -> Tuple[str, str, Dict]:
         """Handle filtering notes by date (today, this week, this month)."""
         try:
+            # ✨ FIX: Uso seguro de tenant_id
             all_notes = await self.note_repository.get_by_user(
-                tenant_id=context["tenant_id"],
+                tenant_id=self._get_tenant_id(context),
                 user_id=user_id,
                 limit=100
             )
@@ -565,7 +579,7 @@ class NoteAgent(BaseAgent):
             else:
                 return "❌ Especifica: hoy, esta semana, o este mes", "idle", {}
 
-            # ✨ FIX: Convertir a naive para comparación correcta (ambos sin timezone)
+            # ✨ FIX: Convertir a naive para comparación correcta
             filtered_notes = [
                 note for note in all_notes
                 if note.created_at.replace(tzinfo=None) >= start_date.replace(tzinfo=None)
