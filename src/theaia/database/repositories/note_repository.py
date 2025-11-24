@@ -5,10 +5,11 @@ Multi-tenant isolation + CRUD + custom queries
 from typing import List, Optional
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from datetime import datetime
+from datetime import datetime, timezone
 
 from src.theaia.database.repositories.base_repository import BaseRepository
 from src.theaia.database.models.note import Note
+
 
 class NoteRepository(BaseRepository[Note]):
     """Repository para operaciones CRUD de notas con multi-tenant"""
@@ -16,7 +17,7 @@ class NoteRepository(BaseRepository[Note]):
     def __init__(self, session: AsyncSession):
         super().__init__(Note, session)
 
-    async def create_note(
+    async def create(
         self,
         tenant_id: str,
         user_id: int,
@@ -35,10 +36,14 @@ class NoteRepository(BaseRepository[Note]):
             "category": category,
             "tags": tags or [],
             "is_pinned": is_pinned,
-            "created_at": datetime.utcnow(),
-            "updated_at": datetime.utcnow()
+            "created_at": datetime.now(timezone.utc),  # ✨ FIX
+            "updated_at": datetime.now(timezone.utc)   # ✨ FIX
         }
-        return await self.create(note_data)
+        note = self.model(**note_data)
+        self.session.add(note)
+        await self.session.commit()
+        await self.session.refresh(note)
+        return note
     
     async def get_by_user(
         self,
@@ -129,14 +134,14 @@ class NoteRepository(BaseRepository[Note]):
     
     async def toggle_pin(
         self,
-        tenant_id: str,
-        note_id: int
+        note_id: int,      # ✨ FIX: note_id primero
+        tenant_id: str     # ✨ FIX: tenant_id segundo
     ) -> Optional[Note]:
         """Toggle pin status de una nota"""
-        note = await self.get_by_id(tenant_id, note_id)
+        note = await self.get_by_id(note_id, tenant_id)  # ✨ FIX: Parámetros correctos
         if note:
             note.is_pinned = not note.is_pinned
-            note.updated_at = datetime.utcnow()
+            note.updated_at = datetime.now(timezone.utc)  # ✨ FIX
             await self.session.commit()
             await self.session.refresh(note)
         return note

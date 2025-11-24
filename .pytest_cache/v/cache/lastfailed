@@ -94,5 +94,6 @@
   "src/theaia/agents/agenda_agent/tests/test_handler.py::test_cannot_handle_other_intents": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::test_full_flow_success": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::test_full_flow_completed": true,
-  "src/theaia/tests/e2e/test_agenda_api_e2e_complete.py": true
+  "src/theaia/tests/e2e/test_agenda_api_e2e_complete.py": true,
+  "src/theaia/tests/unit/test_note_agent_unit.py::TestFSMEdgeCases::test_fsm_context_persistence": true
 }
