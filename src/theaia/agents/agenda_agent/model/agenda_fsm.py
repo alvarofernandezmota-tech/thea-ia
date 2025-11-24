@@ -1,11 +1,16 @@
 """
-AgendaAgent FSM v2.0 - Simple State Machine
+AgendaAgent FSM v2.1 - Simple State Machine
 NO hereda BaseStateMachine (independiente del Core)
 
 Responsable: Álvaro Fernández Mota (CEO THEA IA)
-Fecha: 21 Noviembre 2025
+Fecha: 24 Noviembre 2025 - Fix user_id validation
 Filosofía: TRES (Álvaro + Jarvis + THEA IA)
 Hito: H03 BLOQUE 3.4A.1.1 - Agent FSM Professional
+
+ARCHITECTURE NOTE:
+- user_id is managed by Handler (NOT validated in FSM)
+- FSM only validates business logic
+- This allows FSM to be tested independently
 """
 
 from typing import Optional, Dict, Any, Callable
@@ -21,7 +26,7 @@ class AgendaFSM:
     
     Diseño:
     - FSM SIMPLE (NO hereda BaseStateMachine del Core)
-    - user_id gestionado en handler (viene en context)
+    - user_id gestionado en handler (NO validado aquí)
     - Transiciones explícitas y validadas
     - Callbacks pre/post para validación y side effects
     
@@ -190,7 +195,7 @@ class AgendaFSM:
         
         Args:
             trigger: Nombre de la transición
-            context: Contexto conversacional (contiene user_id, entities, etc)
+            context: Contexto conversacional (puede contener user_id, entities, etc)
             
         Returns:
             True si transición exitosa, False si no permitida
@@ -235,15 +240,28 @@ class AgendaFSM:
     # ========================================
     
     def _validate_can_create(self, context: Dict[str, Any]) -> None:
-        """Valida que se puede iniciar creación"""
-        if not context.get('user_id'):
-            raise ValueError("user_id requerido")
+        """
+        Valida que se puede iniciar creación.
+        
+        Architecture Note:
+        - user_id is managed by Handler (NOT validated here)
+        - FSM only validates business logic
+        - tenant_id defaults to 'default' for single-tenant setups
+        
+        Args:
+            context: Conversation context
+        """
+        # Ensure tenant_id exists (default if missing)
         if not context.get('tenant_id'):
-            raise ValueError("tenant_id requerido")
+            context['tenant_id'] = 'default'
+        
+        self.logger.debug("Validación _validate_can_create OK")
     
     def _validate_title(self, context: Dict[str, Any]) -> None:
         """Valida título del evento"""
-        title = context.get('event_title', '').strip()
+        title = context.get('event_title') or context.get('title', '')
+        title = str(title).strip()
+        
         if not title:
             raise ValueError("Título no puede estar vacío")
         if len(title) > 200:
@@ -251,13 +269,13 @@ class AgendaFSM:
     
     def _validate_date(self, context: Dict[str, Any]) -> None:
         """Valida fecha del evento"""
-        event_date = context.get('event_date')
+        event_date = context.get('event_date') or context.get('date')
         if not event_date:
             raise ValueError("Fecha requerida")
     
     def _validate_time(self, context: Dict[str, Any]) -> None:
         """Valida hora del evento"""
-        event_time = context.get('event_time')
+        event_time = context.get('event_time') or context.get('time')
         if not event_time:
             raise ValueError("Hora requerida")
     
@@ -276,10 +294,14 @@ class AgendaFSM:
     # ========================================
     
     def _init_draft(self, context: Dict[str, Any]) -> None:
-        """Inicializa borrador de evento"""
+        """
+        Inicializa borrador de evento.
+        
+        Note: user_id is optional here (Handler adds it if needed)
+        """
         self._event_draft = {
-            'user_id': context.get('user_id'),
-            'tenant_id': context.get('tenant_id'),
+            'user_id': context.get('user_id'),  # Optional, from Handler
+            'tenant_id': context.get('tenant_id', 'default'),
             'created_at': datetime.now(timezone.utc).isoformat()
         }
         context['event_draft'] = self._event_draft
@@ -287,7 +309,9 @@ class AgendaFSM:
     
     def _store_title(self, context: Dict[str, Any]) -> None:
         """Guarda título en borrador"""
-        title = context.get('event_title', '').strip()
+        title = context.get('event_title') or context.get('title', '')
+        title = str(title).strip()
+        
         if self._event_draft:
             self._event_draft['title'] = title
             context['event_draft'] = self._event_draft
@@ -295,7 +319,7 @@ class AgendaFSM:
     
     def _store_date(self, context: Dict[str, Any]) -> None:
         """Guarda fecha en borrador"""
-        date = context.get('event_date')
+        date = context.get('event_date') or context.get('date')
         if self._event_draft:
             self._event_draft['date'] = str(date)
             context['event_draft'] = self._event_draft
@@ -303,7 +327,7 @@ class AgendaFSM:
     
     def _store_time(self, context: Dict[str, Any]) -> None:
         """Guarda hora en borrador"""
-        time = context.get('event_time')
+        time = context.get('event_time') or context.get('time')
         if self._event_draft:
             self._event_draft['time'] = time
             context['event_draft'] = self._event_draft
@@ -311,7 +335,9 @@ class AgendaFSM:
     
     def _store_location(self, context: Dict[str, Any]) -> None:
         """Guarda ubicación en borrador"""
-        location = context.get('event_location', '').strip()
+        location = context.get('event_location') or context.get('location', '')
+        location = str(location).strip()
+        
         if self._event_draft and location:
             self._event_draft['location'] = location
             context['event_draft'] = self._event_draft
