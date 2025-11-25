@@ -1,33 +1,82 @@
 import pytest
 from src.theaia.agents.schedule_agent.handler import ScheduleAgent
 
+
 @pytest.fixture
 def agent():
-    user_id = "test_user"
+    """Create test agent."""
+    user_id = 123  # Integer user_id
     return ScheduleAgent(user_id)
 
-def test_can_handle_valid_intents(agent):
-    assert agent.can_handle("horario")
-    assert agent.can_handle("agenda semanal")
-    assert agent.can_handle("planning")
-    assert agent.can_handle("schedule")
 
-def test_cannot_handle_other_intents(agent):
-    assert not agent.can_handle("nota")
-    assert not agent.can_handle("evento")
-    assert not agent.can_handle("recordatorio")
+def test_schedule_agent_initialization(agent):
+    """Test agent initializes correctly."""
+    assert agent is not None
+    assert agent.user_id == 123
+    assert agent.conversation_manager is not None
 
-def test_schedule_flow(agent):
-    ctx = {}
-    uid = "test_user"
-    # 1. Pregunta qué día/periodo
-    out = agent.handle(uid, "quiero revisar mi planning", ctx)
-    assert "horario" in out[0].lower() or "periodo" in out[0].lower() or "agenda" in out[0].lower()
-    # 2. Acción sobre día
-    out = agent.handle(uid, "viernes", out[2])
-    assert "consultar" in out[0].lower() or "añadir" in out[0].lower() or "eliminar" in out[0].lower()
-    assert out[1] == "awaiting_action"
-    # 3. Confirmación acción final
-    out = agent.handle(uid, "consultar", out[2])
-    assert "registrada" in out[0].lower() or "agenda" in out[0].lower()
-    assert out[1] == "completed"
+
+def test_get_supported_intents(agent):
+    """Test agent returns supported intents."""
+    intents = agent.get_supported_intents()
+    assert isinstance(intents, list)
+    assert len(intents) > 0
+    assert "horario" in intents
+    assert "agenda" in intents
+    assert "optimizar" in intents
+
+
+@pytest.mark.asyncio
+async def test_handle_message_optimize(agent):
+    """Test handling optimize intent."""
+    context = {"user_id": 123, "session_id": "test_session"}
+    
+    response, state, updated_context = await agent.handle_message(
+        123, "optimiza mi agenda de hoy", context
+    )
+    
+    assert response is not None
+    assert isinstance(response, str)
+    assert len(response) > 0
+
+
+@pytest.mark.asyncio
+async def test_handle_message_free_time(agent):
+    """Test handling free time intent."""
+    context = {"user_id": 123, "session_id": "test_session"}
+    
+    response, state, updated_context = await agent.handle_message(
+        123, "¿cuándo tengo tiempo libre?", context
+    )
+    
+    assert response is not None
+    assert isinstance(response, str)
+
+
+@pytest.mark.asyncio
+async def test_handle_message_prioritize(agent):
+    """Test handling prioritize intent."""
+    context = {"user_id": 123, "session_id": "test_session"}
+    
+    response, state, updated_context = await agent.handle_message(
+        123, "priorizar mis tareas", context
+    )
+    
+    assert response is not None
+    assert isinstance(response, str)
+    assert "prioriza" in response.lower() or "tarea" in response.lower()
+
+
+@pytest.mark.asyncio
+async def test_handle_message_unknown_intent(agent):
+    """Test handling unknown intent returns help."""
+    context = {"user_id": 123, "session_id": "test_session"}
+    
+    response, state, updated_context = await agent.handle_message(
+        123, "algo random sin intención", context
+    )
+    
+    assert response is not None
+    assert isinstance(response, str)
+    # Should return help message
+    assert "agenda" in response.lower() or "ayuda" in response.lower()
