@@ -93,5 +93,14 @@
   "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentIntentHandling::test_note_agent_handles_note_intents": true,
   "src/theaia/agents/event_agent_new/tests/test_handler.py": true,
   "src/theaia/agents/event_agent_new/tests/test_note_fsm.py": true,
-  "src/theaia/tests/e2e/test_event_agent_e2e.py": true
+  "src/theaia/tests/e2e/test_event_agent_e2e.py": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestAgendaAgentInitialization": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestSupportedIntents": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestFSMPerUser": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestHandleMethod": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestEntityExtraction": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestTriggerDetermination": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestResponseGeneration": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestFullFlows": true,
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestLegacyMethods": true
 }

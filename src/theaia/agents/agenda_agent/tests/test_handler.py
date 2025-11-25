@@ -1,15 +1,18 @@
 """
-Tests for AgendaAgent Handler v3.0
-Updated: 24 Nov 2025 - Match handler.py v3.0 implementation
+Tests for AgendaAgent Handler v3.1 (H04-H05 Upgrade)
+Updated: 25 Nov 2025 - Match handler.py v3.1 implementation
 
 Tests cover:
-- Initialization
+- Initialization (v1 + v2)
 - async handle() method
-- Supported intents
+- Supported intents (v1 + v2)
 - FSM per-user instances
 - Entity extraction
 - Complete flows
+- Orchestrator v2 integration (NEW H04-H05)
+- Performance tracking (NEW H04-H05)
 """
+
 
 import pytest
 from src.theaia.agents.agenda_agent.handler import AgendaAgent
@@ -17,9 +20,11 @@ from src.theaia.agents.base_agent import AgentConfig
 from src.theaia.agents.agenda_agent.model.agent_states import AgendaStates
 
 
+
 # ========================================
 # FIXTURES
 # ========================================
+
 
 @pytest.fixture
 def agent():
@@ -28,15 +33,18 @@ def agent():
     return AgendaAgent(config)
 
 
+
 @pytest.fixture
 def agent_no_config():
     """Create AgendaAgent instance without config (tests default)."""
     return AgendaAgent()
 
 
+
 # ========================================
 # INITIALIZATION TESTS
 # ========================================
+
 
 class TestAgendaAgentInitialization:
     """Test AgendaAgent initialization."""
@@ -61,11 +69,22 @@ class TestAgendaAgentInitialization:
         """Test ML extractors are initialized."""
         assert hasattr(agent, 'entity_extractor')
         assert hasattr(agent, 'date_extractor')
+    
+    # ========== NEW H04-H05 ==========
+    def test_orchestrator_initialized(self, agent):
+        """
+        Test H04-H05: Orchestrator v2 is initialized.
+        """
+        assert hasattr(agent, 'orchestrator')
+        assert agent.orchestrator is not None
+        assert hasattr(agent.orchestrator, 'process')
+
 
 
 # ========================================
 # SUPPORTED INTENTS TESTS
 # ========================================
+
 
 class TestSupportedIntents:
     """Test supported intents."""
@@ -86,11 +105,27 @@ class TestSupportedIntents:
         intents = agent.get_supported_intents()
         assert isinstance(intents, list)
         assert len(intents) > 0
+    
+    # ========== NEW H04-H05 ==========
+    def test_get_supported_intents_includes_v2(self, agent):
+        """
+        Test H04-H05: get_supported_intents includes v2 intents.
+        """
+        intents = agent.get_supported_intents()
+        
+        # Check v2 intents
+        assert "reorganizar" in intents
+        assert "optimizar" in intents
+        assert "sugerir" in intents
+        assert "resumir" in intents
+        assert "analizar" in intents
+
 
 
 # ========================================
 # FSM PER-USER TESTS
 # ========================================
+
 
 class TestFSMPerUser:
     """Test FSM per-user instance management."""
@@ -126,9 +161,11 @@ class TestFSMPerUser:
         assert len(agent.fsm_instances) == 2
 
 
+
 # ========================================
 # HANDLE METHOD TESTS
 # ========================================
+
 
 class TestHandleMethod:
     """Test async handle() method (main entry point)."""
@@ -199,11 +236,44 @@ class TestHandleMethod:
         
         assert response["status"] == "ok"
         assert "evento" in response["response"].lower()
+    
+    # ========== NEW H04-H05 ==========
+    @pytest.mark.asyncio
+    async def test_handle_returns_performance_ms(self, agent):
+        """
+        Test H04-H05: handle() returns performance_ms field.
+        """
+        user_id = "test_user_perf"
+        message = "crear evento"
+        context = {}
+        
+        response = await agent.handle(user_id, message, context)
+        
+        assert "performance_ms" in response
+        assert isinstance(response["performance_ms"], int)
+        assert response["performance_ms"] >= 0
+    
+    @pytest.mark.asyncio
+    async def test_handle_returns_level(self, agent):
+        """
+        Test H04-H05: handle() returns level field (1/2/3).
+        """
+        user_id = "test_user_level"
+        message = "crear evento"
+        context = {}
+        
+        response = await agent.handle(user_id, message, context)
+        
+        assert "level" in response
+        assert isinstance(response["level"], int)
+        assert response["level"] in [0, 1, 2, 3]  # 0=error, 1/2/3=levels
+
 
 
 # ========================================
 # ENTITY EXTRACTION TESTS
 # ========================================
+
 
 class TestEntityExtraction:
     """Test ML entity extraction."""
@@ -229,9 +299,11 @@ class TestEntityExtraction:
         assert isinstance(result, dict)
 
 
+
 # ========================================
 # TRIGGER DETERMINATION TESTS
 # ========================================
+
 
 class TestTriggerDetermination:
     """Test FSM trigger determination."""
@@ -273,9 +345,11 @@ class TestTriggerDetermination:
         assert trigger == 'cancel'
 
 
+
 # ========================================
 # RESPONSE GENERATION TESTS
 # ========================================
+
 
 class TestResponseGeneration:
     """Test response generation."""
@@ -299,9 +373,11 @@ class TestResponseGeneration:
         assert "título" in response.lower()
 
 
+
 # ========================================
 # INTEGRATION TESTS (FULL FLOWS)
 # ========================================
+
 
 class TestFullFlows:
     """Test complete conversation flows."""
@@ -332,9 +408,11 @@ class TestFullFlows:
         assert "cancelad" in response2["response"].lower()
 
 
+
 # ========================================
 # LEGACY METHOD COMPATIBILITY TESTS
 # ========================================
+
 
 class TestLegacyMethods:
     """Test legacy methods for backward compatibility."""
