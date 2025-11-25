@@ -54,7 +54,7 @@ from src.theaia.ml.intent_detector.inference import IntentDetector
 from src.theaia.ml.entity_extractor.pipeline import EntityExtractionPipeline
 from src.theaia.agents.note_agent.handler import NoteAgent
 from src.theaia.agents.help_agent import HelpAgent
-from src.theaia.agents.event_agent.handler import EventAgent
+from src.theaia.agents.event_agent_new.handler import EventAgent
 from src.theaia.agents.fallback_agent import FallbackAgent
 from src.theaia.agents.query_agent.handler import QueryAgent
 from src.theaia.agents.reminder_agent.handler import ReminderAgent

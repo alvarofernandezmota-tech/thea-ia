@@ -1,4 +1,4 @@
-﻿"""
+"""
 Reminder Agent Model Package.
 """
 

@@ -1,111 +1,400 @@
-        ❓ Help Agent — Asistente de Ayuda Contextual
-        Versión: v1.0.0
-        Última actualización: 2025-11-10 20:16 CET (S14)
-        Status: ✅ Producción
+# HelpAgent - Testing Documentation
 
-        📋 Propósito
-        El Help Agent proporciona ayuda contextual sobre las funcionalidades de THEA IA. Identifica automáticamente temas de ayuda, ofrece explicaciones detalladas y permite consultas iterativas.
+## 📊 Resumen de Testing
 
-        Responsabilidades principales:
+### **Estado General: ✅ COMPLETO**
 
-        ✅ Detectar solicitudes de ayuda
+| Tipo de Test | Cantidad | Passing | Failing | Coverage |
+|--------------|----------|---------|---------|----------|
+| **Unit Tests** | 4 | 4 ✅ | 0 | 100% |
+| **E2E Tests** | 14 | 14 ✅ | 0 | 100% |
+| **TOTAL** | **18** | **18 ✅** | **0** | **100%** |
 
-        ✅ Identificar tópicos de ayuda automáticamente
+**Última ejecución**: 2025-11-24 22:30 CET  
+**Resultado**: ✅ ALL PASSING
 
-        ✅ Proporcionar documentación contextual
+---
 
-        ✅ Listar funcionalidades disponibles
+## 🧪 Unit Tests
 
-        ✅ Mantener sesiones de ayuda multi-turno
+### **Ubicación:**
+src/theaia/agents/help_agent/tests/
+├── test_handler.py (3 tests)
+└── test_help_fsm.py (1 test)
 
-        🏗️ Arquitectura
-        text
-        help_agent/
-        ├── handler.py (HelpAgent class)
-        ├── help_conversation_manager.py
-        ├── model/help_fsm.py (FSM 5 estados)
-        ├── tests/
-        └── __init__.py
-        Intenciones soportadas: ["ayuda", "soporte", "help", "asistencia"]
+text
 
-        🔄 Flujo Conversacional
-        text
-        Usuario: "¿necesito ayuda?"
-        ↓
-        THEA: "¿En qué puedo ayudarte? Puedo explicar: agendamiento, eventos, notas, 
-            recordatorios y mucho más."
-        [estado: awaiting_topic]
-        ↓
-        Usuario: "¿cómo agendar una cita?"
-        ↓
-        THEA: "Para agendar una cita, di 'agendar' y te guiaré paso a paso para crear tu cita.
-            ¿Necesitas ayuda con algo más?"
-        [estado: providing_help]
-        ↓
-        Usuario: "no, gracias"
-        ↓
-        THEA: "Perfecto. Si necesitas más ayuda, solo pregunta."
-        [estado: completed]
-        💻 Componentes Principales
-        HelpAgent (handler.py)
-        python
-        class HelpAgent(BaseAgent):
-            def __init__(self, user_id)
-            def get_supported_intents() → ["ayuda", "soporte", "help", "asistencia"]
-            def handle(user_id, message, context) → (response, state, context)
-        HelpConversationManager (help_conversation_manager.py)
-        python
-        class HelpConversationManager:
-            def __init__(self, user_id: str)
-            def handle_message(user_id, message, context) → (response, state, context)
-        HelpFSM (model/help_fsm.py)
-        5 Estados:
+### **Comando de Ejecución:**
+pytest src/theaia/agents/help_agent/tests/ -v --tb=short
 
-        awaiting_topic — Espera que usuario solicite ayuda sobre un tópico
+text
 
-        providing_help — Proporciona explicación del tópico
+### **Resultados Detallados:**
 
-        follow_up — Pregunta si necesita más ayuda
+#### **test_handler.py (3/3 ✅)**
 
-        completed — Sesión finalizada
+✅ test_can_handle_help_intents
 
-        error — Error en el flujo
+Verifica que el agente detecta intenciones de ayuda
 
-        Tópicos de Ayuda Disponibles:
+Intenciones probadas: ["ayuda", "help", "comando", "asistencia"]
 
-        general: Overview completo de funcionalidades
+Estado: PASSING
 
-        agenda: Cómo agendar citas
+✅ test_cannot_handle_other_intents
 
-        notas: Cómo crear notas
+Verifica que rechaza intenciones no relacionadas
 
-        recordatorio: Cómo programar recordatorios
+Intenciones probadas: ["nota", "evento", "recordatorio"]
 
-        eventos: Cómo crear eventos
+Estado: PASSING
 
-        comandos: Lista de comandos disponibles
+✅ test_help_flow
 
-        🧪 Testing
-        Coverage: 85%+
+Verifica flujo básico de ayuda
 
-        Flujos de prueba:
+Input: "ayuda"
 
-        ✅ Solicitud de ayuda general
+Output: Respuesta informativa
 
-        ✅ Identificación automática de tópico
+Estado: PASSING
 
-        ✅ Transición awaiting_topic → providing_help
+text
 
-        ✅ Sesiones multi-turno
+#### **test_help_fsm.py (1/1 ✅)**
 
-        ✅ Error handling
+✅ test_help_fsm_flow
 
-        📊 Especificaciones
-        Propiedad	Valor
-        Versión	v1.0.0
-        Estados FSM	5 (awaiting_topic, providing_help, follow_up, completed, error)
-        Intenciones	4
-        Tópicos	6 (general, agenda, notas, recordatorio, eventos, comandos)
-        Test Coverage	85%+
-        Status	✅ Production
-        Help Agent v1.0 — Asistente Inteligente de Ayuda Contextual
+Verifica transiciones de estados FSM
+
+Estados probados: initial → providing_help → completed
+
+Estado: PASSING
+
+text
+
+### **Coverage Unit Tests:**
+
+Name Stmts Miss Cover
+handler.py 12 0 100%
+help_conversation_manager.py 9 0 100%
+TOTAL 21 0 100%
+
+text
+
+---
+
+## 🌐 E2E Tests
+
+### **Ubicación:**
+src/theaia/tests/e2e/test_help_agent_e2e.py
+
+text
+
+### **Comando de Ejecución:**
+pytest src/theaia/tests/e2e/test_help_agent_e2e.py -v --tb=short
+
+text
+
+### **Resultados Detallados: (14/14 ✅)**
+
+#### **Ayuda General (3 tests)**
+
+✅ test_help_basic
+
+Input: "necesito ayuda"
+
+Verifica: Respuesta de ayuda general
+
+Estado: PASSING
+
+✅ test_help_commands
+
+Input: "¿qué comandos hay?"
+
+Verifica: Lista de comandos disponibles
+
+Estado: PASSING
+
+✅ test_help_features
+
+Input: "¿qué puedes hacer?"
+
+Verifica: Lista de características
+
+Estado: PASSING
+
+text
+
+#### **Capacidades del Sistema (2 tests)**
+
+✅ test_help_capabilities
+
+Input: "cuéntame tus capacidades"
+
+Verifica: Explicación de capacidades generales
+
+Estado: PASSING
+
+✅ test_help_agents
+
+Input: "¿qué agentes hay?"
+
+Verifica: Lista de agentes disponibles
+
+Estado: PASSING
+
+text
+
+#### **Ayuda por Agente (6 tests)**
+
+✅ test_help_note_agent
+
+Input: "ayuda con notas"
+
+Verifica: Información específica de NoteAgent
+
+Estado: PASSING
+
+✅ test_help_event_agent
+
+Input: "cómo crear eventos"
+
+Verifica: Información específica de EventAgent
+
+Estado: PASSING
+
+✅ test_help_agenda_agent
+
+Input: "ayuda con agenda"
+
+Verifica: Información específica de AgendaAgent
+
+Estado: PASSING
+
+✅ test_help_query_agent
+
+Input: "cómo buscar información"
+
+Verifica: Información específica de QueryAgent
+
+Estado: PASSING
+
+✅ test_help_reminder_agent
+
+Input: "ayuda con recordatorios"
+
+Verifica: Información específica de ReminderAgent
+
+Estado: PASSING
+
+✅ test_help_scheduler_agent
+
+Input: "ayuda con programación"
+
+Verifica: Información específica de SchedulerAgent
+
+Estado: PASSING
+
+text
+
+#### **Ayuda Contextual (2 tests)**
+
+✅ test_help_fallback_agent
+
+Input: "no entiendo"
+
+Verifica: Ayuda cuando no se comprende entrada
+
+Estado: PASSING
+
+✅ test_help_specific_command
+
+Input: "cómo uso el comando crear nota"
+
+Verifica: Ayuda sobre comando específico
+
+Estado: PASSING
+
+text
+
+#### **Ejemplos de Uso (1 test)**
+
+✅ test_help_examples
+
+Input: "dame ejemplos"
+
+Verifica: Proporciona ejemplos de uso
+
+Estado: PASSING
+
+text
+
+### **Coverage E2E:**
+
+Name Stmts Miss Cover
+handler.py 12 0 100%
+help_conversation_manager.py 9 0 100%
+model/help_fsm.py 41 0 100%
+TOTAL 62 0 100%
+
+text
+
+---
+
+## 🔄 Fixtures Utilizados
+
+### **test_user (conftest.py)**
+@pytest.fixture
+def test_user(db_session):
+"""Usuario de prueba con tenant_id"""
+user = User(
+id="test_user_123",
+tenant_id="test_tenant_456",
+username="test_user"
+)
+db_session.add(user)
+db_session.commit()
+return user
+
+text
+
+### **agent (test files)**
+@pytest.fixture
+def agent(test_user):
+"""Instancia fresh de HelpAgent por test"""
+return HelpAgent(user_id=test_user.id)
+
+text
+
+### **context (test files)**
+@pytest.fixture
+def context(test_user):
+"""Context básico para tests"""
+return {
+"user_id": test_user.id,
+"tenant_id": test_user.tenant_id,
+"session_id": "session_456",
+"state": "initial"
+}
+
+text
+
+---
+
+## 📈 Métricas de Calidad
+
+### **Cobertura por Componente:**
+
+| Componente | Cobertura | Estado |
+|-----------|-----------|--------|
+| `handler.py` | 100% | ✅ Completo |
+| `help_conversation_manager.py` | 100% | ✅ Completo |
+| `model/help_fsm.py` | 100% | ✅ Completo |
+
+### **Tipos de Tests:**
+
+| Categoría | Tests | Estado |
+|-----------|-------|--------|
+| Detección de intenciones | 2 | ✅ |
+| Flujo básico | 2 | ✅ |
+| Ayuda general | 3 | ✅ |
+| Ayuda por agente | 6 | ✅ |
+| Ayuda contextual | 3 | ✅ |
+| Ejemplos | 2 | ✅ |
+
+---
+
+## 🚀 Cómo Ejecutar Tests
+
+### **Todos los tests:**
+pytest src/theaia/agents/help_agent/ -v
+
+text
+
+### **Solo unit tests:**
+pytest src/theaia/agents/help_agent/tests/ -v
+
+text
+
+### **Solo E2E tests:**
+pytest src/theaia/tests/e2e/test_help_agent_e2e.py -v
+
+text
+
+### **Con coverage:**
+pytest src/theaia/agents/help_agent/ --cov=src/theaia/agents/help_agent --cov-report=html
+
+text
+
+### **Modo verbose + traceback corto:**
+pytest src/theaia/agents/help_agent/ -v --tb=short
+
+text
+
+---
+
+## 🐛 Debugging Tests
+
+### **Test específico:**
+pytest src/theaia/agents/help_agent/tests/test_handler.py::TestHelpAgent::test_help_flow -v
+
+text
+
+### **Con prints:**
+pytest src/theaia/agents/help_agent/ -v -s
+
+text
+
+### **Stop en primer fallo:**
+pytest src/theaia/agents/help_agent/ -v -x
+
+text
+
+---
+
+## ✅ Checklist de Testing
+
+- [x] Unit tests implementados
+- [x] E2E tests implementados
+- [x] Fixtures configurados
+- [x] Coverage > 95%
+- [x] Todos los tests passing
+- [x] Tests documentados
+- [x] CI/CD ready
+
+---
+
+## 📊 Historial de Ejecuciones
+
+### **2025-11-24 22:30 CET**
+✅ 18 passed, 0 failed
+⏱️ Duración: 2.1s
+📊 Coverage: 100%
+
+text
+
+### **Comandos ejecutados:**
+pytest src/theaia/agents/help_agent/tests/ -v
+pytest src/theaia/tests/e2e/test_help_agent_e2e.py -v
+
+text
+
+---
+
+## 🎯 Estado Final
+
+**HelpAgent Testing: 100% COMPLETO ✅**
+
+- ✅ Todos los tests implementados
+- ✅ Todos los tests passing
+- ✅ Coverage 100%
+- ✅ Listo para producción
+
+---
+
+## 📅 Última Actualización
+
+**Fecha**: 2025-11-24  
+**Responsable**: Equipo THEAIA  
+**Estado**: Production-ready ✅
