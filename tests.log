@@ -1,3 +1,48 @@
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     CustomAgent:base_agent.py:52 CustomAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     AgentWithAttrs:base_agent.py:52 AgentWithAttrs initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+INFO     ConcreteAgent:base_agent.py:52 ConcreteAgent initialized
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'test_agent' with intents: ['test']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'test_agent' with intents: ['intent1', 'intent2']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'test_agent' with intents: ['test']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'auth_agent' with intents: ['test']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'agent1' with intents: ['test']
+DEBUG    asyncio:proactor_events.py:634 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:634 Using proactor: IocpProactor
+DEBUG    asyncio:proactor_events.py:634 Using proactor: IocpProactor
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'calendar_agent' with intents: ['calendar', 'schedule']
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'note_agent' with intents: ['notes', 'reminder']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'test_agent' with intents: ['test']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'agent1' with intents: ['intent1']
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'agent2' with intents: ['intent2']
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'agent3' with intents: ['intent3']
+DEBUG    src.theaia.agents.decorators:decorators.py:100 [AgentDecorator] Registry cleared
+INFO     src.theaia.agents.decorators:decorators.py:58 [AgentDecorator] Registered agent 'functional_agent' with intents: ['test']
+INFO     FunctionalAgent:base_agent.py:52 FunctionalAgent initialized
 INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
 INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
 INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized

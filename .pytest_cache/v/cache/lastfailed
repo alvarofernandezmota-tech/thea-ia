@@ -90,5 +90,8 @@
   "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentBasicFunctionality::test_reminder_agent_can_handle_intent": true,
   "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentBasicFunctionality::test_query_agent_can_handle_intent": true,
   "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentBasicFunctionality::test_schedule_agent_can_handle_intent": true,
-  "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentIntentHandling::test_note_agent_handles_note_intents": true
+  "src/theaia/agents/tests/test_integration_full_stack.py::TestAgentIntentHandling::test_note_agent_handles_note_intents": true,
+  "src/theaia/agents/event_agent_new/tests/test_handler.py": true,
+  "src/theaia/agents/event_agent_new/tests/test_note_fsm.py": true,
+  "src/theaia/tests/e2e/test_event_agent_e2e.py": true
 }
