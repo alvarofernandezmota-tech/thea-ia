@@ -1,0 +1,4 @@
+"""Intent Detection Module - THEA IA"""
+from .detector import IntentDetector, create_and_train_detector
+
+__all__ = ['IntentDetector', 'create_and_train_detector']

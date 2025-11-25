@@ -1,0 +1,68 @@
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 456
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 789
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     AgendaAgent:base_agent.py:52 AgendaAgent initialized
+INFO     AgendaAgent:handler.py:71 FSM v2.0 system initialized (per-user instances)
+INFO     AgendaAgent:handler.py:76 ML Entity Extractors initialized
+INFO     AgendaAgent:handler.py:81 AgendaAgent v3.0 initialized (Complete Implementation)
+INFO     NoteAgent:base_agent.py:52 NoteAgent initialized
+INFO     src.theaia.agents.note_agent.note_conversation_manager.NoteConversationManager:note_conversation_manager.py:32 NoteConversationManager initialized for user 123
+INFO     ReminderAgent:base_agent.py:52 ReminderAgent initialized
+INFO     QueryAgent:base_agent.py:52 QueryAgent initialized
+INFO     ScheduleAgent:base_agent.py:52 ScheduleAgent initialized
