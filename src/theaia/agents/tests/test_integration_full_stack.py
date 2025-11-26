@@ -3,7 +3,6 @@ from src.theaia.agents.agenda_agent import AgendaAgent
 from src.theaia.agents.note_agent import NoteAgent
 from src.theaia.agents.reminder_agent import ReminderAgent
 from src.theaia.agents.query_agent import QueryAgent
-from src.theaia.agents.schedule_agent import ScheduleAgent
 
 
 class TestAgentInstantiation:
@@ -33,13 +32,6 @@ class TestAgentInstantiation:
         """Test QueryAgent with user_id (THEA-IA multi-tenant)."""
         user_id = 123
         agent = QueryAgent(user_id=user_id)
-        assert agent is not None
-        assert hasattr(agent, 'can_handle')
-    
-    def test_schedule_agent_with_user_context(self):
-        """Test ScheduleAgent with user_id (THEA-IA multi-tenant)."""
-        user_id = 123
-        agent = ScheduleAgent(user_id=user_id)
         assert agent is not None
         assert hasattr(agent, 'can_handle')
 
@@ -78,14 +70,6 @@ class TestAgentIntentHandling:
         
         assert isinstance(supported_intents, list)
         assert len(supported_intents) > 0
-    
-    def test_schedule_agent_has_supported_intents(self):
-        """Test ScheduleAgent returns supported intents."""
-        agent = ScheduleAgent(user_id=123)
-        supported_intents = agent.get_supported_intents()
-        
-        assert isinstance(supported_intents, list)
-        assert len(supported_intents) > 0
 
 
 class TestAgentRouterIntegration:
@@ -98,7 +82,6 @@ class TestAgentRouterIntegration:
             ("NoteAgent", NoteAgent(user_id=123)),
             ("ReminderAgent", ReminderAgent(user_id=123)),
             ("QueryAgent", QueryAgent(user_id=123)),
-            ("ScheduleAgent", ScheduleAgent(user_id=123)),
         ]
         
         for agent_name, agent in agents:
@@ -112,7 +95,6 @@ class TestAgentRouterIntegration:
             ("NoteAgent", NoteAgent(user_id=123)),
             ("ReminderAgent", ReminderAgent(user_id=123)),
             ("QueryAgent", QueryAgent(user_id=123)),
-            ("ScheduleAgent", ScheduleAgent(user_id=123)),
         ]
         
         for agent_name, agent in agents:
@@ -133,13 +115,12 @@ class TestAgentMultiTenancy:
                 "note": NoteAgent(user_id=user_id),
                 "reminder": ReminderAgent(user_id=user_id),
                 "query": QueryAgent(user_id=user_id),
-                "schedule": ScheduleAgent(user_id=user_id),
             }
         
         # Verify all user contexts created successfully
         assert len(agents_by_user) == 3
         for user_id, agents in agents_by_user.items():
-            assert len(agents) == 4
+            assert len(agents) == 3
             for agent_name, agent in agents.items():
                 assert agent is not None
     
@@ -180,11 +161,5 @@ class TestAgentFSMIntegration:
     def test_query_fsm_initialized(self):
         """Test QueryAgent FSM is initialized."""
         agent = QueryAgent(user_id=123)
-        assert agent is not None
-        assert hasattr(agent, 'get_supported_intents')
-    
-    def test_schedule_fsm_initialized(self):
-        """Test ScheduleAgent FSM is initialized."""
-        agent = ScheduleAgent(user_id=123)
         assert agent is not None
         assert hasattr(agent, 'get_supported_intents')
