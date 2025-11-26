@@ -1,413 +1,729 @@
-# AgendaAgent - Estrategia de Testing
+# EventAgent - Testing Documentation
 
-**Status:** ✅ 78/78 tests PASSING (100%)  
-**Última actualización:** 24 Noviembre 2025  
-**Coverage:** 88% FSM | 60% Handler | 78% Global AgendaAgent  
+Documentación completa de testing para EventAgent.
 
----
-
-## 🎯 Filosofía de Testing
-
-**Pirámide de Tests THEA IA:**
-
-text
- E2E (7)
-/        \
-Integration (20)
-/
-Unit (51)
-
-text
-
-**Total:** 78/78 tests PASSING ✅
-
-**Principio:** Validar E2E completo antes de continuar con siguiente agente.
+**Última actualización:** 25 Noviembre 2025  
+**Versión:** 1.0.0  
+**Status:** ⏳ Tests pendientes (implementación H04)
 
 ---
 
-## ✅ Tests Unitarios (51 tests)
+## 📊 Test Suite Overview
 
-**Objetivo:** Validar componentes aislados sin dependencias externas.
+### Estado Actual
 
-### test_agenda_fsm.py (23 tests)
+╔════════════════════════════════════════════════════════╗
+║ EVENT AGENT TEST SUITE - STATUS ║
+╠════════════════════════════════════════════════════════╣
+║ Código: ✅ 100% Implementado ║
+║ - Handler: 13 LOC ║
+║ - Manager: 112 LOC ║
+║ - FSM: 91 LOC ║
+║ ║
+║ Tests: ⏳ PENDIENTE H04 ║
+║ - Unit Tests: 0/TBD ║
+║ - E2E Tests: 0/TBD ║
+║ - Integration: 0/TBD ║
+║ ║
+║ Coverage Target: ≥70% ║
+║ Coverage Actual: 0% (no tests ejecutados) ║
+╠════════════════════════════════════════════════════════╣
+║ PRÓXIMO: Implementar suite completa en H04 ║
+╚════════════════════════════════════════════════════════╝
 
-**Coverage:** 88%  
-**Ubicación:** `src/theaia/agents/agenda_agent/tests/test_agenda_fsm.py`
-
-**Tests clave:**
-- `test_fsm_initialization` - Estado inicial IDLE
-- `test_start_create_transition` - Inicio creación evento
-- `test_provide_title_valid` - Validación título
-- `test_provide_date_valid` - Validación fecha
-- `test_provide_time_valid` - Validación hora
-- `test_save_event_complete_draft` - Guardado con draft completo
-- `test_cancel_from_any_state` - Cancelación desde cualquier estado
-- `test_finish_resets_to_idle` - Reset a IDLE
-- `test_is_in_creation_flow` - Detección flujo creación
-- `test_get_next_required_field` - Campo siguiente requerido
-
-**Ejemplo:**
-
-def test_fsm_state_transition():
-"""Verifica transición IDLE → AWAITING_TITLE"""
-fsm = AgendaFSM()
-context = {"tenant_id": "default"}
-
-text
-result = fsm.start_create(context)
-
-assert result is True
-assert fsm.current_state == AgendaStates.AWAITING_TITLE
-text
-
-### test_handler.py (28 tests)
-
-**Coverage:** 60%  
-**Ubicación:** `src/theaia/agents/agenda_agent/tests/test_handler.py`
-
-**Tests clave:**
-- `test_handler_initialization` - Handler crea FSM per-user
-- `test_handle_method_exists` - Método `async def handle()` existe
-- `test_handle_returns_dict` - Respuesta tiene formato correcto
-- `test_supported_intents` - Intents soportados
-- `test_fsm_per_user_isolation` - FSMs aislados por usuario
-- `test_create_event_flow` - Flujo creación completo
-- `test_list_events` - Listado de eventos
-- `test_edit_event` - Edición de evento
-- `test_delete_event` - Eliminación de evento
-
-**Ejemplo:**
-
-@pytest.mark.asyncio
-async def test_handle_method_signature():
-"""Verifica firma del método handle()"""
-handler = AgendaAgentHandler()
-
-text
-response = await handler.handle(
-    user_id="test_user",
-    message="crear evento",
-    context={"tenant_id": "default"}
-)
-
-assert "response" in response
-assert "context" in response
-assert isinstance(response["response"], str)
 text
 
 ---
 
-## 🔗 Tests Integración (20 tests)
+## 🎯 Test Strategy (Planificado H04)
 
-**Objetivo:** Validar interacción entre componentes con DB PostgreSQL REAL.
-
-### test_agenda_database_integration.py (3 tests)
-
-**Coverage:** DB Models 100%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_database_integration.py`
-
-**Tests:**
-- `test_database_connection` - Conexión PostgreSQL
-- `test_user_event_relationship` - Relación User-Event
-- `test_multi_tenant_isolation` - Aislamiento multi-tenant
-
-**Ejemplo:**
-
-@pytest.mark.asyncio
-async def test_database_event_creation():
-"""Verifica creación real en PostgreSQL"""
-async with get_db_session() as session:
-user = User(telegram_id="test_123", tenant_id="default")
-session.add(user)
-await session.commit()
+### Test Pyramid
 
 text
-    event = Event(
-        user_id=user.id,
-        tenant_id="default",
-        title="Test Event",
-        event_date=date.today(),
-        event_time=time(15, 0)
+                ┌─────────────┐
+                │   E2E (15)  │  ← Flujos completos
+                └─────────────┘
+              ┌─────────────────┐
+              │ Integration (8)  │  ← FSM + ML
+              └─────────────────┘
+          ┌───────────────────────┐
+          │    Unit Tests (25)     │  ← Componentes
+          └───────────────────────┘
+TOTAL ESTIMADO: ~48 tests
+TARGET COVERAGE: ≥70%
+EXECUTION TIME: <15 seconds
+
+text
+
+---
+
+## 🧪 Test Categories (Planificadas)
+
+### 1. Unit Tests (25 tests estimados)
+
+#### 1.1 Handler Tests (8 tests)
+
+**Archivo:** `src/theaia/agents/event_agent_new/tests/test_handler.py`
+
+Tests planificados:
+class TestEventAgentHandler:
+"""Test suite para EventAgent handler."""
+
+text
+def test_handler_initialization(self):
+    """Verifica inicialización correcta."""
+    agent = EventAgent(user_id="test_user_123")
+    assert agent.user_id == "test_user_123"
+    assert agent.conversation_manager is not None
+
+def test_get_supported_intents(self):
+    """Verifica lista de intents."""
+    agent = EventAgent(user_id="test_user")
+    intents = agent.get_supported_intents()
+    assert "crear_evento" in intents
+    assert "listar_eventos" in intents
+    assert len(intents) == 9
+
+def test_can_handle_valid_intents(self):
+    """Verifica reconocimiento de intents válidos."""
+    agent = EventAgent(user_id="test_user")
+    assert agent.can_handle("crear_evento")
+    assert agent.can_handle("evento")
+    assert agent.can_handle("agendar")
+
+def test_can_handle_invalid_intents(self):
+    """Verifica rechazo de intents inválidos."""
+    agent = EventAgent(user_id="test_user")
+    assert not agent.can_handle("crear_recordatorio")
+    assert not agent.can_handle("unknown_intent")
+
+async def test_handle_message_basic(self):
+    """Verifica manejo básico de mensajes."""
+    agent = EventAgent(user_id="test_user")
+    response, state, context = await agent.handle(
+        user_id="test_user",
+        message="Quiero crear un evento",
+        context={}
     )
-    session.add(event)
-    await session.commit()
-    
-    # Verificar guardado
-    result = await session.get(Event, event.id)
-    assert result.title == "Test Event"
+    assert response is not None
+    assert state == "awaiting_event_title"
+    assert isinstance(context, dict)
+
+async def test_handle_message_with_context(self):
+    """Verifica preservación de contexto."""
+    agent = EventAgent(user_id="test_user")
+    initial_context = {"previous_data": "test"}
+    response, state, context = await agent.handle(
+        user_id="test_user",
+        message="Reunión",
+        context=initial_context
+    )
+    assert "previous_data" in context
+
+def test_multi_user_isolation(self):
+    """Verifica aislamiento entre usuarios."""
+    agent1 = EventAgent(user_id="user_1")
+    agent2 = EventAgent(user_id="user_2")
+    assert agent1.user_id != agent2.user_id
+    assert agent1.conversation_manager != agent2.conversation_manager
+
+async def test_error_handling(self):
+    """Verifica manejo de errores."""
+    agent = EventAgent(user_id="test_user")
+    # Test con input inválido
+    response, state, context = await agent.handle(
+        user_id="test_user",
+        message="",
+        context={}
+    )
+    assert "error" in response.lower() or state == "idle"
 text
 
-### test_agenda_event_repository.py (8 tests)
+#### 1.2 ConversationManager Tests (12 tests)
 
-**Coverage:** EventRepository 27%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_event_repository.py`
+**Archivo:** `src/theaia/agents/event_agent_new/tests/test_conversation_manager.py`
 
-**Tests CRUD completos:**
-- `test_create_event` - Crear evento
-- `test_get_event_by_id` - Obtener por ID
-- `test_list_user_events` - Listar eventos usuario
-- `test_update_event` - Actualizar evento
-- `test_delete_event` - Eliminar evento
-- `test_find_by_date_range` - Buscar por rango fechas
-- `test_multi_tenant_isolation` - Aislamiento tenants
-- `test_pagination` - Paginación resultados
+Tests planificados:
+class TestEventConversationManager:
+"""Test suite para EventConversationManager."""
 
-### test_agenda_router_integration.py (5 tests)
+text
+def test_manager_initialization(self):
+    """Verifica inicialización del manager."""
+    manager = EventConversationManager(user_id="test_user")
+    assert manager.user_id == "test_user"
+    assert manager.fsm is not None
+    assert manager.context == {}
 
-**Coverage:** Router 33%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_router_integration.py`
+async def test_extract_entities_datetime(self):
+    """Verifica extracción de fecha/hora."""
+    manager = EventConversationManager(user_id="test_user")
+    entities = await manager._extract_entities("mañana a las 15:00")
+    assert "datetime" in entities
+    # Verificar que datetime es correcto
 
-**Tests:**
-- `test_router_routes_to_agenda_agent` - Routing correcto
-- `test_intent_detection` - Detección intent "agenda"
-- `test_entity_extraction` - Extracción entidades ML
-- `test_router_fsm_integration` - Router + FSM
-- `test_multi_user_isolation` - Aislamiento usuarios
+async def test_extract_entities_location(self):
+    """Verifica extracción de ubicación."""
+    manager = EventConversationManager(user_id="test_user")
+    entities = await manager._extract_entities("en la oficina")
+    assert "location" in entities
+    assert entities["location"] == "oficina"
 
-### test_agenda_integration_conversation.py (6 tests) ⭐ BONUS
+async def test_handle_idle_state(self):
+    """Verifica manejo del estado idle."""
+    manager = EventConversationManager(user_id="test_user")
+    response, state, context = await manager._handle_idle_state(
+        "crear evento"
+    )
+    assert state == "awaiting_event_title"
+    assert "título" in response.lower()
 
-**Ubicación:** `src/theaia/tests/integration/test_agenda_integration_conversation.py`
+async def test_handle_awaiting_title(self):
+    """Verifica captura de título."""
+    manager = EventConversationManager(user_id="test_user")
+    response, state, context = await manager._handle_awaiting_title(
+        "Reunión de equipo"
+    )
+    assert state == "awaiting_event_datetime"
+    assert context["event_title"] == "Reunión de equipo"
 
-**Tests conversacionales:**
-- Multi-turno completo
-- Extracción entidades en contexto
-- Persistencia conversación
+async def test_handle_awaiting_datetime(self):
+    """Verifica captura de fecha/hora."""
+    manager = EventConversationManager(user_id="test_user")
+    manager.context = {"event_title": "Test"}
+    entities = {"datetime": "2025-11-26 15:00"}
+    response, state, context = await manager._handle_awaiting_datetime(
+        "mañana a las 15:00",
+        entities
+    )
+    assert state == "awaiting_event_location"
+    assert "event_datetime" in context
+
+async def test_handle_awaiting_location(self):
+    """Verifica captura de ubicación."""
+    manager = EventConversationManager(user_id="test_user")
+    entities = {"location": "Sala A"}
+    response, state, context = await manager._handle_awaiting_location(
+        "en la sala A",
+        entities
+    )
+    assert state == "awaiting_event_description"
+    assert context["event_location"] == "Sala A"
+
+async def test_handle_awaiting_description(self):
+    """Verifica captura de descripción."""
+    manager = EventConversationManager(user_id="test_user")
+    response, state, context = await manager._handle_awaiting_description(
+        "Discutir roadmap Q1"
+    )
+    assert state == "awaiting_confirmation"
+    assert context["event_description"] == "Discutir roadmap Q1"
+
+async def test_handle_confirmation_yes(self):
+    """Verifica confirmación positiva."""
+    manager = EventConversationManager(user_id="test_user")
+    manager.context = {
+        "event_title": "Test",
+        "event_datetime": "2025-11-26 15:00"
+    }
+    response, state, context = await manager._handle_confirmation("sí")
+    assert state == "event_confirmed"
+    assert context["event_confirmed"] == True
+
+async def test_handle_confirmation_no(self):
+    """Verifica cancelación."""
+    manager = EventConversationManager(user_id="test_user")
+    response, state, context = await manager._handle_confirmation("no")
+    assert state == "idle"
+    assert len(context) == 1  # Solo state
+
+def test_build_event_summary(self):
+    """Verifica generación de resumen."""
+    manager = EventConversationManager(user_id="test_user")
+    manager.context = {
+        "event_title": "Test Event",
+        "event_datetime": "2025-11-26 15:00",
+        "event_location": "Sala A",
+        "event_description": "Test description"
+    }
+    summary = manager._build_event_summary()
+    assert "Test Event" in summary
+    assert "Sala A" in summary
+    assert "Test description" in summary
+
+def test_reset_context(self):
+    """Verifica reset de contexto."""
+    manager = EventConversationManager(user_id="test_user")
+    manager.context = {"data": "test"}
+    manager.reset()
+    assert manager.context == {"state": "idle"}
+text
+
+#### 1.3 FSM Tests (5 tests)
+
+**Archivo:** `src/theaia/agents/event_agent_new/tests/test_event_fsm.py`
+
+Tests planificados:
+class TestEventFSM:
+"""Test suite para EventFSM."""
+
+text
+def test_fsm_initialization(self):
+    """Verifica inicialización del FSM."""
+    fsm = EventFSM()
+    assert fsm.current_state == "idle"
+    assert len(fsm.states) == 7
+
+def test_valid_transitions(self):
+    """Verifica transiciones válidas."""
+    fsm = EventFSM()
+    assert fsm.can_transition("idle", "awaiting_event_title")
+    assert fsm.can_transition("awaiting_event_title", "awaiting_event_datetime")
+    assert fsm.can_transition("awaiting_confirmation", "event_confirmed")
+
+def test_invalid_transitions(self):
+    """Verifica que transiciones inválidas se rechacen."""
+    fsm = EventFSM()
+    assert not fsm.can_transition("idle", "event_confirmed")
+    assert not fsm.can_transition("awaiting_event_title", "idle")
+
+def test_get_available_transitions(self):
+    """Verifica obtención de transiciones disponibles."""
+    fsm = EventFSM()
+    transitions = fsm.get_available_transitions("idle")
+    assert "awaiting_event_title" in transitions
+
+def test_state_history(self):
+    """Verifica historial de estados."""
+    fsm = EventFSM()
+    fsm.transition("awaiting_event_title")
+    fsm.transition("awaiting_event_datetime")
+    assert len(fsm.history) == 2
+    assert fsm.history == "idle"
+text
 
 ---
 
-## 🌐 Tests E2E (7 tests)
+### 2. E2E Tests (15 tests estimados)
 
-**Objetivo:** Validar flujos completos end-to-end con todos los componentes.
+**Archivo:** `src/theaia/agents/tests/test_event_agent_e2e.py`
 
-### test_agenda_agent_flow.py (1 test)
-
-**Ubicación:** `src/theaia/tests/integration/test_agenda_agent_flow.py`
-
-**Test:** Flujo multi-turno completo (título → fecha → hora → guardar)
-
-@pytest.mark.asyncio
-async def test_full_conversation_flow():
-"""Flujo E2E: user input → PostgreSQL"""
-handler = AgendaAgentHandler()
-context = {"tenant_id": "default"}
+Tests E2E planificados:
+class TestEventAgentE2E:
+"""End-to-end tests para flujos completos."""
 
 text
-# Turno 1: Iniciar
-r1 = await handler.handle("user_e2e", "crear evento", context)
-assert "título" in r1["response"].lower()
+async def test_create_event_complete_flow(self):
+    """Test: Crear evento completo paso a paso."""
+    # Flujo completo desde inicio hasta confirmación
 
-# Turno 2: Título
-r2 = await handler.handle("user_e2e", "Reunión equipo", r1["context"])
-assert "fecha" in r2["response"].lower()
+async def test_create_event_minimal(self):
+    """Test: Crear evento solo con título y fecha."""
+    # Sin ubicación ni descripción
 
-# Turno 3: Fecha
-r3 = await handler.handle("user_e2e", "mañana", r2["context"])
-assert "hora" in r3["response"].lower()
+async def test_create_event_online(self):
+    """Test: Crear evento online."""
+    # Ubicación = "online" o "virtual"
 
-# Turno 4: Hora
-r4 = await handler.handle("user_e2e", "15:00", r3["context"])
-assert "guardado" in r4["response"].lower()
+async def test_create_event_with_location(self):
+    """Test: Crear evento con ubicación específica."""
+    # Extracción de ubicación compleja
 
-# Verificar en DB
-async with get_db_session() as session:
-    events = await EventRepository(session).find_by_user("user_e2e")
-    assert len(events) > 0
-    assert events.title == "Reunión equipo"
+async def test_create_event_with_description(self):
+    """Test: Crear evento con descripción detallada."""
+    # Descripción larga y compleja
+
+async def test_cancel_event_creation(self):
+    """Test: Cancelar creación en confirmación."""
+    # Usuario dice "no" en confirmación
+
+async def test_list_events(self):
+    """Test: Listar eventos próximos."""
+    # Pre: 3 eventos creados
+    # Acción: Listar
+
+async def test_edit_event(self):
+    """Test: Editar evento existente."""
+    # Cambiar fecha, hora o ubicación
+
+async def test_cancel_event(self):
+    """Test: Cancelar evento."""
+    # Eliminar evento creado
+
+async def test_view_event_details(self):
+    """Test: Ver detalles de evento."""
+    # Mostrar toda la información
+
+async def test_multiple_events_same_day(self):
+    """Test: Crear múltiples eventos mismo día."""
+    # Verificar sin conflictos
+
+async def test_event_past_date_error(self):
+    """Test: Error al crear evento en fecha pasada."""
+    # Validación de fecha futura
+
+async def test_multi_user_event_isolation(self):
+    """Test: Aislamiento de eventos entre usuarios."""
+    # User A no ve eventos de User B
+
+async def test_complex_datetime_extraction(self):
+    """Test: Extracción de fechas complejas."""
+    # "el próximo viernes 18 a las 15:30"
+
+async def test_location_extraction_cities(self):
+    """Test: Extracción de ciudades españolas."""
+    # "en Madrid", "en Barcelona"
 text
-
-### test_context_persistence_between_agents.py (1 test)
-
-**Ubicación:** `src/theaia/tests/integration/test_context_persistence_between_agents.py`
-
-**Test:** Contexto persiste entre llamadas
-
-### test_core_integration.py (3 tests)
-
-**Ubicación:** `src/theaia/tests/integration/test_core_integration.py`
-
-**Tests:**
-- Core FSM integration
-- State transitions
-- Callback execution
 
 ---
 
-## 🧪 Ejecutar Tests
+### 3. Integration Tests (8 tests estimados)
 
-### Por Nivel
+**Archivo:** `src/theaia/agents/tests/test_event_agent_integration.py`
 
-Unit Tests (51)
-pytest src/theaia/agents/agenda_agent/tests/ -v
-
-Integration Tests (20)
-pytest src/theaia/tests/integration/test_agenda_database_integration.py
-src/theaia/tests/integration/test_agenda_event_repository.py
-src/theaia/tests/integration/test_agenda_router_integration.py
-src/theaia/tests/integration/test_agenda_integration_conversation.py -v
-
-E2E Tests (7)
-pytest src/theaia/tests/integration/test_agenda_agent_flow.py
-src/theaia/tests/integration/test_context_persistence_between_agents.py
-src/theaia/tests/integration/test_core_integration.py -v
+Tests de integración planificados:
+class TestEventAgentIntegration:
+"""Tests de integración FSM + ML + Handler."""
 
 text
+async def test_fsm_with_entity_extraction(self):
+    """Integración FSM + DateTimeExtractor."""
+    # Verificar flujo completo con extracción real
 
-### Todos los Tests AgendaAgent (78)
+async def test_fsm_with_location_extraction(self):
+    """Integración FSM + LocationExtractor."""
+    # Verificar extracción de ubicaciones
 
-pytest src/theaia/agents/agenda_agent/tests/
-src/theaia/tests/integration/test_agenda*.py
-src/theaia/tests/integration/test_context_persistence_between_agents.py
-src/theaia/tests/integration/test_core_integration.py
--v --tb=short
+async def test_context_preservation_across_states(self):
+    """Verificar preservación de contexto."""
+    # Context se mantiene entre transiciones
 
+async def test_error_recovery(self):
+    """Verificar recuperación de errores."""
+    # FSM se recupera de estados inválidos
+
+async def test_concurrent_conversations(self):
+    """Verificar conversaciones concurrentes."""
+    # Múltiples usuarios simultáneos
+
+async def test_state_timeout_handling(self):
+    """Verificar timeout de estados."""
+    # Estados expiran después de N minutos
+
+async def test_database_integration(self):
+    """Integración con EventRepository (H05)."""
+    # CRUD completo
+
+async def test_notification_integration(self):
+    """Integración con sistema de notificaciones (H05)."""
+    # Envío de recordatorios
 text
 
-**Resultado esperado:** 78 passed ✅
+---
 
-### Con Coverage
+## 🚀 Running Tests (Comandos Planificados)
 
-pytest src/theaia/agents/agenda_agent/tests/
-src/theaia/tests/integration/test_agenda*.py
---cov=src/theaia/agents/agenda_agent
+### Comandos Básicos
+
+Todos los tests de EventAgent
+pytest src/theaia/agents/event_agent_new/tests/ -v
+
+Solo unit tests
+pytest src/theaia/agents/event_agent_new/tests/test_handler.py -v
+
+Solo E2E tests
+pytest src/theaia/agents/tests/test_event_agent_e2e.py -v
+
+Con coverage
+pytest src/theaia/agents/event_agent_new/
+--cov=src/theaia/agents/event_agent_new
 --cov-report=term-missing
+--cov-report=html
+
+Tests específicos
+pytest src/theaia/agents/event_agent_new/tests/test_handler.py::test_handler_initialization -v
 
 text
 
-**Coverage esperado:**
-- agenda_fsm.py: 88%
-- handler.py: 60%
-- agent_states.py: 87%
+### Opciones Avanzadas
 
----
+Con output detallado
+pytest -v -s
 
-## 📊 Coverage Report (24-NOV-2025)
+Stop on first failure
+pytest -x
 
-| Componente | Statements | Miss | Cover |
-|------------|------------|------|-------|
-| **agenda_fsm.py** | 138 | 17 | **88%** ✅ |
-| **handler.py** | 206 | 82 | **60%** ✅ |
-| **agent_states.py** | 31 | 4 | **87%** ✅ |
-| **Total AgendaAgent** | 375 | ~103 | **~78%** ✅ |
-
-**Target:** ≥70% ✅ SUPERADO
-
----
-
-## 🐛 Debugging Tips
-
-### Test falla en FSM
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-Ejecutar con logs
-pytest test_agenda_fsm.py::test_name -v -s
-
-text
-
-### Test falla en DB
-
-Verificar PostgreSQL corriendo
-docker ps | grep postgres
-
-Ver logs DB
-docker logs thea_postgres
-
-Verificar conexión
-psql -h localhost -U thea -d thea_db
-
-text
-
-### Test falla en async
-
-Siempre usar decorator
-@pytest.mark.asyncio
-async def test_async_operation():
-result = await some_async_function()
-assert result is not None
-
-text
-
-### Tests lentos
-
-Ejecutar en paralelo
+Parallel execution
 pytest -n auto
 
-Solo tests rápidos
-pytest -m "not slow"
+Con timing
+pytest --durations=10
+
+Solo tests marcados
+pytest -m "unit" # Requiere markers en tests
 
 text
 
 ---
 
-## 🔄 CI/CD Integration
+## 📈 Coverage Targets (H04)
 
-**GitHub Actions:** `.github/workflows/tests.yml`
+### Por Componente
 
-name: AgendaAgent Tests
+Component Target Actual Status
+─────────────────────────────────────────────
+Handler 70% 0% ⏳ Pendiente
+ConversationManager 70% 0% ⏳ Pendiente
+FSM 70% 0% ⏳ Pendiente
+Overall 70% 0% ⏳ Pendiente
+
+text
+
+### Por Tipo de Test
+
+Type Count Coverage Status
+────────────────────────────────────────────
+Unit 25 80% ⏳ H04
+Integration 8 60% ⏳ H04
+E2E 15 50% ⏳ H04
+────────────────────────────────────────────
+TOTAL 48 ≥70% ⏳ H04
+
+text
+
+---
+
+## 🎯 Test Implementation Plan (H04)
+
+### Week 1: Unit Tests (8 horas)
+
+Day 1 (3h): Handler Tests (8 tests)
+Day 2 (4h): ConversationManager Tests (12 tests)
+Day 3 (1h): FSM Tests (5 tests)
+
+text
+
+### Week 2: E2E Tests (10 horas)
+
+Day 1 (4h): Basic E2E (tests 1-7)
+Day 2 (4h): Advanced E2E (tests 8-15)
+Day 3 (2h): Integration Tests (8 tests)
+
+text
+
+### Week 3: Coverage & Polish (4 horas)
+
+Day 1 (2h): Alcanzar coverage ≥70%
+Day 2 (1h): Fix failing tests
+Day 3 (1h): Documentation update
+
+text
+
+**TOTAL: 22 horas estimadas (H04)**
+
+---
+
+## 🐛 Known Issues & Limitations
+
+### Limitaciones Actuales
+
+No hay tests implementados aún
+→ Planificado para H04
+→ Código está preparado para testing
+
+Coverage 0%
+→ Normal sin tests
+→ Target H04: ≥70%
+
+Sin validación automática
+→ Requiere tests E2E
+→ Implementar en H04
+
+text
+
+### Deuda Técnica
+
+□ Implementar test fixtures
+□ Crear mocks para entity extractors
+□ Setup test database
+□ Configurar CI/CD pipeline
+□ Añadir property-based testing
+
+text
+
+---
+
+## 📊 Test Metrics (Estimadas H04)
+
+Metric Estimated
+─────────────────────────────────
+Total Tests 48
+Unit Tests 25 (52%)
+Integration Tests 8 (17%)
+E2E Tests 15 (31%)
+Execution Time ~12 seconds
+Coverage ≥70%
+Pass Rate 100%
+
+text
+
+---
+
+## 🔄 CI/CD Integration (Planificado H09)
+
+### GitHub Actions Workflow
+
+name: EventAgent Tests
+
 on: [push, pull_request]
+
 jobs:
 test:
 runs-on: ubuntu-latest
-services:
-postgres:
-image: postgres:13
-env:
-POSTGRES_PASSWORD: thea_password
 steps:
 - uses: actions/checkout@v2
-- name: Run Tests
+- name: Set up Python
+uses: actions/setup-python@v2
+with:
+python-version: '3.11'
+- name: Install dependencies
+run: pip install -r requirements.txt
+- name: Run tests
 run: |
-pytest src/theaia/agents/agenda_agent/tests/ -v
-pytest src/theaia/tests/integration/test_agenda*.py -v
+pytest src/theaia/agents/event_agent_new/tests/ -v --cov
+pytest src/theaia/agents/tests/test_event_agent_e2e.py -v
+- name: Check coverage
+run: |
+coverage report --fail-under=70
 
 text
 
 ---
 
-## ✨ Best Practices
+## 📚 Testing Best Practices
 
-1. ✅ **AAA Pattern** - Arrange, Act, Assert
-2. ✅ **One concept per test** - Test falla → sabes exactamente qué
-3. ✅ **Descriptive names** - `test_fsm_transitions_to_awaiting_title_when_start_create_called`
-4. ✅ **Cleanup fixtures** - Usa `@pytest.fixture` con `yield`
-5. ✅ **Mock external only** - DB real, mocks solo para APIs externas
-6. ✅ **Deterministic** - Tests no dependen de orden
-7. ✅ **Fast feedback** - Unit tests < 100ms
+### Para Implementar en H04
 
----
+Test Isolation
+✓ Cada test independiente
+✓ No compartir estado entre tests
+✓ Cleanup después de cada test
 
-## 📈 Progreso Histórico
+Realistic Data
+✓ Usar fechas/horas reales
+✓ Datos representativos
+✓ Edge cases incluidos
 
-| Fecha | Tests | Coverage FSM | Status |
-|-------|-------|--------------|--------|
-| 21-NOV | 39 | 91% | Initial ✅ |
-| 24-NOV | **78** | **88%** | **100% Complete** ✅ |
+Clear Assertions
+✓ Assertions específicas
+✓ Mensajes de error claros
+✓ Verificar múltiples condiciones
 
-**Incremento:** +39 tests (+100%)
+Fast Execution
+✓ Tests rápidos (<1s cada uno)
+✓ Mocks para dependencias lentas
+✓ Parallel execution cuando sea posible
 
----
+Comprehensive Coverage
+✓ Happy paths
+✓ Error paths
+✓ Edge cases
+✓ Multi-user scenarios
 
-## 🎯 Próximos Pasos
-
-### Testing Roadmap
-- ⏳ Performance benchmarks (latency < 200ms)
-- ⏳ Load testing (100 usuarios concurrentes)
-- ⏳ Stress testing (1000 eventos/usuario)
-- ⏳ Security testing (SQL injection, XSS)
-
-### Coverage Goals
-- ⏳ Handler: 60% → 80%
-- ⏳ EventRepository: 27% → 70%
-- ⏳ Router Integration: 33% → 60%
+text
 
 ---
 
-## 👥 Autores
+## 🎓 Testing Guidelines
 
-**Álvaro Fernández Mota** - CEO THEA IA  
-**Fecha:** 24 Noviembre 2025  
-**Filosofía:** TRES (Álvaro + Jarvis + THEA IA)  
+### Naming Conventions
 
-**Status:** ✅ H03 BLOQUE 3.4A.1 COMPLETE  
-**Tests:** 78/78 PASSING (100%)
+Tests descriptivos
+def test_create_event_with_valid_datetime(): # ✅ Claro
+def test_handler(): # ❌ Vago
+
+Classes organizadas
+class TestEventAgentHandler: # ✅ Por componente
+class TestCreateEvent: # ✅ Por feature
+class Tests: # ❌ Genérico
+
+text
+
+### Assert Patterns
+
+Assertions específicas
+assert response == "✅ Evento creado" # ✅
+assert response # ❌
+
+Múltiples verificaciones
+assert event.title == "Test"
+assert event.datetime is not None
+assert event.location == "Sala A" # ✅
+
+assert event # ❌
+
+text
+
+---
+
+## 📝 Next Steps (H04)
+
+### Implementación Inmediata
+
+Crear archivos de tests
+□ test_handler.py
+□ test_conversation_manager.py
+□ test_event_fsm.py
+□ test_event_agent_e2e.py
+
+Implementar fixtures
+□ Mock user_id
+□ Mock datetime
+□ Mock entity extractors
+
+Escribir unit tests (25)
+□ Handler (8 tests)
+□ ConversationManager (12 tests)
+□ FSM (5 tests)
+
+Escribir E2E tests (15)
+□ Happy paths
+□ Error scenarios
+□ Multi-user
+
+Alcanzar coverage ≥70%
+
+Configurar CI/CD
+
+Actualizar esta documentación
+
+text
+
+---
+
+## 📚 Referencias
+
+- [pytest Documentation](https://docs.pytest.org/)
+- [Coverage.py](https://coverage.readthedocs.io/)
+- [Testing Best Practices](https://docs.python-guide.org/writing/tests/)
+- [FSM Testing Patterns](https://martinfowler.com/articles/mocksArentStubs.html)
+
+---
+
+## 🎯 Success Criteria (H04)
+
+✓ 48+ tests implementados
+✓ 100% tests passing
+✓ ≥70% code coverage
+✓ <15s execution time
+✓ CI/CD pipeline configurado
+✓ Documentation actualizada
+
+text
+
+---
+
+**Última actualización:** 25 Noviembre 2025  
+**Mantenido por:** Álvaro Fernández Mota (CEO THEA-IA)  
+**Status:** ⏳ PLANIFICADO - Implementación H04  
+**Estimación:** 22 horas de desarrollo

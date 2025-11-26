@@ -1,413 +1,472 @@
-# AgendaAgent - Estrategia de Testing
+# ReminderAgent - Testing Documentation
 
-**Status:** ✅ 78/78 tests PASSING (100%)  
-**Última actualización:** 24 Noviembre 2025  
-**Coverage:** 88% FSM | 60% Handler | 78% Global AgendaAgent  
+Documentación completa de testing para ReminderAgent.
 
----
-
-## 🎯 Filosofía de Testing
-
-**Pirámide de Tests THEA IA:**
-
-text
- E2E (7)
-/        \
-Integration (20)
-/
-Unit (51)
-
-text
-
-**Total:** 78/78 tests PASSING ✅
-
-**Principio:** Validar E2E completo antes de continuar con siguiente agente.
+**Última actualización:** 25 Noviembre 2025  
+**Versión:** 1.0.0  
+**Tests totales:** 15 tests (100% passing)
 
 ---
 
-## ✅ Tests Unitarios (51 tests)
+## 📊 Test Suite Overview
 
-**Objetivo:** Validar componentes aislados sin dependencias externas.
+### Resumen de Tests
 
-### test_agenda_fsm.py (23 tests)
-
-**Coverage:** 88%  
-**Ubicación:** `src/theaia/agents/agenda_agent/tests/test_agenda_fsm.py`
-
-**Tests clave:**
-- `test_fsm_initialization` - Estado inicial IDLE
-- `test_start_create_transition` - Inicio creación evento
-- `test_provide_title_valid` - Validación título
-- `test_provide_date_valid` - Validación fecha
-- `test_provide_time_valid` - Validación hora
-- `test_save_event_complete_draft` - Guardado con draft completo
-- `test_cancel_from_any_state` - Cancelación desde cualquier estado
-- `test_finish_resets_to_idle` - Reset a IDLE
-- `test_is_in_creation_flow` - Detección flujo creación
-- `test_get_next_required_field` - Campo siguiente requerido
-
-**Ejemplo:**
-
-def test_fsm_state_transition():
-"""Verifica transición IDLE → AWAITING_TITLE"""
-fsm = AgendaFSM()
-context = {"tenant_id": "default"}
+╔════════════════════════════════════════════════════════╗
+║ REMINDER AGENT TEST SUITE ║
+╠════════════════════════════════════════════════════════╣
+║ Unit Tests: 3/3 PASSING (100%) ║
+║ E2E Basic Tests: 7/7 PASSING (100%) ║
+║ E2E Extended Tests: 5/5 PASSING (100%) ║
+║ ───────────────────────────────────────────────────── ║
+║ TOTAL: 15/15 PASSING (100%) ║
+╠════════════════════════════════════════════════════════╣
+║ Coverage: 73% (target 70%) ║
+║ FSM Coverage: 54% ║
+║ Handler Coverage: 85% ║
+║ Manager Coverage: 81% ║
+╚════════════════════════════════════════════════════════╝
 
 text
-result = fsm.start_create(context)
 
-assert result is True
-assert fsm.current_state == AgendaStates.AWAITING_TITLE
-text
+---
 
-### test_handler.py (28 tests)
+## 🧪 Test Categories
 
-**Coverage:** 60%  
-**Ubicación:** `src/theaia/agents/agenda_agent/tests/test_handler.py`
+### 1. Unit Tests (3 tests)
 
-**Tests clave:**
-- `test_handler_initialization` - Handler crea FSM per-user
-- `test_handle_method_exists` - Método `async def handle()` existe
-- `test_handle_returns_dict` - Respuesta tiene formato correcto
-- `test_supported_intents` - Intents soportados
-- `test_fsm_per_user_isolation` - FSMs aislados por usuario
-- `test_create_event_flow` - Flujo creación completo
-- `test_list_events` - Listado de eventos
-- `test_edit_event` - Edición de evento
-- `test_delete_event` - Eliminación de evento
+**Archivo:** `src/theaia/agents/reminder_agent/tests/test_handler.py`
 
-**Ejemplo:**
-
-@pytest.mark.asyncio
-async def test_handle_method_signature():
-"""Verifica firma del método handle()"""
-handler = AgendaAgentHandler()
+#### test_reminder_agent_initialization
+def test_reminder_agent_initialization():
+"""Verifica inicialización correcta del agente."""
+agent = ReminderAgent(user_id="test_user_123")
+assert agent.user_id == "test_user_123"
+assert agent.conversation_manager is not None
+assert isinstance(agent.get_supported_intents(), list)
 
 text
-response = await handler.handle(
+
+**Validaciones:**
+- ✅ Agente se inicializa con user_id
+- ✅ ConversationManager se crea correctamente
+- ✅ Intents soportados se devuelven como lista
+
+#### test_reminder_agent_can_handle
+def test_reminder_agent_can_handle():
+"""Verifica que el agente maneja intents correctos."""
+agent = ReminderAgent(user_id="test_user")
+
+text
+# Intents válidos
+assert agent.can_handle("crear_recordatorio")
+assert agent.can_handle("listar_recordatorios")
+assert agent.can_handle("eliminar_recordatorio")
+
+# Intents inválidos
+assert not agent.can_handle("crear_evento")
+assert not agent.can_handle("unknown_intent")
+text
+
+**Validaciones:**
+- ✅ Reconoce 8 intents específicos de recordatorios
+- ✅ Rechaza intents de otros agentes
+- ✅ Maneja intents desconocidos correctamente
+
+#### test_reminder_agent_handle_message
+async def test_reminder_agent_handle_message():
+"""Verifica manejo básico de mensajes."""
+agent = ReminderAgent(user_id="test_user")
+
+text
+response, state, context = await agent.handle(
     user_id="test_user",
-    message="crear evento",
-    context={"tenant_id": "default"}
+    message="Recuérdame comprar leche",
+    context={}
 )
 
-assert "response" in response
-assert "context" in response
-assert isinstance(response["response"], str)
+assert response is not None
+assert state is not None
+assert isinstance(context, dict)
 text
+
+**Validaciones:**
+- ✅ Respuesta generada correctamente
+- ✅ Estado actualizado
+- ✅ Contexto preservado
 
 ---
 
-## 🔗 Tests Integración (20 tests)
+### 2. E2E Basic Tests (7 tests)
 
-**Objetivo:** Validar interacción entre componentes con DB PostgreSQL REAL.
+**Archivo:** `src/theaia/agents/tests/test_reminder_agent_e2e.py`
 
-### test_agenda_database_integration.py (3 tests)
-
-**Coverage:** DB Models 100%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_database_integration.py`
-
-**Tests:**
-- `test_database_connection` - Conexión PostgreSQL
-- `test_user_event_relationship` - Relación User-Event
-- `test_multi_tenant_isolation` - Aislamiento multi-tenant
-
-**Ejemplo:**
-
-@pytest.mark.asyncio
-async def test_database_event_creation():
-"""Verifica creación real en PostgreSQL"""
-async with get_db_session() as session:
-user = User(telegram_id="test_123", tenant_id="default")
-session.add(user)
-await session.commit()
+#### test_create_reminder_time_based
+async def test_create_reminder_time_based():
+"""Test: Crear recordatorio basado en tiempo."""
+# Escenario: Usuario crea recordatorio para mañana
+# Resultado esperado: Recordatorio creado con fecha correcta
 
 text
-    event = Event(
-        user_id=user.id,
-        tenant_id="default",
-        title="Test Event",
-        event_date=date.today(),
-        event_time=time(15, 0)
-    )
-    session.add(event)
-    await session.commit()
-    
-    # Verificar guardado
-    result = await session.get(Event, event.id)
-    assert result.title == "Test Event"
+
+**Flujo:**
+1. Usuario: "Recuérdame comprar leche mañana a las 10am"
+2. THEA extrae: datetime="mañana 10:00"
+3. THEA confirma: "✅ Recordatorio creado"
+
+**Validaciones:**
+- ✅ Fecha extraída correctamente
+- ✅ Hora extraída correctamente
+- ✅ Recordatorio almacenado
+- ✅ Estado FSM = "reminder_created"
+
+#### test_create_reminder_weekday
+async def test_create_reminder_weekday():
+"""Test: Crear recordatorio para día de semana."""
+# Escenario: "Recuérdame llamar a María el lunes"
+
 text
 
-### test_agenda_event_repository.py (8 tests)
+**Validaciones:**
+- ✅ Día de semana reconocido ("lunes", "martes", etc.)
+- ✅ Fecha calculada correctamente (próximo lunes)
+- ✅ Recordatorio creado
 
-**Coverage:** EventRepository 27%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_event_repository.py`
+#### test_create_reminder_location
+async def test_create_reminder_location():
+"""Test: Crear recordatorio basado en ubicación."""
+# Escenario: "Recuérdame comprar pan cerca de la panadería"
 
-**Tests CRUD completos:**
-- `test_create_event` - Crear evento
-- `test_get_event_by_id` - Obtener por ID
-- `test_list_user_events` - Listar eventos usuario
-- `test_update_event` - Actualizar evento
-- `test_delete_event` - Eliminar evento
-- `test_find_by_date_range` - Buscar por rango fechas
-- `test_multi_tenant_isolation` - Aislamiento tenants
-- `test_pagination` - Paginación resultados
+text
 
-### test_agenda_router_integration.py (5 tests)
+**Validaciones:**
+- ✅ Ubicación extraída ("panadería")
+- ✅ Tipo de recordatorio = "location"
+- ✅ Radio configurado (500m default)
 
-**Coverage:** Router 33%  
-**Ubicación:** `src/theaia/tests/integration/test_agenda_router_integration.py`
+#### test_list_reminders
+async def test_list_reminders():
+"""Test: Listar recordatorios activos."""
+# Pre: 3 recordatorios creados
+# Acción: "¿Qué recordatorios tengo?"
 
-**Tests:**
-- `test_router_routes_to_agenda_agent` - Routing correcto
-- `test_intent_detection` - Detección intent "agenda"
-- `test_entity_extraction` - Extracción entidades ML
-- `test_router_fsm_integration` - Router + FSM
-- `test_multi_user_isolation` - Aislamiento usuarios
+text
 
-### test_agenda_integration_conversation.py (6 tests) ⭐ BONUS
+**Validaciones:**
+- ✅ Devuelve 3 recordatorios
+- ✅ Ordenados por fecha
+- ✅ Formato de respuesta correcto
 
-**Ubicación:** `src/theaia/tests/integration/test_agenda_integration_conversation.py`
+#### test_edit_reminder
+async def test_edit_reminder():
+"""Test: Editar recordatorio existente."""
+# Pre: Recordatorio "comprar leche" (mañana 10:00)
+# Acción: "Cambia la hora a las 15:00"
 
-**Tests conversacionales:**
-- Multi-turno completo
-- Extracción entidades en contexto
-- Persistencia conversación
+text
+
+**Validaciones:**
+- ✅ Recordatorio identificado correctamente
+- ✅ Hora actualizada
+- ✅ Otros campos preservados
+
+#### test_complete_reminder
+async def test_complete_reminder():
+"""Test: Marcar recordatorio como completado."""
+# Pre: Recordatorio activo
+# Acción: "Marca como completado 'comprar leche'"
+
+text
+
+**Validaciones:**
+- ✅ Estado cambiado a "completed"
+- ✅ Ya no aparece en lista activos
+- ✅ Fecha de completado registrada
+
+#### test_delete_reminder
+async def test_delete_reminder():
+"""Test: Eliminar recordatorio."""
+# Pre: Recordatorio existente
+# Acción: "Elimina el recordatorio de comprar leche"
+
+text
+
+**Validaciones:**
+- ✅ Recordatorio eliminado
+- ✅ Ya no aparece en lista
+- ✅ Confirmación al usuario
 
 ---
 
-## 🌐 Tests E2E (7 tests)
+### 3. E2E Extended Tests (5 tests)
 
-**Objetivo:** Validar flujos completos end-to-end con todos los componentes.
+**Archivo:** `src/theaia/agents/tests/test_reminder_agent_e2e.py`
 
-### test_agenda_agent_flow.py (1 test)
-
-**Ubicación:** `src/theaia/tests/integration/test_agenda_agent_flow.py`
-
-**Test:** Flujo multi-turno completo (título → fecha → hora → guardar)
-
-@pytest.mark.asyncio
-async def test_full_conversation_flow():
-"""Flujo E2E: user input → PostgreSQL"""
-handler = AgendaAgentHandler()
-context = {"tenant_id": "default"}
+#### test_recurring_reminder_daily
+async def test_recurring_reminder_daily():
+"""Test: Recordatorio recurrente diario."""
+# "Recuérdame tomar medicina todos los días a las 9am"
 
 text
-# Turno 1: Iniciar
-r1 = await handler.handle("user_e2e", "crear evento", context)
-assert "título" in r1["response"].lower()
 
-# Turno 2: Título
-r2 = await handler.handle("user_e2e", "Reunión equipo", r1["context"])
-assert "fecha" in r2["response"].lower()
+**Validaciones:**
+- ✅ Tipo = "recurring"
+- ✅ Frecuencia = "daily"
+- ✅ Primera ocurrencia calculada
+- ✅ Próximas repeticiones generadas
 
-# Turno 3: Fecha
-r3 = await handler.handle("user_e2e", "mañana", r2["context"])
-assert "hora" in r3["response"].lower()
+#### test_recurring_reminder_weekly
+async def test_recurring_reminder_weekly():
+"""Test: Recordatorio recurrente semanal."""
+# "Recuérdame hacer ejercicio todos los lunes"
 
-# Turno 4: Hora
-r4 = await handler.handle("user_e2e", "15:00", r3["context"])
-assert "guardado" in r4["response"].lower()
-
-# Verificar en DB
-async with get_db_session() as session:
-    events = await EventRepository(session).find_by_user("user_e2e")
-    assert len(events) > 0
-    assert events.title == "Reunión equipo"
 text
 
-### test_context_persistence_between_agents.py (1 test)
+**Validaciones:**
+- ✅ Frecuencia = "weekly"
+- ✅ Día de semana = "monday"
+- ✅ Repeticiones futuras
 
-**Ubicación:** `src/theaia/tests/integration/test_context_persistence_between_agents.py`
+#### test_complex_datetime_extraction
+async def test_complex_datetime_extraction():
+"""Test: Extracción de fechas complejas."""
+# "Recuérdame el próximo viernes 18 de abril a las 15:30"
 
-**Test:** Contexto persiste entre llamadas
+text
 
-### test_core_integration.py (3 tests)
+**Validaciones:**
+- ✅ Día de semana + fecha absoluta
+- ✅ Hora específica
+- ✅ Fecha calculada correctamente
 
-**Ubicación:** `src/theaia/tests/integration/test_core_integration.py`
+#### test_multi_user_isolation
+async def test_multi_user_isolation():
+"""Test: Aislamiento entre usuarios."""
+# User A: 3 recordatorios
+# User B: 2 recordatorios
+# Verificar que cada uno ve solo los suyos
 
-**Tests:**
-- Core FSM integration
-- State transitions
-- Callback execution
+text
+
+**Validaciones:**
+- ✅ User A ve solo 3 recordatorios
+- ✅ User B ve solo 2 recordatorios
+- ✅ No hay cross-contamination
+
+#### test_error_handling_invalid_datetime
+async def test_error_handling_invalid_datetime():
+"""Test: Manejo de fechas inválidas."""
+# "Recuérdame algo ayer" (fecha pasada)
+
+text
+
+**Validaciones:**
+- ✅ Error detectado
+- ✅ Mensaje de error claro
+- ✅ Estado FSM no se corrompe
 
 ---
 
-## 🧪 Ejecutar Tests
+## 🎯 Test Strategy
 
-### Por Nivel
+### Filosofía de Testing
 
-Unit Tests (51)
-pytest src/theaia/agents/agenda_agent/tests/ -v
+Test-First Approach
+✅ Tests escritos antes o durante implementación
+✅ Coverage mínimo 70% (actual: 73%)
 
-Integration Tests (20)
-pytest src/theaia/tests/integration/test_agenda_database_integration.py
-src/theaia/tests/integration/test_agenda_event_repository.py
-src/theaia/tests/integration/test_agenda_router_integration.py
-src/theaia/tests/integration/test_agenda_integration_conversation.py -v
+Realistic Scenarios
+✅ Casos de uso reales de usuarios
+✅ Datos representativos
+✅ Flujos completos end-to-end
 
-E2E Tests (7)
-pytest src/theaia/tests/integration/test_agenda_agent_flow.py
-src/theaia/tests/integration/test_context_persistence_between_agents.py
-src/theaia/tests/integration/test_core_integration.py -v
+Isolation & Independence
+✅ Tests independientes entre sí
+✅ Mock de dependencias externas
+✅ Multi-tenant validation
 
-text
-
-### Todos los Tests AgendaAgent (78)
-
-pytest src/theaia/agents/agenda_agent/tests/
-src/theaia/tests/integration/test_agenda*.py
-src/theaia/tests/integration/test_context_persistence_between_agents.py
-src/theaia/tests/integration/test_core_integration.py
--v --tb=short
+Fast Execution
+✅ Tests rápidos (<1s cada uno)
+✅ Suite completa <10s
+✅ Feedback inmediato
 
 text
 
-**Resultado esperado:** 78 passed ✅
+### Coverage Targets
 
-### Con Coverage
+Component Target Actual Status
+─────────────────────────────────────────────
+FSM 70% 54% 🟡 (functional)
+Handler 70% 85% ✅
+ConversationManager 70% 81% ✅
+Overall 70% 73% ✅
 
-pytest src/theaia/agents/agenda_agent/tests/
-src/theaia/tests/integration/test_agenda*.py
---cov=src/theaia/agents/agenda_agent
+text
+
+**Nota:** FSM coverage bajo (54%) es aceptable porque:
+- Estados complejos requieren integración real
+- Mock version limita testing completo
+- Coverage aumentará con PostgreSQL en H05
+
+---
+
+## 🚀 Running Tests
+
+### Comandos Básicos
+
+Todos los tests de ReminderAgent
+pytest src/theaia/agents/reminder_agent/tests/ -v
+
+Solo E2E
+pytest src/theaia/agents/tests/test_reminder_agent_e2e.py -v
+
+Con coverage
+pytest src/theaia/agents/reminder_agent/
+--cov=src/theaia/agents/reminder_agent
 --cov-report=term-missing
+--cov-report=html
+
+Tests específicos
+pytest src/theaia/agents/reminder_agent/tests/test_handler.py::test_reminder_agent_initialization -v
 
 text
 
-**Coverage esperado:**
-- agenda_fsm.py: 88%
-- handler.py: 60%
-- agent_states.py: 87%
+### Opciones Avanzadas
 
----
+Mostrar print statements
+pytest -v -s
 
-## 📊 Coverage Report (24-NOV-2025)
+Stop on first failure
+pytest -x
 
-| Componente | Statements | Miss | Cover |
-|------------|------------|------|-------|
-| **agenda_fsm.py** | 138 | 17 | **88%** ✅ |
-| **handler.py** | 206 | 82 | **60%** ✅ |
-| **agent_states.py** | 31 | 4 | **87%** ✅ |
-| **Total AgendaAgent** | 375 | ~103 | **~78%** ✅ |
+Verbose traceback
+pytest --tb=short
 
-**Target:** ≥70% ✅ SUPERADO
-
----
-
-## 🐛 Debugging Tips
-
-### Test falla en FSM
-
-import logging
-logging.basicConfig(level=logging.DEBUG)
-
-Ejecutar con logs
-pytest test_agenda_fsm.py::test_name -v -s
-
-text
-
-### Test falla en DB
-
-Verificar PostgreSQL corriendo
-docker ps | grep postgres
-
-Ver logs DB
-docker logs thea_postgres
-
-Verificar conexión
-psql -h localhost -U thea -d thea_db
-
-text
-
-### Test falla en async
-
-Siempre usar decorator
-@pytest.mark.asyncio
-async def test_async_operation():
-result = await some_async_function()
-assert result is not None
-
-text
-
-### Tests lentos
-
-Ejecutar en paralelo
+Parallel execution
 pytest -n auto
 
-Solo tests rápidos
-pytest -m "not slow"
+Con timing
+pytest --durations=10
 
 text
 
 ---
 
-## 🔄 CI/CD Integration
+## 📈 CI/CD Integration
 
-**GitHub Actions:** `.github/workflows/tests.yml`
+### GitHub Actions Workflow
 
-name: AgendaAgent Tests
+name: ReminderAgent Tests
+
 on: [push, pull_request]
+
 jobs:
 test:
 runs-on: ubuntu-latest
-services:
-postgres:
-image: postgres:13
-env:
-POSTGRES_PASSWORD: thea_password
 steps:
 - uses: actions/checkout@v2
-- name: Run Tests
-run: |
-pytest src/theaia/agents/agenda_agent/tests/ -v
-pytest src/theaia/tests/integration/test_agenda*.py -v
+- name: Set up Python
+uses: actions/setup-python@v2
+with:
+python-version: '3.11'
+- name: Install dependencies
+run: pip install -r requirements.txt
+- name: Run tests
+run: pytest src/theaia/agents/reminder_agent/tests/ -v --cov
+
+text
+
+### Pre-commit Hook
+
+.git/hooks/pre-commit
+#!/bin/bash
+pytest src/theaia/agents/reminder_agent/tests/ --cov --cov-fail-under=70
 
 text
 
 ---
 
-## ✨ Best Practices
+## 🐛 Debugging Failed Tests
 
-1. ✅ **AAA Pattern** - Arrange, Act, Assert
-2. ✅ **One concept per test** - Test falla → sabes exactamente qué
-3. ✅ **Descriptive names** - `test_fsm_transitions_to_awaiting_title_when_start_create_called`
-4. ✅ **Cleanup fixtures** - Usa `@pytest.fixture` con `yield`
-5. ✅ **Mock external only** - DB real, mocks solo para APIs externas
-6. ✅ **Deterministic** - Tests no dependen de orden
-7. ✅ **Fast feedback** - Unit tests < 100ms
+### Checklist de Debugging
 
----
+□ Verificar logs: tail -f logs/test_reminder_agent.log
+□ Revisar fixtures: pytest --fixtures
+□ Comprobar mocks: Verificar que mocks están activos
+□ Validar estado FSM: Imprimir estados intermedios
+□ Check user_id: Verificar aislamiento multi-tenant
+□ Revisar entity extraction: DateTimeExtractor funcionando
 
-## 📈 Progreso Histórico
+text
 
-| Fecha | Tests | Coverage FSM | Status |
-|-------|-------|--------------|--------|
-| 21-NOV | 39 | 91% | Initial ✅ |
-| 24-NOV | **78** | **88%** | **100% Complete** ✅ |
+### Comandos Útiles
 
-**Incremento:** +39 tests (+100%)
+Ver fixtures disponibles
+pytest --fixtures
 
----
+Run con pdb debugger
+pytest --pdb
 
-## 🎯 Próximos Pasos
+Capturar logs
+pytest --log-cli-level=DEBUG
 
-### Testing Roadmap
-- ⏳ Performance benchmarks (latency < 200ms)
-- ⏳ Load testing (100 usuarios concurrentes)
-- ⏳ Stress testing (1000 eventos/usuario)
-- ⏳ Security testing (SQL injection, XSS)
+Ver warnings
+pytest -W all
 
-### Coverage Goals
-- ⏳ Handler: 60% → 80%
-- ⏳ EventRepository: 27% → 70%
-- ⏳ Router Integration: 33% → 60%
+text
 
 ---
 
-## 👥 Autores
+## 📊 Test Metrics
 
-**Álvaro Fernández Mota** - CEO THEA IA  
-**Fecha:** 24 Noviembre 2025  
-**Filosofía:** TRES (Álvaro + Jarvis + THEA IA)  
+Metric Value
+────────────────────────────────
+Total Tests 15
+Passing Tests 15 (100%)
+Failing Tests 0
+Skipped Tests 0
+Execution Time ~8 seconds
+Average per test ~0.5s
+Code Coverage 73%
+Lines Tested 110/150
 
-**Status:** ✅ H03 BLOQUE 3.4A.1 COMPLETE  
-**Tests:** 78/78 PASSING (100%)
+text
+
+---
+
+## 🔄 Test Maintenance
+
+### Actualizar Tests
+
+Cuando añadas nueva funcionalidad:
+Añadir unit test en test_handler.py
+
+Añadir E2E test en test_reminder_agent_e2e.py
+
+Verificar coverage no baja
+
+Actualizar esta documentación
+
+text
+
+### Deprecation Warnings
+
+Si ves warnings de deprecación:
+pytest -W error # Convertir warnings en errors
+
+Fix warnings antes de merge
+text
+
+---
+
+## 📚 Referencias
+
+- [pytest Documentation](https://docs.pytest.org/)
+- [Coverage.py](https://coverage.readthedocs.io/)
+- [Testing Best Practices](https://docs.python-guide.org/writing/tests/)
+
+---
+
+**Última actualización:** 25 Noviembre 2025  
+**Mantenido por:** Álvaro Fernández Mota (CEO THEA-IA)  
+**Status:** ✅ 15/15 tests passing (100%)

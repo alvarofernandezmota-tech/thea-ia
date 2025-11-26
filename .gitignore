@@ -183,21 +183,20 @@ sospechosos.txt
 
 
 ##########################################
-# DOCUMENTACIÓN - PERMITIR SUBIDA        #
-##########################################
-# Permitir docs/ para roadmaps, checklists, specs
-# (NO se ignora docs/, se sube todo)
-# Si necesitas ignorar algo específico en docs/, añádelo aquí:
-# docs/temp/
-# docs/drafts/
-
-
-##########################################
 # ARCHIVOS MULTIMEDIA GRANDES            #
 ##########################################
 *.mp4
 *.mov
 *.avi
+
+
+##########################################
+# DOCUMENTACIÓN - PERMITIR SUBIDA        #
+##########################################
+# docs/ NO está ignorado, se sube todo
+# Si necesitas ignorar algo específico:
+# docs/temp/
+# docs/drafts/
 
 
 ##########################################

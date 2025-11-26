@@ -1,983 +1,805 @@
-📋 CHECKLIST MASTER H04-H05 — BLOQUE B FASE 2 (REVISADO)
-Proyecto: THEA-IA
-Última actualización: 25 Noviembre 2025, 16:55 CET
-Responsable: Álvaro Fernández Mota (CEO THEA-IA)
-Status: ⏳ PRÓXIMO - Inicio 26 NOV 2025
+✅ CHECKLIST DETALLADO H04-H05 — OPERACIONAL + DATABASE INTEGRADA
+Proyecto: THEA IA — Asistente Multi-Agente MVP
+Versión: v4.0 — CHECKLIST DETALLADO + DATABASE COMPLETO
+Período: 26 NOV – 5 DIC 2025
+Responsable: Álvaro Fernández Mota
+Status: 🟢 LISTO PARA EJECUTAR AHORA
 
-🎯 INFORMACIÓN GENERAL
+🎯 OBJETIVO H04-H05
 text
-╔════════════════════════════════════════════════════════════════╗
-║   BLOQUE B: AGENT INTELLIGENCE & DATABASE OPTIMIZATION        ║
-╠════════════════════════════════════════════════════════════════╣
-║ Hitos:              H04 + H05 (Consolidados)                  ║
-║ Fase:               2 / 4 (Multi-agente & Adapters)           ║
-║ Período:            26 NOV - 17 DIC 2025 (FLEXIBLE)           ║
-║ Duración ESTIMADA:  105 horas (orientativo, no rígido)        ║
-║ Tests Target:       80 tests                                  ║
-║ Coverage Target:    ≥85%                                      ║
-║ Status:             ⏳ 0% - Listo para iniciar                ║
-╚════════════════════════════════════════════════════════════════╝
-⚠️ CLARIFICACIONES IMPORTANTES
-1. Agentes a Implementar
-YA TENEMOS de H03 (8 agentes del sistema):
+INPUT (post-H03):
+├─ CoreRouter orquestador con FSM v2
+├─ ML Pipeline (Intent Detector 89%, Entity Extractor)
+└─ Database multi-tenant (PostgreSQL, 5 modelos base, 65+ tests)
 
+OUTPUT (post-H05):
+├─ 5 agentes CORE 100% operativos (handlers + FSM reales + repos)
+├─ Database avanzada (9 modelos, 4 repos nuevos, indices optimizados)
+├─ EventAgent proactivo (scheduler cada 60s)
+├─ Tests exhaustivos (50+, ≥80% coverage)
+└─ MVP READY para H06 (ML pipelines) + H07 (QA)
+📋 FASE 1 — AUDITORÍA INICIAL (2h - LUN 26 NOV TARDE)
+BLOQUE 1.1: Análisis Estado Agentes
+✅ TAREA 1.1.1 — Revisar AgendaAgent
 text
-✅ HelpAgent (sistema)
-✅ ResetAgent (sistema)
-✅ StartAgent (sistema)
-✅ EventAgent (básico)
-✅ NoteAgent (básico)
-✅ AgendaAgent (básico v1)
-✅ ConversationAgent (sistema)
-✅ DefaultAgent (fallback)
-NUEVOS en H04-H05 (4 agentes VERTICALES v2 - MEJORADOS):
+□ Leer handler.py (268 LOC)
+  └─ Ubicación: src/theaia/agents/agenda_agent/handler.py
+  └─ Qué buscar: estructura __init__, handle(), métodos create/update/delete
+  └─ Registrar: ¿tiene integración ML? ¿qué repos usa?
 
-text
-⏳ AgendaAgent v2 (mejora del AgendaAgent v1)
-   - Arquitectura híbrida 3 niveles
-   - NLP + LLM
-   - Detección conflictos avanzada
+□ Revisar FSM (¿hereda BaseStateMachine?)
+  └─ Ubicación: src/theaia/agents/agenda_agent/fsm.py
+  └─ Qué buscar: clase principal, estados definidos, transiciones
+  └─ Registrar: ¿heredanza correcta? ¿callbacks on_enter/on_exit?
 
-⏳ NotesAgent v2 (mejora del NoteAgent v1)
-   - Búsqueda inteligente
-   - Búsqueda semántica
-   - Auto-categorización
+□ Validar EventRepository connection
+  └─ ¿Llama EventRepository? ¿qué métodos?
+  └─ ¿Multi-tenant validation? (tenant_id field)
 
-⏳ EventsAgent (nuevo, más robusto que EventAgent básico)
-   - Gestión avanzada eventos
-   - Eventos recurrentes
-   - Optimización horarios LLM
+□ Revisar tests existentes
+  └─ Ubicación: tests/agents/agenda_agent/test_*.py
+  └─ ¿Cuántos tests? ¿Coverage? ¿PASSING?
 
-⏳ QueryAgent v2 (nuevo)
-   - Consultas multi-agente
-   - Búsqueda cross-domain
-   - Analytics básico
-TOTAL AL COMPLETAR H04-H05: 12 agentes (8 sistema + 4 verticales v2)
-
-2. Database Completa
-YA TENEMOS de H02:
+□ Documentar estado en matriz
+  └─ RESULTADO: Fila en tabla estado (ver abajo)
+  └─ MICRO-RECOMPENSA: +1 punto
+MATRIZ ESTADO AGENTES (ir completando):
 
 text
-✅ 5 Modelos base
-   - User
-   - Event
-   - Note
-   - Conversation
-   - MessageHistory
-
-✅ 5 Repositories async
-✅ Migraciones Alembic base
-✅ Multi-tenant architecture
-NUEVOS en H04-H05 (optimizaciones + posibles modelos):
-
+| Agente | Handler LOC | FSM LOC | BaseStateMachine? | Repo | ML | Tests | Action |
+|--------|-------------|---------|-------------------|------|----|----|--------|
+| AgendaAgent | 268 | ? | ? | YES | ? | ? | REFACTOR |
+| NoteAgent | 15 | ? | ? | NO | NO | NO | CREATE NEW |
+| ReminderAgent | 15 | 58 | ? | NO | NO | NO | MERGE→Event |
+| QueryAgent | 15 | 68 | ? | NO | NO | NO | REFACTOR |
+| ScheduleAgent | 15 | ? | ? | NO | NO | NO | DELETE |
+| HelpAgent | 16 | 90 | ? | NO | NO | NO | MERGE→Help |
+| EventAgent | 16 | 70 | ? | NO | NO | NO | REUSE+ENHANCE |
+| FallbackAgent | 16 | 36 | ? | NO | NO | NO | MERGE→Help |
+| MilestoneAgent | 16 | ? | NO | NO | NO | NO | DEFER→H08 |
+✅ TAREA 1.1.2 — Revisar NoteAgent
 text
-⏳ Modelos adicionales (SI NECESARIOS según agentes v2)
-   - Reminder (si AgendaAgent v2 lo requiere)
-   - Task (si EventsAgent lo requiere)
-   - Category (si NotesAgent v2 lo requiere)
+□ Leer handler.py (15 LOC stub)
+  └─ Verificar: ¿es stub real? ¿tiene lógica?
+  └─ Registrar en matriz
 
-⏳ Optimizaciones
-   - Full-text search (PostgreSQL tsvector)
-   - Índices compuestos
-   - Connection pooling optimizado
-   - Query analyzer
+□ Revisar FSM (¿real o placeholder?)
+  └─ Estados definidos? ¿transiciones?
+  └─ Registrar en matriz
 
-⏳ Backup/Restore
-   - JSON export completo
-   - JSON import con validación
-   - Disaster recovery
-3. Sin Timeline Rígido
-IMPORTANTE: Las horas son ESTIMADAS y ORIENTATIVAS, no compromisos estrictos.
+□ ¿Existe NoteRepository? (NO)
+  └─ Verificar: src/theaia/database/repositories/note_repository.py
+  └─ ACCIÓN: Crear en FASE 2
 
-✅ Usamos horas como guía de esfuerzo
+□ ¿Integración ML? (NO)
+  └─ Registrar en matriz
 
-✅ Nos adaptamos a ritmo real de trabajo
-
-✅ Priorizamos CALIDAD sobre VELOCIDAD
-
-✅ Sesiones flexibles según disponibilidad
-
-📊 RESUMEN EJECUTIVO
-Estado Global
-Métrica	Valor	Target	Status
-Progreso Total	0%	100%	⏳
-Fases completadas	0/4	4/4	⏳
-Tests PASSING	0	80	⏳
-Coverage	0%	≥85%	⏳
-Agentes v2 completos	0/4	4/4	⏳
-Optimizaciones DB	0/3	3/3	⏳
-🏗️ ESTRUCTURA DEL BLOQUE
+□ Documentar: REFACTOR FROM SCRATCH
+  └─ Registrar decisión
+  └─ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.1.3 — Revisar ReminderAgent
 text
-BLOQUE B (105h estimadas)
-│
-├─ FASE 1: Agentes Verticales v2 (45h est.)
-│  ├─ AgendaAgent v2 (mejora v1)
-│  ├─ NotesAgent v2 (mejora NoteAgent)
-│  ├─ EventsAgent (nuevo robusto)
-│  └─ QueryAgent v2 (nuevo)
-│
-├─ FASE 2: Database Optimization (25h est.)
-│  ├─ Análisis + modelos adicionales (si necesarios)
-│  ├─ Query optimization (full-text + índices)
-│  └─ JSON backup/restore
-│
-├─ FASE 3: ML/NLP Integration (20h est.)
-│  ├─ Intent Detector spaCy
-│  ├─ Entity Extractor advanced
-│  └─ LLM integration simple
-│
-└─ FASE 4: Testing & QA (15h est.)
-   ├─ E2E tests
-   ├─ Coverage ≥85%
-   └─ Performance benchmarks
-🎯 FASE 1: AGENTES VERTICALES V2 (45h est.)
-Objetivo: Mejorar agentes existentes + nuevos agentes especializados
-
-✅ TAREA 1.1: AgendaAgent v2 - MEJORA DE v1
-Relación con H03: Mejora del AgendaAgent básico existente
-
-¿Qué Mejoramos?
+□ Leer handler (15 LOC stub)
+  □ Revisar FSM (58 LOC, ¿real?)
+  □ ¿Existe ReminderRepository? (NO)
+  □ Documentar: MERGE → EventAgent
+  □ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.1.4 — Revisar QueryAgent
 text
-AgendaAgent v1 (H03) → AgendaAgent v2 (H04-H05)
-──────────────────────────────────────────────────
-Comandos básicos     → + Arquitectura híbrida 3 niveles
-FSM simple           → + NLP intent detection
-CRUD eventos         → + LLM para queries complejas
-Sin optimización     → + Detección conflictos inteligente
-                     → + Sugerencias automáticas horarios
-Subtareas
-#	Subtarea	Tests	Prioridad
-1.1.1	Estructura AgendaAgent v2 (extiende v1)	2	Alta
-1.1.2	NIVEL 1: Comandos simples (mantener v1)	3	Alta
-1.1.3	NIVEL 2: NLP queries (NUEVO)	5	Alta
-1.1.4	NIVEL 3: LLM fallback (NUEVO)	3	Media
-1.1.5	Database integration optimizada	2	Alta
-TOTAL		15	
-Criterios DONE 1.1
+□ Leer handler (15 LOC stub)
+  □ Revisar FSM (68 LOC incomplete)
+  □ Cross-domain search capability? (NO)
+  □ Cache strategy? (NO)
+  □ Documentar: REFACTOR + NEW REPOS
+  □ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.1.5 — Revisar HelpAgent + FallbackAgent
 text
-□ Estructura AgendaAgent v2 creada
-  ├─ src/theaia/agents/agenda_agent_v2/__init__.py
-  ├─ src/theaia/agents/agenda_agent_v2/handler.py
-  ├─ src/theaia/agents/agenda_agent_v2/manager.py
-  └─ Extiende funcionalidad de AgendaAgent v1
-
-□ NIVEL 1 implementado (mantiene v1)
-  ├─ /agenda_today funcional
-  ├─ /agenda_week funcional
-  ├─ /agenda_month funcional
-  └─ Respuesta <10ms
-
-□ NIVEL 2 implementado (NUEVO)
-  ├─ Intent detection: "Qué tengo mañana"
-  ├─ Entity extraction: fechas
-  ├─ Respuesta <100ms
-  └─ Integrado con spaCy básico
-
-□ NIVEL 3 implementado (NUEVO)
-  ├─ LLM fallback para queries complejas
-  ├─ Cache implementado
-  ├─ "Reorganiza mi agenda" funcional
-  └─ Respuesta <2s
-
-□ Database integration
-  ├─ Usa EventRepository existente
-  ├─ Queries optimizadas
-  └─ Multi-tenant verificado
-
-□ 15/15 tests PASSING
-□ Compatible con CoreRouter existente
-□ Documentation completa
-Archivos a Crear 1.1
+□ HelpAgent: 16 LOC handler, 90 LOC FSM
+□ FallbackAgent: 16 LOC handler, 36 LOC FSM
+□ Documentar: MERGE → Unified Help
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.1.6 — Revisar EventAgent
 text
-src/theaia/agents/agenda_agent_v2/
-├── __init__.py
-├── handler.py                     # Entry point
-├── manager.py                     # Orchestrator
-└── model/
-    └── fsm.py                     # FSM states
-
-tests/agents/agenda_agent_v2/
-├── __init__.py
-├── test_handler.py                # 5 tests
-├── test_manager.py                # 8 tests
-└── test_performance.py            # 2 tests
-Progreso 1.1
+□ 16 LOC handler, 70 LOC FSM
+□ Scheduler capability? (NO)
+□ TelegramAdapter integration? (NO)
+□ Documentar: REUSE + ENHANCE (proactive scheduler)
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.1.7-1.1.8 — Revisar ScheduleAgent + MilestoneAgent
 text
-□ Estructura base creada
-□ NIVEL 1 completo (comandos simples)
-□ NIVEL 2 completo (NLP queries)
-□ NIVEL 3 completo (LLM fallback)
-□ Database integration OK
-□ 15/15 tests PASSING
-□ Documentation completa
+□ ScheduleAgent: DELETE (funcionalidad en Agenda+Event)
+□ MilestoneAgent: DEFER → H08 (no MVP)
+□ MICRO-RECOMPENSA: +2 puntos
+BLOQUE 1.1 TOTAL MICRO-RECOMPENSA: ✅ +8 puntos
+CRITERIO DONE: Matriz completada, hallazgos documentados
+RESULTADO: AUDITORIA_AGENTES_26NOV.md
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 1.2: NotesAgent v2 - MEJORA DE NoteAgent
-Relación con H03: Mejora del NoteAgent básico existente
-
-¿Qué Mejoramos?
+BLOQUE 1.2: Decisiones Arquitectónicas
+✅ TAREA 1.2.1 — Definir plan refactorización
 text
-NoteAgent v1 (H03)   → NotesAgent v2 (H04-H05)
-──────────────────────────────────────────────────
-CRUD básico          → + Arquitectura híbrida 3 niveles
-Búsqueda simple      → + Búsqueda NLP inteligente
-Tags manuales        → + Búsqueda semántica LLM
-                     → + Auto-categorización
-                     → + Full-text search optimizado
-Subtareas
-#	Subtarea	Tests	Prioridad
-1.2.1	Estructura NotesAgent v2 (extiende v1)	2	Alta
-1.2.2	NIVEL 1: CRUD mejorado	3	Alta
-1.2.3	NIVEL 2: Búsqueda NLP (NUEVO)	5	Alta
-1.2.4	NIVEL 3: Búsqueda semántica LLM (NUEVO)	3	Media
-1.2.5	Auto-categorization (NUEVO)	2	Media
-TOTAL		15	
-Criterios DONE 1.2
+□ Crear documento: DECISIONES_H04H05.md
+
+□ Registrar para cada agente:
+  ├─ AgendaAgent: REFACTOR (validar FSM herencia, ML integration)
+  ├─ NoteAgent: CREATE NEW (handler + FSM + repo from scratch)
+  ├─ ReminderAgent: MERGE → EventAgent
+  ├─ QueryAgent: REFACTOR (cross-domain, cache)
+  ├─ HelpAgent+FallbackAgent: MERGE → Unified Help
+  ├─ EventAgent: REUSE + ENHANCE (scheduler proactivo)
+  ├─ ScheduleAgent: DELETE
+  └─ MilestoneAgent: DEFER
+
+□ MICRO-RECOMPENSA: +3 puntos
+✅ TAREA 1.2.2 — Definir nuevos repositorios
 text
-□ Estructura NotesAgent v2 creada
-  ├─ src/theaia/agents/notes_agent_v2/__init__.py
-  ├─ Extiende funcionalidad de NoteAgent v1
-  └─ Compatible con NoteRepository existente
+□ Registrar 4 nuevos repos:
+  ├─ NoteRepository (search_by_tags, full_text_search, get_recent, get_by_date_range)
+  ├─ ReminderRepository (get_pending, mark_sent, create_batch, cleanup_old)
+  ├─ QueryCacheRepository (cache management con TTL)
+  └─ UserPreferencesRepository (quiet_hours, reminder_advance, language, timezone)
 
-□ NIVEL 1: CRUD mejorado
-  ├─ create_note() (mantiene v1)
-  ├─ edit_note() (mantiene v1)
-  ├─ delete_note() (mantiene v1)
-  └─ + pin_note() (NUEVO)
-
-□ NIVEL 2: Búsqueda NLP (NUEVO)
-  ├─ Búsqueda por contenido (NLP)
-  ├─ Búsqueda por tags (mejorada)
-  ├─ Búsqueda por fecha
-  └─ Full-text search PostgreSQL
-
-□ NIVEL 3: Búsqueda semántica (NUEVO)
-  ├─ Embeddings con LLM
-  ├─ Similarity search
-  ├─ Cache resultados
-  └─ "Ideas sobre marketing" funcional
-
-□ Auto-categorization (NUEVO)
-  ├─ Sugerencia automática tags
-  ├─ ML model básico
-  └─ Confidence score
-
-□ 15/15 tests PASSING
-□ Compatible con CoreRouter
-□ Documentation completa
-Archivos a Crear 1.2
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 1.2.3 — Definir contratos agentes
 text
-src/theaia/agents/notes_agent_v2/
-├── __init__.py
-├── handler.py
-├── manager.py
-├── model/
-│   └── fsm.py
-└── search/
-    ├── nlp_search.py              # Búsqueda NLP
-    └── semantic_search.py         # Búsqueda semántica
+□ Registrar contrato (input/output) para cada agente:
+  ├─ AgendaAgent: create_event, update_event, list_events, delete_event
+  ├─ NoteAgent: create_note, list_notes, search_notes, delete_note
+  ├─ QueryAgent: search_cross_domain, get_daily_summary, get_weekly_summary
+  ├─ HelpAgent: show_help, show_commands, error_recovery, delegate_to_agent
+  └─ EventAgent: run_scheduler (proactive, respeta quiet hours)
 
-tests/agents/notes_agent_v2/
-├── __init__.py
-├── test_handler.py                # 5 tests
-├── test_manager.py                # 8 tests
-└── test_search.py                 # 2 tests
-Progreso 1.2
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 1.2.4 — Validar CoreRouter routes
 text
-□ Estructura base creada
-□ NIVEL 1 CRUD completo
-□ NIVEL 2 búsqueda NLP completo
-□ NIVEL 3 búsqueda semántica completo
-□ Auto-categorization completo
-□ 15/15 tests PASSING
-□ Documentation completa
+□ Revisar routing table actual:
+  ├─ Intent mappings (schedule/event → Agenda, save note → Notes, etc.)
+  ├─ Fallback route (unknown → Help agent)
+  └─ Cross-agent delegation (Query → Agenda/Notes if needed)
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 1.3: EventsAgent - NUEVO ROBUSTO
-Relación con H03: Reemplazo del EventAgent básico con versión robusta
+□ Registrar cambios necesarios
 
-¿Qué es Diferente?
+□ MICRO-RECOMPENSA: +1 punto
+BLOQUE 1.2 TOTAL MICRO-RECOMPENSA: ✅ +7 puntos
+CRITERIO DONE: Todas decisiones documentadas y consensuadas
+RESULTADO: DECISIONES_H04H05.md (firmado)
+
+FASE 1 TOTAL: 8 + 7 = ✅ 15 PUNTOS
+ESTADO: ⏳ AUDITORÍA COMPLETADA
+PRÓXIMO: FASE 2 (Repositorios + Database)
+
+📚 FASE 2 — REPOSITORIOS AVANZADOS + DATABASE (8h - MAR 27-28 NOV)
+BLOQUE 2.1: Database Setup + Modelo Reminder
+✅ TAREA 2.1.1 — Crear modelo Reminder
 text
-EventAgent v1 (H03)  → EventsAgent (H04-H05)
-──────────────────────────────────────────────────
-CRUD básico          → + Arquitectura híbrida 3 niveles
-Sin conflictos       → + Detección automática conflictos
-Sin recurrencia      → + Eventos recurrentes (DAILY/WEEKLY/MONTHLY)
-Sin optimización     → + Optimización horarios LLM
-                     → + Sugerencias inteligentes
-                     → + Gestión participantes
-Subtareas
-#	Subtarea	Tests	Prioridad
-1.3.1	Estructura EventsAgent (nuevo)	2	Alta
-1.3.2	NIVEL 1: CRUD completo	3	Alta
-1.3.3	NIVEL 2: Detección conflictos (NUEVO)	5	Alta
-1.3.4	NIVEL 3: Optimización LLM (NUEVO)	3	Media
-1.3.5	Eventos recurrentes (NUEVO)	2	Alta
-TOTAL		15	
-Criterios DONE 1.3
+□ Archivo: src/theaia/database/models/reminder.py
+
+□ Definir modelo SQLAlchemy:
+  ├─ class Reminder(Base):
+  ├─ Fields:
+  │  ├─ id (PK, UUID)
+  │  ├─ user_id (FK User, not null)
+  │  ├─ event_id (FK Event, nullable)
+  │  ├─ trigger_time (TIMESTAMPTZ, not null)
+  │  ├─ sent (BOOLEAN, default False)
+  │  ├─ created_at (TIMESTAMPTZ, default now())
+  │  ├─ updated_at (TIMESTAMPTZ)
+  │  └─ tenant_id (para multi-tenant)
+  └─ Constraints:
+     └─ FK: user_id → User(id)
+     └─ FK: event_id → Event(id) ON DELETE SET NULL
+     └─ Índices: user_id, trigger_time, sent, tenant_id
+
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 2.1.2 — Crear migración Alembic
 text
-□ Estructura EventsAgent creada
-  ├─ src/theaia/agents/events_agent/__init__.py
-  ├─ Reemplaza EventAgent v1 (más robusto)
-  └─ Compatible con EventRepository
+□ Generar migración:
+  └─ alembic revision --autogenerate -m "add reminder model"
 
-□ NIVEL 1: CRUD completo
-  ├─ create_event()
-  ├─ edit_event()
-  ├─ delete_event()
-  └─ add_participant() (NUEVO)
+□ Editar archivo de migración:
+  └─ Validar SQL (DDL) correcto
+  └─ Añadir índices manualmente si es necesario
 
-□ NIVEL 2: Detección conflictos (NUEVO)
-  ├─ detect_conflicts() automático
-  ├─ suggest_alternatives()
-  ├─ Validación al crear evento
-  └─ Notificación conflictos
+□ Ejecutar migración:
+  └─ alembic upgrade head
 
-□ NIVEL 3: Optimización LLM (NUEVO)
-  ├─ suggest_optimal_time()
-  ├─ Análisis patrones usuario
-  ├─ Recomendaciones personalizadas
-  └─ "Mejor horario para reunión" funcional
+□ Verificar tabla en BD:
+  └─ \dt reminders (en psql)
+  └─ Columnas correctas
+  └─ Índices creados
 
-□ Eventos recurrentes (NUEVO)
-  ├─ DAILY support
-  ├─ WEEKLY support
-  ├─ MONTHLY support
-  ├─ RRULE parsing básico
-  └─ Generación instancias automática
-
-□ 15/15 tests PASSING
-□ Compatible con CoreRouter
-□ Documentation completa
-Archivos a Crear 1.3
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 2.1.3 — Crear modelo QueryCache
 text
-src/theaia/agents/events_agent/
-├── __init__.py
-├── handler.py
-├── manager.py
-├── model/
-│   └── fsm.py
-├── conflicts/
-│   └── detector.py                # Detección conflictos
-└── recurrence/
-    └── handler.py                 # Eventos recurrentes
+□ Archivo: src/theaia/database/models/query_cache.py
 
-tests/agents/events_agent/
-├── __init__.py
-├── test_handler.py                # 5 tests
-├── test_conflicts.py              # 5 tests
-└── test_recurrence.py             # 5 tests
-Progreso 1.3
+□ Definir modelo:
+  ├─ class QueryCache(Base):
+  ├─ Fields:
+  │  ├─ id (PK)
+  │  ├─ user_id (FK User)
+  │  ├─ query_hash (VARCHAR 64, index)
+  │  ├─ result (JSONB)
+  │  ├─ ttl (INTEGER, segundos)
+  │  ├─ created_at (TIMESTAMPTZ)
+  │  ├─ expires_at (TIMESTAMPTZ, calculated from ttl + created_at)
+  │  └─ tenant_id
+  └─ Índices: user_id+query_hash, expires_at
+
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 2.1.4 — Crear modelo UserPreferences
 text
-□ Estructura base creada
-□ NIVEL 1 CRUD completo
-□ NIVEL 2 detección conflictos completo
-□ NIVEL 3 optimización LLM completo
-□ Eventos recurrentes completo
-□ 15/15 tests PASSING
-□ Documentation completa
+□ Archivo: src/theaia/database/models/user_preferences.py
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 1.4: QueryAgent v2 - NUEVO
-Relación con H03: Agente COMPLETAMENTE NUEVO (no existía en H03)
+□ Definir modelo:
+  ├─ class UserPreferences(Base):
+  ├─ Fields:
+  │  ├─ user_id (FK User, PK)
+  │  ├─ quiet_hours_start (TIME, default 23:00)
+  │  ├─ quiet_hours_end (TIME, default 07:00)
+  │  ├─ reminder_advance_min (INTEGER, default 15)
+  │  ├─ language (VARCHAR 10, default 'es')
+  │  ├─ timezone (VARCHAR 50, default 'UTC')
+  │  ├─ created_at (TIMESTAMPTZ)
+  │  ├─ updated_at (TIMESTAMPTZ)
+  │  └─ tenant_id
+  └─ Constraint: user_id unique
 
-¿Qué Hace?
+□ MICRO-RECOMPENSA: +1 punto
+✅ TAREA 2.1.5 — Migración para QueryCache + UserPreferences
 text
-NO EXISTÍA en H03    → QueryAgent v2 (H04-H05)
-──────────────────────────────────────────────────
-                     → Consultas multi-agente
-                     → Búsqueda cross-domain
-                     → FAQs sistema
-                     → Analytics básico
-                     → "Resume mi semana"
-                     → Routing inteligente a otros agentes
-Subtareas
-#	Subtarea	Tests	Prioridad
-1.4.1	Estructura QueryAgent (nuevo)	2	Alta
-1.4.2	NIVEL 1: FAQs predefinidas	3	Alta
-1.4.3	NIVEL 2: Búsqueda estructurada	5	Alta
-1.4.4	NIVEL 3: Conversación libre LLM	3	Media
-1.4.5	Multi-agent routing	2	Alta
-TOTAL		15	
-Criterios DONE 1.4
+□ alembic revision --autogenerate -m "add query_cache and user_preferences models"
+□ Validar SQL
+□ Ejecutar: alembic upgrade head
+□ Verificar tablas en BD
+
+□ MICRO-RECOMPENSA: +1 punto
+BLOQUE 2.1 TOTAL MICRO-RECOMPENSA: ✅ +5 puntos
+CRITERIO DONE: 3 modelos + migraciones creados, tablas en BD
+ESTADO: Database schema actualizado
+
+BLOQUE 2.2: NoteRepository
+✅ TAREA 2.2.1 — Crear NoteRepository clase
 text
-□ Estructura QueryAgent v2 creada
-  ├─ src/theaia/agents/query_agent_v2/__init__.py
-  ├─ Agente NUEVO (no existía en H03)
-  └─ Compatible con CoreRouter
+□ Archivo: src/theaia/database/repositories/note_repository.py
 
-□ NIVEL 1: FAQs implementado
-  ├─ Lista FAQs comunes
-  ├─ "¿Qué puedo hacer?"
-  ├─ "¿Cómo creo una nota?"
-  └─ Respuestas instantáneas
+□ Estructura:
+  ├─ from database.repositories.base_repository import BaseRepository
+  ├─ from database.models.note import Note
+  ├─ class NoteRepository(BaseRepository[Note]):
+  │
+  │  Métodos custom:
+  │  ├─ async def search_by_tags(user_id, tags: List[str]) → List[Note]
+  │  │   └─ Query: WHERE user_id=? AND tag = ANY(tags)
+  │  │   └─ Multi-tenant validation
+  │  │
+  │  ├─ async def full_text_search(user_id, query: str) → List[Note]
+  │  │   └─ Query: WHERE user_id=? AND content @@ to_tsquery(query)
+  │  │   └─ TSVECTOR índex en content
+  │  │
+  │  ├─ async def get_recent(user_id, limit=10) → List[Note]
+  │  │   └─ ORDER BY created_at DESC LIMIT limit
+  │  │
+  │  └─ async def get_by_date_range(user_id, start, end) → List[Note]
+  │      └─ WHERE created_at BETWEEN start AND end
 
-□ NIVEL 2: Búsqueda estructurada
-  ├─ Búsqueda en notas
-  ├─ Búsqueda en eventos
-  ├─ Búsqueda en conversaciones
-  ├─ Resultado unificado
-  └─ "Busca 'proyecto X'" funcional
+□ Validations en todos:
+  └─ tenant_id check (multi-tenant)
+  └─ user_id check (authorization)
 
-□ NIVEL 3: Conversación libre
-  ├─ LLM para queries complejas
-  ├─ "Resume mi semana" funcional
-  ├─ Analytics básico
-  └─ Respuestas contextuales
-
-□ Multi-agent routing
-  ├─ route_to_agents()
-  ├─ Determina agentes necesarios
-  ├─ Combina respuestas
-  └─ Delegación inteligente
-
-□ 15/15 tests PASSING
-□ Compatible con CoreRouter
-□ Documentation completa
-Archivos a Crear 1.4
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 2.2.2 — Tests NoteRepository
 text
-src/theaia/agents/query_agent_v2/
-├── __init__.py
-├── handler.py
-├── manager.py
-├── model/
-│   └── fsm.py
-└── routing/
-    └── agent_router.py            # Multi-agent routing
+□ Archivo: tests/database/test_note_repository.py
 
-tests/agents/query_agent_v2/
-├── __init__.py
-├── test_handler.py                # 5 tests
-├── test_routing.py                # 5 tests
-└── test_llm.py                    # 5 tests
-Progreso 1.4
+□ Test 1: create_note (básico)
+  └─ assert nota guardada en BD
+
+□ Test 2: search_by_tags (1 tag)
+  └─ Create nota con tags=['urgent'], search por 'urgent'
+  └─ assert encontrada
+
+□ Test 3: search_by_tags (multiple tags, no match)
+  └─ Create nota con tags=['urgent'], search por 'low_priority'
+  └─ assert lista vacía
+
+□ Test 4: full_text_search (match)
+  └─ Create nota con content="Python es genial"
+  └─ Search "Python", assert encontrada
+
+□ Test 5: full_text_search (no match)
+  └─ Search "Rust", assert vacío
+
+□ Test 6: get_recent (ordering)
+  └─ Create 5 notas
+  └─ get_recent(limit=3)
+  └─ assert orden DESC por created_at
+
+□ Test 7: get_by_date_range (inclusive)
+  └─ Create notas on varios días
+  └─ get_by_date_range(start, end)
+  └─ assert solo notas en rango
+
+□ Test 8: Multi-tenant isolation
+  └─ Create notas con different tenant_id
+  └─ assert no leak entre tenants
+
+□ Test 9: Performance (<100ms)
+  └─ Medir tiempo query
+  └─ assert query_time < 100ms
+
+□ Test 10: Edge case (null tags)
+  └─ search_by_tags(tags=None)
+  └─ assert sin error
+
+□ Run: pytest tests/database/test_note_repository.py -v --cov
+□ Target coverage: ≥85%
+
+□ MICRO-RECOMPENSA: +1 punto (all 10 PASSING)
+BLOQUE 2.2 TOTAL MICRO-RECOMPENSA: ✅ +3 puntos
+CRITERIO DONE: Todos 10 tests PASSING, coverage ≥85%
+
+BLOQUE 2.3: ReminderRepository
+✅ TAREA 2.3.1 — Crear ReminderRepository clase
 text
-□ Estructura base creada
-□ NIVEL 1 FAQs completo
-□ NIVEL 2 búsqueda estructurada completo
-□ NIVEL 3 conversación libre completo
-□ Multi-agent routing completo
-□ 15/15 tests PASSING
-□ Documentation completa
+□ Archivo: src/theaia/database/repositories/reminder_repository.py
 
-STATUS: ⏳ 0% → 100%
-📊 CHECKPOINT FASE 1
+□ Métodos custom:
+  ├─ async def get_pending(user_id, before_time) → List[Reminder]
+  │   └─ WHERE sent=False AND trigger_time <= before_time
+  │   └─ ORDER BY trigger_time ASC
+  │
+  ├─ async def mark_sent(reminder_id, sent_time) → None
+  │   └─ UPDATE reminders SET sent=True, updated_at=sent_time WHERE id=reminder_id
+  │
+  ├─ async def create_batch(reminders: List[dict]) → List[Reminder]
+  │   └─ INSERT multiple reminders
+  │   └─ RETURN list of created
+  │
+  └─ async def cleanup_old(older_than: datetime) → int
+      └─ DELETE FROM reminders WHERE created_at < older_than AND sent=True
+      └─ RETURN count deleted
+
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 2.3.2 — Tests ReminderRepository
 text
-╔════════════════════════════════════════════════════════════════╗
-║   CHECKPOINT FASE 1: Agentes Verticales v2                    ║
-╠════════════════════════════════════════════════════════════════╣
-║ □ AgendaAgent v2 (mejora v1) - 15 tests ✅                    ║
-║ □ NotesAgent v2 (mejora NoteAgent) - 15 tests ✅              ║
-║ □ EventsAgent (nuevo robusto) - 15 tests ✅                   ║
-║ □ QueryAgent v2 (nuevo) - 15 tests ✅                         ║
-║                                                                ║
-║ □ Tests FASE 1: 60/60 PASSING (100%)                          ║
-║ □ Coverage FASE 1: ≥80%                                       ║
-║ □ Todos con arquitectura híbrida (3 niveles)                  ║
-║ □ Compatibles con CoreRouter de H03                           ║
-║                                                                ║
-║ TOTAL AGENTES AL COMPLETAR:                                   ║
-║ - Sistema (H03): 8 agentes ✅                                 ║
-║ - Verticales v2 (H04-H05): 4 agentes ⏳                       ║
-║ = TOTAL: 12 agentes                                           ║
-║                                                                ║
-║ SI TODOS ✓ → CONTINUAR A FASE 2                               ║
-║ SI ALGUNO ✗ → REVISAR ANTES DE CONTINUAR                      ║
-╚════════════════════════════════════════════════════════════════╝
-🗄️ FASE 2: DATABASE OPTIMIZATION (25h est.)
-Objetivo: Optimizar database + añadir modelos SI NECESARIOS
+□ Test 1: create_reminder
+□ Test 2: get_pending (found)
+□ Test 3: get_pending (empty)
+□ Test 4: mark_sent (BD updated)
+□ Test 5: create_batch
+□ Test 6: cleanup_old
+□ Test 7: Multi-tenant
+□ Test 8: Performance (<100ms)
+□ Coverage: ≥85%
 
-✅ TAREA 2.1: Análisis + Modelos Adicionales
-Importante: SOLO implementar modelos SI los agentes v2 los requieren
+□ Run: pytest tests/database/test_reminder_repository.py -v --cov
+□ MICRO-RECOMPENSA: +1 punto (all 8 PASSING)
+BLOQUE 2.3 TOTAL MICRO-RECOMPENSA: ✅ +3 puntos
 
-Subtareas
-#	Subtarea	Tests	Prioridad
-2.1.1	Analizar requisitos agentes FASE 1	0	Alta
-2.1.2	Reminder model (SI NECESARIO)	4	Media
-2.1.3	Task model (SI NECESARIO)	4	Media
-2.1.4	Category model (SI NECESARIO)	0	Baja
-2.1.5	Migraciones Alembic	0	Alta
-TOTAL		8	
-Criterios DONE 2.1
+BLOQUE 2.4: QueryCacheRepository
+✅ TAREA 2.4.1 — Crear QueryCacheRepository clase
 text
-□ Análisis requisitos completado
-  ├─ AgendaAgent v2: ¿necesita Reminder separado?
-  ├─ NotesAgent v2: ¿necesita Category model?
-  ├─ EventsAgent: ¿necesita Task model?
-  ├─ QueryAgent v2: ¿necesita Analytics model?
-  └─ DECISIÓN DOCUMENTADA (sí/no + razón)
+□ Archivo: src/theaia/database/repositories/query_cache_repository.py
 
-□ Modelos implementados (SOLO SI NECESARIOS)
-  ├─ src/theaia/database/models/reminder.py (si aplica)
-  ├─ src/theaia/database/models/task.py (si aplica)
-  ├─ src/theaia/database/models/category.py (si aplica)
-  └─ Todos con multi-tenant enforcement
+□ Métodos:
+  ├─ async def get_cached(user_id, query_hash) → Optional[QueryCache]
+  │   └─ SELECT * WHERE user_id=? AND query_hash=? AND expires_at > now()
+  │   └─ If expired: return None (no delete yet)
+  │
+  ├─ async def set_cache(user_id, query, result, ttl) → QueryCache
+  │   └─ query_hash = sha256(query).hexdigest()
+  │   └─ expires_at = now() + ttl seconds
+  │   └─ INSERT OR REPLACE
+  │
+  └─ async def cleanup_expired() → int
+      └─ DELETE FROM query_cache WHERE expires_at <= now()
+      └─ RETURN count deleted
 
-□ Repositories correspondientes (si aplica)
-  ├─ ReminderRepository (si modelo creado)
-  ├─ TaskRepository (si modelo creado)
-  └─ CategoryRepository (si modelo creado)
-
-□ Migraciones Alembic
-  ├─ alembic/versions/XXX_add_new_models.py
-  ├─ Up/Down testeado
-  └─ Rollback verificado
-
-□ Tests (SI aplica - 8 máximo)
-  ├─ test_model_creation
-  ├─ test_relationships
-  ├─ test_multi_tenant_isolation
-  └─ test_crud_operations
-
-□ Documentation
-  ├─ DECISION.md (análisis + decisión)
-  └─ README actualizado (si modelos añadidos)
-Archivos a Crear 2.1
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 2.4.2 — Tests QueryCacheRepository
 text
-docs/decisions/
-└── H04-05_DATABASE_MODELS_DECISION.md  # Análisis + decisión
+□ Test 1: set_cache
+□ Test 2: get_cached (hit, not expired)
+□ Test 3: get_cached (expired, return None)
+□ Test 4: cleanup_expired
+□ Test 5: Multi-tenant
+□ Test 6: TTL calculation
+□ Coverage: ≥85%
 
-# SI SE CREAN MODELOS:
-src/theaia/database/models/
-├── reminder.py (condicional)
-├── task.py (condicional)
-└── category.py (condicional)
+□ MICRO-RECOMPENSA: +1 punto (all 6 PASSING)
+BLOQUE 2.4 TOTAL MICRO-RECOMPENSA: ✅ +3 puntos
 
-src/theaia/database/repositories/
-├── reminder_repository.py (condicional)
-├── task_repository.py (condicional)
-└── category_repository.py (condicional)
-
-alembic/versions/
-└── XXX_add_new_models.py (si aplica)
-
-tests/database/
-├── test_reminder_model.py (si aplica)
-└── test_task_model.py (si aplica)
-Progreso 2.1
+BLOQUE 2.5: UserPreferencesRepository
+✅ TAREA 2.5.1 — Crear UserPreferencesRepository clase
 text
-□ Análisis requisitos completado
-□ Decisión documentada
-□ Modelos creados (si necesarios)
-□ Repositories creados (si necesarios)
-□ Migraciones aplicadas
-□ Tests PASSING
-□ Documentation completa
+□ Archivo: src/theaia/database/repositories/user_preferences_repository.py
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 2.2: Query Optimization
-Objetivo: Optimizar queries que se identificaron como lentas
+□ Métodos:
+  ├─ async def get_or_create_default(user_id) → UserPreferences
+  │   └─ Si exists: SELECT * WHERE user_id=?
+  │   └─ Si not exists: INSERT defaults
+  │
+  ├─ async def update_quiet_hours(user_id, start: TIME, end: TIME) → None
+  │   └─ UPDATE quiet_hours_start=start, quiet_hours_end=end WHERE user_id=?
+  │
+  ├─ async def is_quiet_time(user_id, current_time) → bool
+  │   └─ SELECT quiet_hours_start, quiet_hours_end WHERE user_id=?
+  │   └─ Lógica: if start < end: (current < start or current > end)
+  │           else: (current < start and current > end)  # wraps midnight
+  │
+  └─ async def get_reminder_advance_min(user_id) → int
+      └─ SELECT reminder_advance_min WHERE user_id=?
 
-Subtareas
-#	Subtarea	Tests	Prioridad
-2.2.1	Full-text search PostgreSQL	2	Alta
-2.2.2	Índices compuestos	2	Alta
-2.2.3	Connection pooling tuning	2	Alta
-2.2.4	Query analysis tools	2	Media
-2.2.5	Subqueries optimization	2	Media
-TOTAL		10	
-Criterios DONE 2.2
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 2.5.2 — Tests UserPreferencesRepository
 text
-□ Full-text search PostgreSQL
-  ├─ tsvector column añadido a notes table
-  ├─ GIN index creado
-  ├─ Trigger automático actualización
-  ├─ NoteRepository.full_text_search() implementado
-  └─ Performance <50ms validado
+□ Test 1: get_or_create_default (new user)
+□ Test 2: get_or_create_default (existing)
+□ Test 3: update_quiet_hours
+□ Test 4: is_quiet_time (inside: 14:00 between 23:00-07:00) → False
+□ Test 5: is_quiet_time (outside: 02:00 between 23:00-07:00) → True
+□ Test 6: Timezone handling
+□ Test 7: Language preference
+□ Test 8: Multi-tenant
+□ Test 9: Edge case (22:59 vs 23:00)
+□ Test 10: get_reminder_advance_min
+□ Coverage: ≥85%
 
-□ Índices compuestos
-  ├─ idx_events_tenant_date_range creado
-  ├─ idx_notes_tenant_tags creado
-  ├─ idx_events_tenant_location creado (si aplica)
-  ├─ EXPLAIN ANALYZE ejecutado
-  └─ Improvement documentado
+□ MICRO-RECOMPENSA: +1 punto (all 10 PASSING)
+BLOQUE 2.5 TOTAL MICRO-RECOMPENSA: ✅ +3 puntos
 
-□ Connection pooling optimizado
-  ├─ pool_size = 20 (antes 5)
-  ├─ max_overflow = 40 (antes 10)
-  ├─ pool_recycle = 3600s
-  ├─ pool_pre_ping = True
-  └─ Performance bajo carga validado
+FASE 2 TOTAL: 5 + 3 + 3 + 3 + 3 = ✅ 17 PUNTOS
+CRITERIO DONE: 4 repos + 3 modelos + 34 tests (all PASSING), coverage ≥85%
+ESTADO: Database avanzada operativa
 
-□ Query analysis tools
-  ├─ QueryAnalyzer class creada
-  ├─ explain_query() method
-  ├─ log_slow_queries() configurado
-  └─ Threshold 100ms
-
-□ Subqueries optimization
-  ├─ N+1 problems identificados y eliminados
-  ├─ JOINs en vez de múltiples queries
-  ├─ Bulk operations implementadas
-  └─ get_events_with_conflicts() optimizado
-
-□ 10/10 tests PASSING
-□ Performance ANTES vs DESPUÉS documentado
-□ Improvement % calculado
-Archivos a Crear/Modificar 2.2
+🤖 FASE 3 — AGENTES CORE (20h - MAR 27 – JUE 29 NOV)
+BLOQUE 3.1: AgendaAgent (REFACTOR)
+✅ TAREA 3.1.1 — Refactor handler.py
 text
-alembic/versions/
-├── XXX_add_fulltext_search.py
-└── XXX_add_composite_indexes.py
+□ Archivo: src/theaia/agents/agenda_agent/handler.py
 
-src/theaia/database/
-├── session.py (modificar - pooling)
-└── optimization/
-    ├── __init__.py
-    ├── query_analyzer.py
-    └── performance_monitor.py
+□ Revisar estructura actual:
+  └─ ¿Tiene class AgendaAgentHandler o AgendaAgent?
+  └─ ¿Tiene method handle()?
 
-src/theaia/database/repositories/
-├── note_repository.py (añadir full_text_search)
-└── event_repository.py (optimizar queries)
+□ Mejorar:
+  ├─ Integrar Intent Detector ML
+  │   └─ detect_intent(message) → intent_name
+  │   └─ Intents: "create_event", "update_event", "list_events", "delete_event"
+  │
+  ├─ Integrar Entity Extractor ML
+  │   └─ extract_entities(message) → {dates, times, people, title}
+  │
+  ├─ Context passing a FSM
+  │   └─ context = {intent, entities, user_input, ...}
+  │
+  ├─ Métodos handlers:
+  │   ├─ async def create_event_handler(context) → response
+  │   ├─ async def update_event_handler(context) → response
+  │   ├─ async def list_events_handler(context) → response
+  │   └─ async def delete_event_handler(context) → response
+  │
+  └─ EventRepository calls:
+      └─ event_repo.create_event(user_id, data)
+      └─ event_repo.update_event(event_id, data)
+      └─ event_repo.get_events(user_id)
+      └─ event_repo.delete_event(event_id)
 
-tests/database/
-├── test_fulltext_search.py         # 2 tests
-├── test_indexes.py                 # 2 tests
-├── test_connection_pool.py         # 2 tests
-├── test_query_analyzer.py          # 2 tests
-└── test_optimization.py            # 2 tests
+□ Validations:
+  └─ date_in_future(date) → bool
+  └─ valid_time_format(time) → bool
+  └─ tenant_id present → True or raise
 
-docs/
-└── PERFORMANCE_IMPROVEMENTS.md     # ANTES vs DESPUÉS
-Progreso 2.2
+□ Logging:
+  └─ logger.info(f"Creating event for user {user_id}")
+  └─ logger.error(f"Error creating event: {error}")
+
+□ Target LOC: 250-300
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 3.1.2 — Refactor FSM.py
 text
-□ Full-text search implementado y validado
-□ Índices compuestos creados y verificados
-□ Connection pooling optimizado
-□ Query analysis tools creados
-□ Subqueries optimizadas
-□ 10/10 tests PASSING
-□ Performance documentado (ANTES vs DESPUÉS)
+□ Archivo: src/theaia/agents/agenda_agent/fsm.py
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 2.3: JSON Backup/Restore
-Objetivo: Sistema disaster recovery completo
+□ Verificar herencia:
+  └─ from agents.base_state_machine import BaseStateMachine
+  └─ class AgendaFSM(BaseStateMachine):
 
-Subtareas
-#	Subtarea	Tests	Prioridad
-2.3.1	JSONExporter class	3	Alta
-2.3.2	JSONImporter class	3	Alta
-2.3.3	CLI commands	1	Media
-TOTAL		7	
-Criterios DONE 2.3
+□ Estados:
+  ├─ IDLE (inicial)
+  ├─ ASKING_TITLE
+  ├─ ASKING_DATE
+  ├─ ASKING_TIME
+  ├─ ASKING_PARTICIPANTS
+  ├─ CONFIRMED
+  └─ ERROR
+
+□ Transiciones:
+  ├─ IDLE → ASKING_TITLE (on_enter: "Dime el título del evento")
+  ├─ ASKING_TITLE → ASKING_DATE (on_enter: "¿Qué día?")
+  ├─ ASKING_DATE → ASKING_TIME (on_enter: "¿A qué hora?")
+  ├─ ASKING_TIME → CONFIRMED (on_enter: "Evento creado!")
+  └─ Any → ERROR (on error)
+
+□ Callbacks:
+  ├─ on_enter_ASKING_TITLE(): generate prompt
+  ├─ on_exit_ASKING_TITLE(): validate input
+  └─ on_enter_CONFIRMED(): save to DB
+
+□ Draft storage:
+  └─ context['event_draft'] = {title, date, time, participants}
+
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 3.1.3 — Connect EventRepository + Tests
 text
-□ JSONExporter implementado
-  ├─ export_full(output_path)
-  ├─ export_incremental(since, output_path)
-  ├─ export_tenant(tenant_id, output_path)
-  ├─ Compresión gzip opcional
-  └─ Progress bar para exports grandes
+□ Handler llama repo:
+  └─ event_repo.create_event(user_id=?, data=?, tenant_id=?)
+  └─ Result: Event object o error
 
-□ JSONImporter implementado
-  ├─ import_full(backup_path)
-  ├─ import_tenant(backup_path, tenant_id)
-  ├─ validate_backup(backup_path) antes de importar
-  ├─ Rollback automático si error
-  └─ Verificación integridad post-import
+□ Multi-tenant validation:
+  └─ assert tenant_id present
+  └─ repo checks tenant_id ownership
 
-□ CLI commands
-  ├─ python -m theaia.backup export --full
-  ├─ python -m theaia.backup export --tenant=X
-  ├─ python -m theaia.backup import --file=backup.json.gz
-  ├─ python -m theaia.backup validate --file=backup.json.gz
-  └─ --help documentation completa
+□ Performance:
+  └─ assert <100ms create_event
 
-□ 7/7 tests PASSING
-  ├─ test_export_full()
-  ├─ test_export_incremental()
-  ├─ test_export_tenant()
-  ├─ test_import_full_restore()
-  ├─ test_import_validation()
-  ├─ test_tenant_isolation()
-  └─ test_disaster_recovery_complete()
+□ Tests (8 tests):
+  ├─ Test 1: FSM transition IDLE → ASKING_TITLE
+  ├─ Test 2: FSM transition ASKING_TITLE → ASKING_DATE
+  ├─ Test 3: FSM full chain (IDLE → CONFIRMED)
+  ├─ Test 4: Intent detection ML (detect "crear evento")
+  ├─ Test 5: Entity extraction (extract date "mañana" → tomorrow)
+  ├─ Test 6: create_event E2E (message → handler → DB)
+  ├─ Test 7: Error handling (invalid date "hace 5 días")
+  ├─ Test 8: Multi-tenant isolation
+  └─ Coverage: ≥85%
 
-□ Documentation
-  ├─ BACKUP_GUIDE.md creado
-  ├─ Recovery procedures paso a paso
-  └─ Best practices documentadas
-Archivos a Crear 2.3
+□ Run: pytest tests/agents/agenda_agent/test_*.py -v --cov
+□ MICRO-RECOMPENSA: +2 puntos (all 8 PASSING)
+BLOQUE 3.1 TOTAL MICRO-RECOMPENSA: ✅ +6 puntos
+CRITERIO DONE: Handler refactorizado, FSM real, 8 tests PASSING
+ESTADO: AgendaAgent operativo
+
+BLOQUE 3.2: NoteAgent (CREATE NEW)
+✅ TAREA 3.2.1 — Create handler.py from scratch
 text
-src/theaia/database/backup/
-├── __init__.py
-├── json_exporter.py
-├── json_importer.py
-└── cli.py
+□ Archivo: src/theaia/agents/note_agent/handler.py (NEW)
 
-docs/
-└── BACKUP_GUIDE.md
+□ Estructura:
+  ├─ class NoteAgentHandler:
+  ├─ __init__(note_repo, intent_detector, entity_extractor)
+  ├─ async def handle(user_id, message, context) → response
+  │
+  ├─ Intents: "create_note", "list_notes", "search_notes", "delete_note"
+  │
+  ├─ Methods:
+  │   ├─ async def create_note_handler(context) → response
+  │   │   └─ note_repo.create_note(user_id, text, tags)
+  │   │
+  │   ├─ async def list_notes_handler(context) → response
+  │   │   └─ note_repo.get_recent(user_id, limit=10)
+  │   │
+  │   ├─ async def search_handler(context) → response
+  │   │   └─ entities = extract_entities(message) → {keywords, tags}
+  │   │   └─ if tags: note_repo.search_by_tags(user_id, tags)
+  │   │   └─ else: note_repo.full_text_search(user_id, query)
+  │   │
+  │   └─ async def delete_handler(context) → response
+  │       └─ note_repo.delete_note(note_id)
+  │
+  └─ Target LOC: 200-250
 
-tests/database/backup/
-├── __init__.py
-├── test_exporter.py                # 3 tests
-├── test_importer.py                # 3 tests
-└── test_cli.py                     # 1 test
-Progreso 2.3
+□ ML Integration:
+  └─ detect_intent(message) → intent
+  └─ extract_entities(message) → {keywords, tags}
+
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 3.2.2 — Create FSM.py from scratch
 text
-□ JSONExporter completo
-□ JSONImporter completo
-□ CLI commands funcionales
-□ 7/7 tests PASSING
-□ BACKUP_GUIDE.md completo
-□ Disaster recovery validado
+□ Archivo: src/theaia/agents/note_agent/fsm.py (NEW)
 
-STATUS: ⏳ 0% → 100%
-📊 CHECKPOINT FASE 2
+□ Heredar BaseStateMachine
+
+□ Estados:
+  ├─ IDLE
+  ├─ ASKING_TEXT
+  ├─ ASKING_TAGS
+  ├─ CONFIRMING
+  ├─ COMPLETED
+  └─ ERROR
+
+□ Draft storage:
+  └─ context['note_draft'] = {text, tags}
+
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 3.2.3 — Tests NoteAgent
 text
-╔════════════════════════════════════════════════════════════════╗
-║   CHECKPOINT FASE 2: Database Optimization                     ║
-╠════════════════════════════════════════════════════════════════╣
-║ □ Análisis modelos + decisión documentada ✅                  ║
-║ □ Modelos adicionales (si necesarios) ✅                      ║
-║ □ Full-text search (<50ms) ✅                                 ║
-║ □ Índices compuestos validados ✅                             ║
-║ □ Connection pooling (20/40) ✅                               ║
-║ □ Query analyzer operativo ✅                                 ║
-║ □ Backup/restore completo ✅                                  ║
-║                                                                ║
-║ □ Tests FASE 2: 25/25 PASSING (100%)                          ║
-║ □ Coverage FASE 2: ≥85%                                       ║
-║                                                                ║
-║ MÉTRICAS VALIDADAS:                                            ║
-║ □ Full-text search: <50ms                                     ║
-║ □ Búsquedas con índices: <20ms                                ║
-║ □ Backup 10,000 registros: <30s                               ║
-║ □ Performance improvement: documentado                         ║
-║                                                                ║
-║ SI TODOS ✓ → CONTINUAR A FASE 3                               ║
-╚════════════════════════════════════════════════════════════════╝
-🤖 FASE 3: ML/NLP INTEGRATION (20h est.)
-Objetivo: Inteligencia básica para agentes
+□ 8 tests:
+  ├─ Test 1: FSM transitions
+  ├─ Test 2: Intent detection (create vs search)
+  ├─ Test 3: Entity extraction (tags)
+  ├─ Test 4: create_note E2E
+  ├─ Test 5: list_notes (pagination)
+  ├─ Test 6: search_notes (full-text)
+  ├─ Test 7: delete_note
+  ├─ Test 8: Error (empty text)
+  └─ Coverage: ≥85%
 
-✅ TAREA 3.1: Intent Detector spaCy
-Criterios DONE 3.1
+□ MICRO-RECOMPENSA: +2 puntos (all 8 PASSING)
+BLOQUE 3.2 TOTAL MICRO-RECOMPENSA: ✅ +6 puntos
+
+BLOQUE 3.3: EventAgent (MERGE ReminderAgent + ENHANCE)
+✅ TAREA 3.3.1-3.3.2 — Create EventAgent service
 text
-□ IntentDetectorProduction implementado
-□ Custom training con datos H03
-□ Confidence thresholds configurados
-□ Fallback automático a LLM
-□ 8/8 tests PASSING
-□ Accuracy ≥92% validada
-□ Latency <100ms validada
-Progreso 3.1
+□ Archivo: src/theaia/agents/event_agent/service.py (NEW)
+
+□ Clase:
+  ├─ class EventAgent:
+  ├─ __init__(reminder_repo, telegram_adapter, user_prefs_repo)
+  │
+  ├─ async def run_scheduler() → while True loop
+  │   ├─ while True:
+  │   │   ├─ await asyncio.sleep(60)  # 60 segundos
+  │   │   ├─ await self._check_and_send_reminders()
+  │   │   └─ except and log errors
+  │   │
+  │   └─ Este método corre en background (on_startup de main.py)
+  │
+  ├─ async def _fetch_pending_reminders(user_id, before_time) → List[Reminder]
+  │   └─ reminder_repo.get_pending(user_id, before_time)
+  │
+  ├─ async def _send_reminder(reminder, user_id) → bool
+  │   ├─ Check quiet hours: is_quiet_time(user_id)?
+  │   ├─ If quiet: skip, return False
+  │   ├─ Else: telegram_adapter.send_message(user_id, "🔔 {evento} en 15 min")
+  │   └─ Return True if sent
+  │
+  ├─ async def _mark_sent(reminder_id, sent_time) → None
+  │   └─ reminder_repo.mark_sent(reminder_id, sent_time)
+  │
+  └─ async def _is_quiet_time(user_id) → bool
+      └─ user_prefs = await user_prefs_repo.get_or_create_default(user_id)
+      └─ return user_prefs_repo.is_quiet_time(user_id, now())
+
+□ Target LOC: 250-300
+□ MICRO-RECOMPENSA: +2 puntos
+✅ TAREA 3.3.3 — Tests EventAgent
 text
-□ IntentDetector completo
-□ Training pipeline funcional
-□ Thresholds configurados
-□ 8/8 tests PASSING
-□ Accuracy ≥92%
-□ Performance validado
+□ 7 tests:
+  ├─ Test 1: run_scheduler loop logic (mock sleep)
+  ├─ Test 2: _fetch_pending_reminders (found)
+  ├─ Test 3: _fetch_pending_reminders (empty)
+  ├─ Test 4: _send_reminder (mock Telegram, verify message)
+  ├─ Test 5: _mark_sent (BD updated)
+  ├─ Test 6: _is_quiet_time (at 2am) → True
+  ├─ Test 7: _is_quiet_time (at 2pm) → False
+  └─ Coverage: ≥85%
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 3.2: Entity Extractor Advanced
-Criterios DONE 3.2
+□ MICRO-RECOMPENSA: +2 puntos (all 7 PASSING)
+BLOQUE 3.3 TOTAL MICRO-RECOMPENSA: ✅ +6 puntos
+
+BLOQUE 3.4: QueryAgent (REFACTOR)
+✅ TAREA 3.4.1-3.4.2 — Refactor + Tests
 text
-□ AdvancedEntityExtractor implementado
-□ DateTime extraction (fuzzy matching)
-□ Location extraction (ciudades ES)
-□ Person extraction (nombres)
-□ 7/7 tests PASSING
-□ Accuracy ≥90% validada
-□ Latency <50ms validada
-Progreso 3.2
+□ Handler:
+  ├─ Intents: search_notes, search_events, summary_today, summary_week
+  ├─ Cross-domain search logic
+  ├─ Cache strategy (QueryCacheRepository)
+  └─ Target LOC: 250-300
+
+□ FSM:
+  ├─ States: IDLE, ASKING_QUERY, EXECUTING, RETURNING_RESULTS, ERROR
+  ├─ Cache hit logic
+  └─ Pagination
+
+□ 8 tests:
+  ├─ Test 1: Search notes (full-text)
+  ├─ Test 2: Search events (date range)
+  ├─ Test 3: Cache hit
+  ├─ Test 4: Cache miss
+  ├─ Test 5: Cross-domain merge
+  ├─ Test 6: Summary today
+  ├─ Test 7: Summary week
+  ├─ Test 8: Error (no results)
+  └─ Coverage: ≥85%
+
+□ MICRO-RECOMPENSA: +4 puntos (refactor + tests)
+BLOQUE 3.4 TOTAL MICRO-RECOMPENSA: ✅ +4 puntos
+
+BLOQUE 3.5: HelpAgent (MERGE + UNIFIED)
+✅ TAREA 3.5.1-3.5.2 — Create unified Help + Tests
 text
-□ AdvancedEntityExtractor completo
-□ DateTime fuzzy matching OK
-□ Location extraction OK
-□ Person extraction OK
-□ 7/7 tests PASSING
-□ Accuracy ≥90%
-□ Performance validado
+□ Handler:
+  ├─ Merge HelpAgent + FallbackAgent
+  ├─ Purpose: Help + Fallback unified
+  ├─ Intents: help, commands, unknown_command
+  └─ Target LOC: 200-250
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 3.3: LLM Integration Simple
-Criterios DONE 3.3
+□ FSM:
+  ├─ States: IDLE, SHOWING_HELP, AWAITING_COMMAND, REDIRECTING, ERROR
+  └─ Fallback transitions
+
+□ 9 tests:
+  ├─ Test 1: Show help menu
+  ├─ Test 2: Show commands
+  ├─ Test 3: Fallback scenario
+  ├─ Test 4: Error recovery
+  ├─ Test 5: Command delegation
+  ├─ Test 6: Context preservation
+  ├─ Test 7: Language preference
+  ├─ Test 8: Edge case
+  ├─ Test 9: Multi-tenant
+  └─ Coverage: ≥85%
+
+□ MICRO-RECOMPENSA: +4 puntos (create + tests)
+BLOQUE 3.5 TOTAL MICRO-RECOMPENSA: ✅ +4 puntos
+
+FASE 3 TOTAL: 6 + 6 + 6 + 4 + 4 = ✅ 26 PUNTOS
+
+🔗 FASE 4 — INTEGRACIÓN (8h - VIE 30 NOV)
+BLOQUE 4.1: CoreRouter + Validación
 text
-□ LLMService implementado
-□ Cache layer (Redis)
-□ Fallback & error handling
-□ 5/5 tests PASSING
-□ Cache reduciendo costos 30-50%
-□ Rate limiting funcional
-Progreso 3.3
+□ Actualizar routing table
+□ Tests CoreRouter (6 tests, ≥80% coverage)
+□ MICRO-RECOMPENSA: +3 puntos
+BLOQUE 4.2: EventAgent on_startup
 text
-□ LLMService completo
-□ Cache layer funcional
-□ Fallback implementado
-□ 5/5 tests PASSING
-□ Cost reduction validado
-
-STATUS: ⏳ 0% → 100%
-📊 CHECKPOINT FASE 3
+□ Actualizar main.py (on_startup, on_shutdown)
+□ E2E test scheduler
+□ MICRO-RECOMPENSA: +2 puntos
+BLOQUE 4.3: Full-stack Validation
 text
-╔════════════════════════════════════════════════════════════════╗
-║   CHECKPOINT FASE 3: ML/NLP Integration                        ║
-╠════════════════════════════════════════════════════════════════╣
-║ □ Intent Detector (≥92% accuracy) ✅                          ║
-║ □ Entity Extractor (≥90% accuracy) ✅                         ║
-║ □ LLM integration (30-50% cost reduction) ✅                  ║
-║                                                                ║
-║ □ Tests FASE 3: 20/20 PASSING (100%)                          ║
-║ □ Coverage FASE 3: ≥85%                                       ║
-║                                                                ║
-║ MÉTRICAS VALIDADAS:                                            ║
-║ □ Intent detection: <100ms                                     ║
-║ □ Entity extraction: <50ms                                     ║
-║ □ LLM cached: <20ms                                            ║
-║ □ LLM uncached: <2s                                            ║
-║                                                                ║
-║ SI TODOS ✓ → CONTINUAR A FASE 4                               ║
-╚════════════════════════════════════════════════════════════════╝
-✅ FASE 4: TESTING & QA (15h est.)
-Objetivo: Coverage ≥85% y performance validado
+□ Checklist validación (12 items)
+□ MICRO-RECOMPENSA: +2 puntos
+FASE 4 TOTAL: ✅ +7 PUNTOS
 
-✅ TAREA 4.1: E2E Tests
-Criterios DONE 4.1
+📚 FASE 5 — DOCUMENTACIÓN & CIERRE (6h - VIE 30 NOV)
 text
-□ E2E AgendaAgent v2 (5 tests)
-□ E2E NotesAgent v2 (5 tests)
-□ E2E EventsAgent (5 tests)
-□ E2E QueryAgent v2 (5 tests)
-□ 20/20 tests PASSING
-□ Todos los flujos validados
-Progreso 4.1
+□ Documentación por agente (READMEs)
+□ ARCHITECTURE.md global
+□ Coverage report + CHANGELOG
+□ Clean commits (11 commits)
+□ Git push + tags
+□ HITO_H04H05_CIERRE.md
+
+FASE 5 TOTAL: ✅ +6 PUNTOS
+🎯 RESUMEN MICRO-RECOMPENSAS H04-H05
 text
-□ E2E AgendaAgent v2 completo
-□ E2E NotesAgent v2 completo
-□ E2E EventsAgent completo
-□ E2E QueryAgent v2 completo
-□ 20/20 tests PASSING
-
-STATUS: ⏳ 0% → 100%
-✅ TAREA 4.2: Coverage ≥85%
-Criterios DONE 4.2
+Fase 1: Auditoría                    = 15 puntos
+Fase 2: Repos + Database             = 17 puntos
+Fase 3: 5 Agentes CORE               = 26 puntos
+Fase 4: Integración                  = 7 puntos
+Fase 5: Documentación & Cierre        = 6 puntos
+─────────────────────────────────────
+TOTAL H04-H05:                        ✅ 71 PUNTOS 🎯
+✅ ESTADO MVP FINAL (post-H05)
 text
-□ Coverage analysis completado
-□ Gaps identificados y llenados
-□ Coverage ≥85% en TODOS los módulos:
-  ├─ agenda_agent_v2/ ≥85%
-  ├─ notes_agent_v2/ ≥85%
-  ├─ events_agent/ ≥85%
-  ├─ query_agent_v2/ ≥85%
-  ├─ database/ ≥85%
-  └─ ml/ ≥85%
-□ 10/10 tests adicionales PASSING
-□ Coverage report HTML generado
-Progreso 4.2
-text
-□ Coverage analysis OK
-□ Gaps llenados
-□ Coverage ≥85% alcanzado
-□ 10/10 tests adicionales PASSING
-□ Report generado
+✅ 5 AGENTES CORE OPERATIVOS:
+  ✓ AgendaAgent (refactorizado)
+  ✓ NoteAgent (nuevo)
+  ✓ QueryAgent (refactorizado)
+  ✓ HelpAgent (unified merged)
+  ✓ EventAgent (proactive scheduler)
 
-STATUS: ⏳ 0% → 100%
-✅ TAREA 4.3: Performance Benchmarks
-Criterios DONE 4.3
-text
-□ Benchmarks por nivel validados:
-  ├─ NIVEL 1: <10ms ✅
-  ├─ NIVEL 2: <100ms ✅
-  └─ NIVEL 3: <2s ✅
-□ Database queries: <50ms ✅
-□ Concurrent load (100 req): <5s ✅
-□ 5/5 tests PASSING
-□ Benchmark report generado
-Progreso 4.3
-text
-□ Benchmarks niveles validados
-□ DB performance validado
-□ Concurrent load validado
-□ 5/5 tests PASSING
-□ Report generado
+✅ DATABASE AVANZADA:
+  ✓ 9 modelos (5 base + 3 nuevos: Reminder, QueryCache, UserPreferences)
+  ✓ 4 repositorios nuevos (Note, Reminder, QueryCache, UserPreferences)
+  ✓ 34 tests database (all PASSING, ≥85% coverage)
+  ✓ Índices optimizados
+  ✓ Multi-tenant aislada
 
-STATUS: ⏳ 0% → 100%
-📊 CHECKPOINT FINAL BLOQUE B
-text
-╔════════════════════════════════════════════════════════════════╗
-║   ✨ CHECKPOINT FINAL: BLOQUE B COMPLETADO ✨                 ║
-╠════════════════════════════════════════════════════════════════╣
-║                                                                ║
-║ FASE 1: Agentes Verticales v2                                 ║
-║ □ AgendaAgent v2 (15 tests) ✅                                ║
-║ □ NotesAgent v2 (15 tests) ✅                                 ║
-║ □ EventsAgent (15 tests) ✅                                   ║
-║ □ QueryAgent v2 (15 tests) ✅                                 ║
-║                                                                ║
-║ FASE 2: Database Optimization                                 ║
-║ □ Modelos (si necesarios) + decisión ✅                       ║
-║ □ Query optimization (10 tests) ✅                            ║
-║ □ Backup/restore (7 tests) ✅                                 ║
-║                                                                ║
-║ FASE 3: ML/NLP Integration                                    ║
-║ □ Intent Detector (8 tests) ✅                                ║
-║ □ Entity Extractor (7 tests) ✅                               ║
-║ □ LLM integration (5 tests) ✅                                ║
-║                                                                ║
-║ FASE 4: Testing & QA                                          ║
-║ □ E2E tests (20 tests) ✅                                     ║
-║ □ Coverage ≥85% (10 tests) ✅                                 ║
-║ □ Performance benchmarks (5 tests) ✅                         ║
-║                                                                ║
-╠════════════════════════════════════════════════════════════════╣
-║                    TOTALES FINALES                             ║
-╠════════════════════════════════════════════════════════════════╣
-║ □ Tests PASSING: 80/80 (100%)                                 ║
-║ □ Coverage global: ≥85%                                       ║
-║ □ Performance validado                                         ║
-║ □ Documentation completa                                       ║
-║                                                                ║
-║ AGENTES TOTALES:                                               ║
-║ - Sistema (H03): 8 agentes ✅                                 ║
-║ - Verticales v2 (H04-H05): 4 agentes ✅                       ║
-║ = TOTAL: 12 agentes funcionales                               ║
-║                                                                ║
-║ SI TODOS ✓ → BLOQUE B COMPLETADO ✅                           ║
-║ PRÓXIMO: BLOQUE C (H06+H07) - Cuando iniciemos               ║
-╚════════════════════════════════════════════════════════════════╝
-🎊 ENTREGABLES FINALES
-text
-✅ 4 Agentes Verticales v2 (nuevos/mejorados)
-   ├─ AgendaAgent v2 (mejora v1)
-   ├─ NotesAgent v2 (mejora NoteAgent)
-   ├─ EventsAgent (nuevo robusto)
-   └─ QueryAgent v2 (nuevo)
+✅ CALIDAD:
+  ✓ 50+ tests NEW (TODOS PASSING)
+  ✓ Coverage ≥80% por módulo
+  ✓ Performance <100ms
+  ✓ Error handling graceful
 
-✅ Database Optimizada
-   ├─ Modelos adicionales (si necesarios)
-   ├─ Full-text search PostgreSQL
-   ├─ Índices compuestos
-   ├─ Connection pooling optimizado
-   └─ Backup/restore completo
+✅ INTEGRACIÓN COMPLETA:
+  ✓ CoreRouter + 5 agentes orquestados
+  ✓ EventAgent scheduler en background (on_startup)
+  ✓ Database ↔ Agentes ↔ Telegram
+  ✓ E2E full-cycle operativo
 
-✅ ML/NLP Básico
-   ├─ Intent Detector (≥92%)
-   ├─ Entity Extractor (≥90%)
-   └─ LLM integration + cache
-
-✅ Testing Completo
-   ├─ 80 tests PASSING
-   ├─ Coverage ≥85%
-   ├─ E2E validado
-   └─ Performance benchmarked
-
-✅ Documentation
-   ├─ README por agente
-   ├─ DECISION.md (modelos DB)
-   ├─ BACKUP_GUIDE.md
-   └─ PERFORMANCE_IMPROVEMENTS.md
-NOTAS FINALES:
-
-✅ Agentes completos: 12 total (8 sistema H03 + 4 verticales v2 H04-H05)
-
-✅ Database completa: Base H02 + optimizaciones H04-H05
-
-✅ Sin timeline rígido: Horas son orientativas, trabajamos a ritmo flexible
-
-✅ Checklist flexible: Marcamos según completemos, sin presión horaria
-
-✅ Calidad > Velocidad: Priorizamos hacer bien vs. hacer rápido
-
-Última actualización: 25 Noviembre 2025, 16:55 CET
-Versión: v2.0.0 REVISADO (sin timeline rígido)
-Status: ✅ READY TO START - Cuando estés listo
+🚀 READY FOR H06 + H07
+Versión: v4.0 — CHECKLIST DETALLADO + DATABASE INTEGRADA
+Fecha: 26 Noviembre 2025
+Status: 🟢 LISTO PARA EJECUTAR AHORA
