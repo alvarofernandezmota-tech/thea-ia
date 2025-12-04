@@ -2,20 +2,27 @@
 Event Tools - Herramientas para AgendaAgent
 Tools que el agente usa para interactuar con eventos
 
-UPGRADE v1.0 → v1.1 (04 DIC 2025):
+
+UPGRADE v1.0 → v1.3 (04 DIC 2025):
 - ✅ user_id y tenant_id ahora son opcionales en __init__
 - ✅ Se pueden configurar después vía set_context()
 - ✅ Backward compatible con uso directo
+- ✅ FIX: Acepta TANTO string COMO datetime en create_event
+- ✅ FIX: Manejo de ValueError para fechas inválidas
+- ✅ FIX: Validación robusta de tipos
+
 
 Autor: Álvaro Fernández Mota
 Fecha: 04 Dic 2025 (H03 PHASE 1 - Updated H04)
 Hito: H03 - AgendaAgent Tools
 """
 
+
 from typing import Optional, List, Dict, Any
 from datetime import datetime, timezone, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 import logging
+
 
 from src.theaia.agents.agenda_agent.services.event_service import EventService
 from src.theaia.agents.agenda_agent.schemas.event_schema import (
@@ -24,16 +31,19 @@ from src.theaia.agents.agenda_agent.schemas.event_schema import (
     EventResponse
 )
 
+
 # Logger
 logger = logging.getLogger(__name__)
+
 
 
 class EventTools:
     """
     Herramientas para que AgendaAgent gestione eventos.
     
-    v1.1: user_id y tenant_id son opcionales en __init__.
+    v1.3: user_id y tenant_id son opcionales en __init__.
     Se pueden configurar después con set_context().
+    Acepta datetime objects Y strings ISO 8601.
     
     Cada método es una herramienta (tool) que el agente puede invocar.
     Los métodos reciben parámetros en formato dict (como los manda el LLM)
@@ -61,7 +71,7 @@ class EventTools:
         """
         Inicializa EventTools.
         
-        v1.1: user_id y tenant_id ahora son opcionales.
+        v1.3: user_id y tenant_id ahora son opcionales.
         Si no se proveen en __init__, deben configurarse con set_context()
         antes de usar las herramientas.
         
@@ -123,9 +133,9 @@ class EventTools:
         Args:
             params: Diccionario con datos del evento
                 - title (str): Título del evento
-                - start_datetime (str): Fecha/hora inicio (ISO 8601)
+                - start_datetime (str|datetime): Fecha/hora inicio (ISO 8601 o datetime)
                 - description (str, opcional): Descripción
-                - end_datetime (str, opcional): Fecha/hora fin
+                - end_datetime (str|datetime, opcional): Fecha/hora fin
                 - location (str, opcional): Ubicación
                 - participants (list[str], opcional): Lista de participantes
                 - event_type (str, opcional): Tipo de evento
@@ -145,17 +155,45 @@ class EventTools:
             self._ensure_context()  # Validar contexto
             logger.info(f"Creating event with params: {params}")
             
-            # Convertir start_datetime string a datetime
-            start_dt = datetime.fromisoformat(
-                params['start_datetime'].replace('Z', '+00:00')
-            )
+            # ✅ VALIDACIÓN: Verificar que start_datetime existe
+            if 'start_datetime' not in params:
+                return "❌ Error: falta el campo 'start_datetime'"
             
-            # Convertir end_datetime si existe
+            # ✅ CONVERTIR start_datetime (acepta string O datetime)
+            start_dt = params['start_datetime']
+            if isinstance(start_dt, str):
+                try:
+                    start_dt = datetime.fromisoformat(
+                        start_dt.replace('Z', '+00:00')
+                    )
+                except (ValueError, AttributeError) as e:
+                    return f"❌ Error: formato de fecha inválido en 'start_datetime': {str(e)}"
+            elif isinstance(start_dt, datetime):
+                # Ya es datetime, usar directamente
+                pass
+            else:
+                return f"❌ Error: 'start_datetime' debe ser string o datetime, recibido: {type(start_dt).__name__}"
+            
+            # ✅ CONVERTIR end_datetime si existe (acepta string O datetime)
             end_dt = None
             if 'end_datetime' in params and params['end_datetime']:
-                end_dt = datetime.fromisoformat(
-                    params['end_datetime'].replace('Z', '+00:00')
-                )
+                end_dt_raw = params['end_datetime']
+                
+                if isinstance(end_dt_raw, str):
+                    try:
+                        end_dt = datetime.fromisoformat(
+                            end_dt_raw.replace('Z', '+00:00')
+                        )
+                    except (ValueError, AttributeError) as e:
+                        return f"❌ Error: formato de fecha inválido en 'end_datetime': {str(e)}"
+                elif isinstance(end_dt_raw, datetime):
+                    end_dt = end_dt_raw
+                else:
+                    return f"❌ Error: 'end_datetime' debe ser string o datetime, recibido: {type(end_dt_raw).__name__}"
+            
+            # ✅ VALIDACIÓN: Verificar que title existe
+            if 'title' not in params or not params['title']:
+                return "❌ Error: falta el campo 'title'"
             
             # Crear EventCreate schema
             event_data = EventCreate(
@@ -189,6 +227,9 @@ class EventTools:
         except RuntimeError as re:
             logger.error(f"Context error: {re}")
             return f"❌ Error de contexto: {str(re)}"
+        except ValueError as ve:
+            logger.error(f"Value error creating event: {ve}")
+            return f"❌ Error de formato en los datos: {str(ve)}"
         except Exception as e:
             logger.error(f"Error creating event: {e}", exc_info=True)
             return f"❌ Error al crear evento: {str(e)}"
@@ -261,16 +302,36 @@ class EventTools:
             event_id = params.pop('event_id')
             logger.info(f"Updating event: id={event_id}, params={params}")
             
-            # Convertir datetimes si existen
-            if 'start_datetime' in params:
-                params['start_datetime'] = datetime.fromisoformat(
-                    params['start_datetime'].replace('Z', '+00:00')
-                )
+            # Convertir datetimes si existen (acepta string O datetime)
+            if 'start_datetime' in params and params['start_datetime']:
+                start_raw = params['start_datetime']
+                if isinstance(start_raw, str):
+                    try:
+                        params['start_datetime'] = datetime.fromisoformat(
+                            start_raw.replace('Z', '+00:00')
+                        )
+                    except (ValueError, AttributeError) as e:
+                        return f"❌ Error: formato de fecha inválido en 'start_datetime': {str(e)}"
+                elif isinstance(start_raw, datetime):
+                    # Ya es datetime
+                    pass
+                else:
+                    return f"❌ Error: 'start_datetime' debe ser string o datetime"
             
-            if 'end_datetime' in params:
-                params['end_datetime'] = datetime.fromisoformat(
-                    params['end_datetime'].replace('Z', '+00:00')
-                )
+            if 'end_datetime' in params and params['end_datetime']:
+                end_raw = params['end_datetime']
+                if isinstance(end_raw, str):
+                    try:
+                        params['end_datetime'] = datetime.fromisoformat(
+                            end_raw.replace('Z', '+00:00')
+                        )
+                    except (ValueError, AttributeError) as e:
+                        return f"❌ Error: formato de fecha inválido en 'end_datetime': {str(e)}"
+                elif isinstance(end_raw, datetime):
+                    # Ya es datetime
+                    pass
+                else:
+                    return f"❌ Error: 'end_datetime' debe ser string o datetime"
             
             # Crear EventUpdate schema
             update_data = EventUpdate(**params)

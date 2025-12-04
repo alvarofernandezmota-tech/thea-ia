@@ -1,384 +1,287 @@
----
+# ✅ CHECKLIST H04 PHASE 2 - Tests E2E AgendaAgent v3.3
 
-## 🎉 FASE 1 - AUDITORÍA COMPLETA ✅✅✅ (03 Dic 2025)
-
-### ✅ BLOQUE 1.1 — Auditoría Sistema Agentes (8/8 tareas) ✅
-
-**Duración:** 11:00-13:00 (2h)
-
-- [x] **TAREA 1.1.1** — AgendaAgent → 🔴 REFACTOR
-  - 392 LOC handler, 85 LOC FSM
-  - Coverage: 8% handler / 39% FSM
-  - 92% código muerto (360/392 líneas sin ejecutar)
-  - ✅ 78/78 tests PASSING
-  - ❌ NO persiste en BD (EventRepository no usado)
-  - ⚠️ ML parcial (Entity extractors, NO Intent detector)
-  - **Decisión:** REFACTOR COMPLETO (H06)
-
-- [x] **TAREA 1.1.2** — NoteAgent → 🔴 CREATE NEW
-  - 392 LOC handler, 85 LOC FSM
-  - Coverage: 8% handler / 39% FSM
-  - 92% código muerto
-  - ✅ 47/47 tests PASSING
-  - ✅ NoteRepository CONECTADO (mejor que Agenda)
-  - ✅ CRUD completo
-  - **Decisión:** CREATE NEW (reescribir desde cero) (H07)
-
-- [x] **TAREA 1.1.3** — ReminderAgent → 🔴 REFACTOR
-  - 40 LOC handler stub, 82 LOC FSM
-  - Coverage: 54% handler / 39% FSM
-  - ⚠️ Handler STUB (delega a ConversationManager)
-  - ✅ 17 estados FSM definidos
-  - ⚠️ Solo flujo CREATE implementado (60% falta)
-  - ❌ NO persiste en BD
-  - ✅ 15/15 tests PASSING
-  - **Decisión:** REFACTOR COMPLETO (H08)
-
-- [x] **TAREA 1.1.4** — QueryAgent → 🔴 REFACTOR COMPLETO
-  - 12 LOC handler stub, 26 LOC FSM placeholder
-  - Coverage: 50% handler / 0% FSM ❌
-  - ❌ FSM 0% coverage = NUNCA SE EJECUTA
-  - ❌ `_process_query()` retorna PLACEHOLDER
-  - ❌ NO implementa cross-domain search
-  - ✅ 19/19 tests PASSING (mocks)
-  - **Decisión:** REFACTOR COMPLETO (casi CREATE NEW) (H09)
-
-- [x] **TAREA 1.1.5** — HelpAgent + FallbackAgent → 🔵 MERGE
-  - HelpAgent: 12 LOC handler, 41 LOC FSM
-  - FallbackAgent: 16 LOC handler, 36 LOC FSM
-  - Coverage: 50% handler / 0% FSM ambos ❌
-  - ⚠️ Help topics hardcoded (no dinámicos)
-  - ❌ Fallback NO sugiere correcciones
-  - ✅ 18/18 tests PASSING
-  - **Decisión:** MERGE → HelpFallbackAgent (H10)
-
-- [x] **TAREA 1.1.6** — EventAgent_NEW → 🔴 DELETE + MERGE
-  - 52 LOC handler, 332 LOC conversation manager, 210 LOC FSM
-  - Coverage: 0% TODO ❌ (nunca se ejecuta)
-  - 🔴 OVERLAP 100% con AgendaAgent
-  - ⚠️ EventFSM nunca se usa
-  - ✅ ML Integration (DateTime + Location extractors)
-  - ❌ NO persiste eventos
-  - **Decisión:** DELETE + MERGE → AgendaAgent
-
-- [x] **TAREA 1.1.7** — ScheduleAgent → 🟢 ARCHIVADO
-  - Ubicación: `.archive/schedule_agent/`
-  - 29 LOC conversation manager, 140 LOC FSM
-  - 🔴 OVERLAP 100% con AgendaAgent
-  - ❌ TODAS las funciones retornan PLACEHOLDERS fake
-  - ⚠️ README dice "✅ Producción" pero código es placeholder
-  - **Decisión:** MANTENER ARCHIVADO (correcto)
-
-- [x] **TAREA 1.1.8** — MilestoneAgent → 🟡 POST-MVP
-  - ❌ NO EXISTE
-  - MilestoneAgent = Gestión HITOS a largo plazo
-  - NO entra en MVP (funcionalidad avanzada)
-  - **Decisión:** POST-MVP (NO implementar ahora)
-
-**Resultado:**
-- ✅ Documento auditoría: `docs/audit/AGENTS_AUDIT_2025-12-03.md` (20 páginas)
-- ✅ 8 agentes analizados (~2,500 LOC)
-- ✅ 5 agentes MVP definidos (Agenda, Note, Reminder, Query, HelpFallback)
-- ✅ 2 agentes eliminados (EventAgent_NEW, ScheduleAgent archivado)
-- ✅ 1 agente POST-MVP (MilestoneAgent)
-- ✅ Roadmap FASE 2+3 documentado
-
-**Puntos ganados:** 8 puntos ✅
+**Fecha:** 04 Diciembre 2025  
+**Autor:** Álvaro Fernández Mota  
+**Hito:** Tests End-to-End para AgendaAgent con PostgreSQL Real  
+**Estado:** ✅ COMPLETADO
 
 ---
 
-### ✅ BLOQUE 1.2 — Auditoría ML Components (3/3 tareas) ✅
+## 🎯 OBJETIVOS DE LA SESIÓN
 
-**Duración:** 13:00-13:15 (15 min)
-
-- [x] **TAREA 1.2.1** — EntityExtractor → 🟢 MANTENER
-  - 150 LOC
-  - ✅ spaCy `es_core_news_sm` (NER español)
-  - ✅ Custom regex patterns (fallback)
-  - ✅ Hybrid approach (ML + rules)
-  - ✅ 4 tipos entidades: DATE, TIME, PERSON, LOCATION
-  - ⚠️ Silent fallback si spaCy no instalado
-  - ❓ No tests unitarios
-  - **Decisión:** MANTENER Y MEJORAR (añadir logging + tests)
-
-- [x] **TAREA 1.2.2** — IntentDetector → 🟢 MANTENER + 🔴 DELETE Legacy
-  - **IntentDetector (nuevo):** 250 LOC
-    - ✅ TF-IDF + Logistic Regression
-    - ✅ 320 training examples (40 por intent)
-    - ✅ 8 intents
-    - ⚠️ Threshold 0.3 bajo (debería ser 0.5)
-    - **Decisión:** MANTENER Y MEJORAR
-  - **IntentDetector (legacy):** 80 LOC
-    - ⚠️ LinearSVC + keywords hardcoded
-    - ⚠️ Solo 8 training examples (insuficiente)
-    - 🔴 Duplicado obsoleto
-    - **Decisión:** DELETE COMPLETO
-
-- [x] **TAREA 1.2.3** — NLPPipeline → 🟢 OPTIMIZAR
-  - 25 LOC
-  - ✅ Pipeline unificado (Intent + Entities)
-  - ✅ Batch processing
-  - ⚠️ Entrena cada vez (no carga modelo pre-entrenado)
-  - ❓ No tests E2E
-  - **Decisión:** MANTENER Y OPTIMIZAR (cachear modelo)
-
-**Resultado:**
-- ✅ Documento auditoría: `docs/audit/ML_COMPONENTS_AUDIT_2025-12-03.md`
-- ✅ 4 componentes analizados (EntityExtractor, IntentDetector x2, NLPPipeline)
-- ✅ 3 componentes mantener
-- 🔴 1 componente DELETE (IntentDetector legacy)
-- ✅ Training data completo (320 ejemplos)
-
-**Puntos ganados:** 3 puntos ✅
+- [x] Resolver problemas de Event Loop en Windows con asyncpg
+- [x] Implementar fixtures correctas para tests E2E
+- [x] Crear suite completa de tests de integración
+- [x] Validar arquitectura de 3 capas (Handler → Service → Repository)
+- [x] Alcanzar 10/10 tests pasando exitosamente
 
 ---
 
-### ✅ BLOQUE 1.3 — Auditoría Adapters (1/1 adapter + 3 faltantes) ✅
+## 🔧 PROBLEMAS RESUELTOS
 
-**Duración:** 13:15-13:20 (5 min)
+### 1. Event Loop Issues (Windows + asyncpg)
+- [x] **WindowsSelectorEventLoopPolicy** implementado en conftest.py
+- [x] **Event loop por función** - Nuevo loop para cada test
+- [x] **Engine por test** - Evita event loop mismatch en pool de conexiones
+- [x] **pool_pre_ping=False** - Deshabilitado para compatibilidad Windows
 
-- [x] **TAREA 1.3.1** — TelegramAdapter → 🟢 MANTENER
-  - ~400 LOC
-  - ✅ Framework: python-telegram-bot 20.7
-  - ✅ PostgreSQL integrado (UserRepository, ConversationRepository, MessageHistoryRepository)
-  - ✅ Multi-tenant desde día 1
-  - ✅ 12/12 tests database PASSING
-  - ✅ Primera conversación real: 12 Nov 2025 (Usuario Entu)
-  - ⚠️ CoreRouter placeholder (esperando H03)
-  - ⚠️ Intent/Entities placeholders
-  - ❓ No tests adapter
-  - **Decisión:** MANTENER Y EVOLUCIONAR (H03: CoreRouter integration)
+**Archivos modificados:**
+- `src/theaia/tests/conftest.py`
 
-- [x] **TAREA 1.3.2** — WebAdapter (REST API) → 🟢 CREAR MVP
-  - ❌ NO EXISTE
-  - 🔴 CRÍTICO para MVP (API REST necesaria)
-  - Framework: FastAPI (recomendado)
-  - Features: REST endpoints, JWT auth, Swagger docs
-  - **Decisión:** CREAR EN FASE 2 (H04-H05)
+**Solución clave:**
+@pytest.fixture(scope="session")
+def event_loop_policy():
+if asyncio.sys.platform == 'win32':
+asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+return asyncio.get_event_loop_policy()
 
-- [x] **TAREA 1.3.3** — WhatsAppAdapter → 🟡 POST-MVP
-  - ❌ NO EXISTE
-  - Prioridad: LOW
-  - ⚠️ Setup complejo + costos
-  - **Decisión:** POST-MVP (FASE 4+)
-
-- [x] **TAREA 1.3.4** — SlackAdapter → 🟡 POST-MVP
-  - ❌ NO EXISTE
-  - Prioridad: LOW
-  - ⚠️ Uso corporativo específico
-  - **Decisión:** POST-MVP (FASE 4+)
-
-**Resultado:**
-- ✅ Documento auditoría: `docs/audit/ADAPTERS_AUDIT_2025-12-03.md`
-- ✅ 1 adapter funcional (TelegramAdapter)
-- 🟢 1 adapter CREAR MVP (WebAdapter)
-- 🟡 2 adapters POST-MVP (WhatsApp, Slack)
-
-**Puntos ganados:** 2 puntos ✅
+text
 
 ---
 
-### ✅ BLOQUE 1.4 — Auditoría Core Components (8/8 componentes) ✅
+### 2. Foreign Key Violations
+- [x] **Fixture test_user** - Crea usuario antes de cada test
+- [x] **Dependencias de fixtures** - Todas las fixtures dependen de test_user
+- [x] **ID consistente** - Usuario con ID=123 para todos los tests
 
-**Duración:** 13:20-13:35 (15 min)
+**Archivos modificados:**
+- `src/theaia/tests/agents/agenda_agent/test_agenda_integration.py`
 
-- [x] **TAREA 1.4.1** — ConversationStateMachine → 🟢 MANTENER
-  - ~200 LOC
-  - ✅ Framework: Python transitions library
-  - ✅ Herencia: BaseStateMachine + CallbacksMixin
-  - ✅ 5 estados principales (initial, awaiting_disambiguation, agent_delegated, completed, timeout)
-  - ✅ Context merging integrado
-  - ✅ H03 callbacks avanzados
-  - ❓ No tests
-  - **Decisión:** MANTENER (H06: añadir 20 tests)
+**Solución clave:**
+@pytest_asyncio.fixture
+async def test_user(db_session):
+test_user = User(
+id=123,
+telegram_id=123456789,
+username="test_user",
+# ...
+)
+db_session.add(test_user)
+await db_session.flush()
+await db_session.commit()
+return test_user
 
-- [x] **TAREA 1.4.2** — ConversationManager → 🟡 REFACTOR
-  - ~350 LOC
-  - ⚠️ DEMASIADO COMPLEJO (8 responsabilidades mezcladas)
-  - ✅ FSM orchestration
-  - ⚠️ Intent detection (debería estar en IntentDetector)
-  - ⚠️ Session management (debería estar en SessionManager)
-  - ⚠️ Disambiguation (debería estar en DisambiguationHandler)
-  - ❓ No tests
-  - **Decisión:** REFACTOR (H07: separar en 5 componentes, 350 → 530 LOC distribuidas)
-
-- [x] **TAREA 1.4.3** — BaseStateMachine → 🟢 MANTENER
-  - ~150 LOC
-  - ✅ ABC abstracta
-  - ✅ Python transitions library
-  - ✅ Universal transitions (reset, error)
-  - ✅ Context management robusto
-  - ❓ No tests
-  - **Decisión:** MANTENER (H06: añadir 10 tests)
-
-- [x] **TAREA 1.4.4** — CallbacksMixin → 🟢 MANTENER
-  - ~100 LOC
-  - ✅ H03 feature avanzado
-  - ✅ Pre/Post/Error callbacks
-  - ✅ Context injection
-  - ✅ Universal callbacks
-  - ❓ No tests
-  - **Decisión:** MANTENER (H06: añadir 15 tests)
-
-- [x] **TAREA 1.4.5** — ContextMergingEngine → 🟢 MANTENER
-  - ~200 LOC
-  - ✅ 4 estrategias: overwrite, append, merge, windowing
-  - ✅ Session isolation
-  - ✅ Timestamp tracking
-  - ✅ Context stats
-  - ❓ No tests
-  - **Decisión:** MANTENER (H06: añadir 20 tests)
-
-- [x] **TAREA 1.4.6** — TransitionConfig → 🟢 MANTENER
-  - ~80 LOC
-  - ✅ Transition logging
-  - ✅ Error tracking
-  - ✅ History management
-  - ❓ No tests
-  - **Decisión:** MANTENER (H06: añadir 8 tests)
-
-- [x] **TAREA 1.4.7** — BotFactory → 🟡 EVALUAR
-  - ~30 LOC
-  - ✅ Factory pattern simple
-  - ❓ NO usado en código actual
-  - **Decisión:** EVALUAR (H10: usar en CoreRouter o DELETE)
-
-- [x] **TAREA 1.4.8** — CoreRouter → 🔴 CREAR MVP
-  - ❌ NO EXISTE
-  - 🔴🔴🔴 CRÍTICO: TelegramAdapter lo necesita
-  - Features: NLP integration, Agent routing, FSM orchestration
-  - **Decisión:** CREAR EN H03 (CRÍTICO MVP, 250-300 LOC, 25 tests)
-
-**Resultado:**
-- ✅ Documento auditoría: `docs/audit/CORE_AUDIT_2025-12-03.md`
-- ✅ 8 componentes analizados (~1,110 LOC)
-- 🟢 5 componentes MANTENER (FSM, BaseStateMachine, Callbacks, Context, Transitions)
-- 🟡 1 componente REFACTOR (ConversationManager)
-- 🟡 1 componente EVALUAR (BotFactory)
-- 🔴 1 componente CREAR (CoreRouter - CRÍTICO MVP)
-
-**Puntos ganados:** 2 puntos ✅
+text
 
 ---
 
-## 🎉 RESUMEN FASE 1 COMPLETADA
+### 3. BaseRepository.create() TypeError
+- [x] **Cambio a **kwargs** - Parámetros flexibles en create()
+- [x] **Eliminación de parámetros posicionales** - Mayor flexibilidad
+- [x] **Compatibilidad con todos los repositorios**
 
-### 📊 Estadísticas Generales
+**Archivos modificados:**
+- `src/theaia/database/repositories/base_repository.py`
 
-- **Duración total:** 11:00-13:35 (2h 35min)
-- **Bloques completados:** 4/4 (100%)
-- **Tareas completadas:** 8 + 3 + 4 + 8 = 23 tareas
-- **Puntos ganados:** 8 + 3 + 2 + 2 = **15/15 puntos (100%)** ✅✅✅
+**Solución clave:**
+async def create(self, **kwargs) -> T:
+instance = self.model(**kwargs)
+self.session.add(instance)
+await self.session.flush()
+await self.session.refresh(instance)
+return instance
 
-### 📋 Componentes Auditados
-
-- **Agentes:** 8 analizados (~2,500 LOC)
-  - 5 MVP (AgendaAgent, NoteAgent, ReminderAgent, QueryAgent, HelpFallbackAgent)
-  - 2 eliminados (EventAgent_NEW, ScheduleAgent archivado)
-  - 1 POST-MVP (MilestoneAgent)
-
-- **ML Components:** 4 analizados
-  - 3 mantener (EntityExtractor, IntentDetector nuevo, NLPPipeline)
-  - 1 DELETE (IntentDetector legacy)
-
-- **Adapters:** 1 funcional + 3 faltantes identificados
-  - 1 mantener (TelegramAdapter)
-  - 1 CREAR MVP (WebAdapter)
-  - 2 POST-MVP (WhatsApp, Slack)
-
-- **Core Components:** 8 analizados (~1,110 LOC)
-  - 5 mantener (ConversationStateMachine, BaseStateMachine, CallbacksMixin, ContextMergingEngine, TransitionConfig)
-  - 1 REFACTOR (ConversationManager)
-  - 1 EVALUAR (BotFactory)
-  - 1 CREAR (CoreRouter - CRÍTICO)
-
-**TOTAL:** 26 componentes auditados, ~5,000 LOC analizadas
-
-### 📄 Documentos Generados
-
-1. ✅ `docs/audit/AGENTS_AUDIT_2025-12-03.md` (20 páginas)
-2. ✅ `docs/audit/ML_COMPONENTS_AUDIT_2025-12-03.md`
-3. ✅ `docs/audit/ADAPTERS_AUDIT_2025-12-03.md`
-4. ✅ `docs/audit/CORE_AUDIT_2025-12-03.md`
-
-### 🎯 Hallazgos Críticos
-
-**GAPS CRÍTICOS MVP:**
-- 🔴 **CoreRouter NO EXISTE** - TelegramAdapter lo necesita (H03)
-- 🔴 **WebAdapter NO EXISTE** - API REST necesaria (H04-H05)
-
-**REFACTORS NECESARIOS:**
-- 🟡 **ConversationManager** - 350 LOC sobrecargado (H07)
-- 🔴 **5 agentes MVP** - Refactorizar/crear (H06-H10)
-
-**MEJORAS NECESARIAS:**
-- ✅ Tests ausentes (0 → 217+ tests)
-- ✅ Coverage 0% → 85%+
-- 🔴 DELETE IntentDetector legacy
-- 🔴 DELETE EventAgent_NEW
+text
 
 ---
 
-## 🚀 PRÓXIMOS PASOS (FASE 2)
+### 4. Validation Errors (Event Status)
+- [x] **Valores de enum corregidos** - Usar "completed" en lugar de "confirmed"
+- [x] **Validación con schemas** - Pydantic valida correctamente
 
-### FASE 2 (H04-H05) - Database + WebAdapter
-
-**H04 — Modelos Base de Datos:**
-- [ ] Crear Event, Note, Reminder, QueryCache models (SQLAlchemy)
-- [ ] Implementar repositories completos
-- [ ] Tests E2E con BD real
-- [ ] Migrations Alembic
-
-**H05 — WebAdapter REST API:**
-- [ ] Crear FastAPI application
-- [ ] REST endpoints (4+)
-- [ ] JWT authentication
-- [ ] OpenAPI docs
-- [ ] 20 tests E2E
-
-### FASE 3 (H03, H06-H10) - CoreRouter + Refactors
-
-**H03 — CoreRouter (CRÍTICO):**
-- [ ] Crear CoreRouter class (250-300 LOC)
-- [ ] NLPPipeline integration
-- [ ] Agent routing (5 agents MVP)
-- [ ] FSM orchestration
-- [ ] 25 tests CoreRouter
-
-**H06 — Tests Core Components:**
-- [ ] 73 tests Core (20+10+15+20+8)
-- [ ] Coverage 0% → 85%+
-
-**H06-H10 — Refactor 5 Agentes MVP:**
-- [ ] H06: AgendaAgent REFACTOR
-- [ ] H07: NoteAgent CREATE NEW + ConversationManager REFACTOR
-- [ ] H08: ReminderAgent REFACTOR
-- [ ] H09: QueryAgent REFACTOR
-- [ ] H10: HelpFallbackAgent MERGE
+**Archivos modificados:**
+- `src/theaia/tests/agents/agenda_agent/test_agenda_integration.py`
 
 ---
 
-## ✅ MÉTRICAS ÉXITO FASE 1
+## ✅ TESTS IMPLEMENTADOS (10/10 PASSED)
 
-| Métrica | Objetivo | Alcanzado | Estado |
-|---------|----------|-----------|--------|
-| **Bloques completados** | 4 | 4 | ✅ 100% |
-| **Puntos ganados** | 15 | 15 | ✅ 100% |
-| **Componentes auditados** | 25+ | 26 | ✅ 104% |
-| **LOC analizadas** | 4,000+ | ~5,000 | ✅ 125% |
-| **Documentos generados** | 4 | 4 | ✅ 100% |
-| **Duración** | <3h | 2h 35min | ✅ 86% |
-| **Gaps críticos identificados** | - | 2 | ✅ |
-| **Roadmap FASE 2+3** | - | ✅ | ✅ |
+### Suite de Tests E2E
+
+1. **test_handler_initialization** ✅
+   - Valida inicialización correcta del AgendaAgent
+   - Verifica event_service y event_tools están disponibles
+
+2. **test_service_create_event** ✅
+   - Crea evento via EventService
+   - Valida persistencia en PostgreSQL
+
+3. **test_service_get_event** ✅
+   - Recupera evento por ID
+   - Valida datos correctos
+
+4. **test_tools_create_event** ✅
+   - Crea evento via EventTools (CrewAI)
+   - Valida respuesta formateada
+
+5. **test_tools_list_upcoming_events** ✅
+   - Lista eventos próximos
+   - Valida filtrado por tiempo
+
+6. **test_tools_update_event** ✅
+   - Actualiza título y status de evento
+   - Valida cambios persistidos
+
+7. **test_tools_mark_completed** ✅
+   - Marca evento como completado
+   - Valida cambio de estado
+
+8. **test_service_get_upcoming_events** ✅
+   - Obtiene eventos próximos via Service
+   - Valida filtrado de 24 horas
+
+9. **test_service_delete_event** ✅
+   - Elimina evento
+   - Valida que no se puede recuperar después
+
+10. **test_full_integration_flow** ✅
+    - Flujo completo end-to-end
+    - Simula handler real con contexto
 
 ---
 
-**🎉 FASE 1 COMPLETADA EXITOSAMENTE 🎉**
+## 📊 COBERTURA DE CÓDIGO
 
-**Fecha:** 03 Diciembre 2025  
-**Duración:** 11:00-13:35 (2h 35min)  
-**Progreso:** 15/15 puntos (100%) ✅✅✅  
-**Equipo:** Perplexity AI + Lead Developer  
+### Módulos Testeados
 
-**Estado:** ✅ AUDITORÍA COMPLETA - SISTEMA THEA IA  
-**Siguiente:** FASE 2 (H04-H05) - Database + WebAdapter
+| Módulo | Cobertura | Estado |
+|--------|-----------|--------|
+| `event_service.py` | 65% | ✅ Mejorado |
+| `event_tools.py` | 41% | ✅ Mejorado |
+| `event_schema.py` | 77% | ✅ Bueno |
+| `agent_states.py` | 87% | ✅ Excelente |
+| `handler.py` | 14% | ⚠️ Necesita más tests |
+
+---
+
+## 🏗️ ARQUITECTURA VALIDADA
+
+┌─────────────────────────────────────────────────────────┐
+│ AgendaAgent Handler │
+│ (Orchestration & FSM Layer) │
+└─────────────────────────────────────────────────────────┘
+│
+┌───────────┴───────────┐
+│ │
+┌───────▼────────┐ ┌───────▼────────┐
+│ EventService │ │ EventTools │
+│ (Business │ │ (CrewAI Tools) │
+│ Logic Layer) │ │ │
+└───────┬────────┘ └───────┬────────┘
+│ │
+└───────────┬───────────┘
+│
+┌───────────▼────────────┐
+│ EventRepository │
+│ (Data Access Layer) │
+└───────────┬────────────┘
+│
+┌───────────▼────────────┐
+│ PostgreSQL Database │
+│ (Real Instance) │
+└────────────────────────┘
+
+text
+
+**✅ Validación:** Todas las capas funcionan correctamente integradas
+
+---
+
+## 📁 ARCHIVOS CREADOS/MODIFICADOS
+
+### Archivos Creados
+src/theaia/tests/agents/agenda_agent/
+└── test_agenda_integration.py # 10 tests E2E (NUEVO)
+
+text
+
+### Archivos Modificados
+src/theaia/tests/
+├── conftest.py # WindowsSelectorEventLoopPolicy + fixtures
+src/theaia/database/repositories/
+└── base_repository.py # create() con **kwargs
+
+text
+
+---
+
+## 🚀 COMANDOS DE EJECUCIÓN
+
+### Ejecutar Tests E2E
+pytest src/theaia/tests/agents/agenda_agent/test_agenda_integration.py -v -s
+
+text
+
+### Ver Cobertura
+pytest src/theaia/tests/agents/agenda_agent/test_agenda_integration.py --cov=src/theaia/agents/agenda_agent --cov-report=html
+
+text
+
+### Ejecutar Test Específico
+pytest src/theaia/tests/agents/agenda_agent/test_agenda_integration.py::test_handler_initialization -v -s
+
+text
+
+---
+
+## 📝 LECCIONES APRENDIDAS
+
+### Windows + asyncpg + pytest
+1. **WindowsSelectorEventLoopPolicy es necesario** en Windows
+2. **Engine por test** evita problemas de event loop reusado
+3. **pool_pre_ping=False** necesario para evitar problemas en Windows
+4. **pytest_asyncio.fixture** para fixtures async
+
+### Testing E2E
+1. **Usuario de test es fundamental** - Crear antes de cualquier test
+2. **Limpieza automática** con clean_database fixture
+3. **Rollback en fixtures base** garantiza aislamiento
+4. **Validar con schemas Pydantic** evita errores de validación
+
+### Debugging
+1. **Leer stacktrace completo** - El error real está al fondo
+2. **Verificar Foreign Keys** - Crear dependencias primero
+3. **Validar valores de enum** - Usar valores permitidos
+4. **Event loop errors** - Siempre relacionados con asyncio en Windows
+
+---
+
+## ⏭️ PRÓXIMOS PASOS
+
+### Integración Pendiente
+- [ ] Registrar AgendaAgent en Core Router
+- [ ] Mapear intents a AgendaAgent
+- [ ] Tests de routing completo
+
+### Tests Adicionales
+- [ ] Tests de FSM (estados y transiciones)
+- [ ] Tests de Entity Extractors (ML)
+- [ ] Tests de integración con Telegram
+- [ ] Tests de casos edge
+
+### Features Pendientes
+- [ ] Recordatorios automáticos
+- [ ] Eventos recurrentes
+- [ ] Integración con calendarios externos
+- [ ] Notificaciones
+
+---
+
+## 🎊 RESULTADO FINAL
+
+======================== 10 passed in 9.15s =========================
+
+text
+
+**Estado:** ✅ COMPLETADO  
+**Fecha de Completación:** 04 Diciembre 2025, 18:08 CET  
+**Próximo Hito:** H04 PHASE 3 - Integración con Core Router
+
+---
+
+## 👤 EQUIPO
+
+**Desarrollador Principal:** Álvaro Fernández Mota  
+**Fecha:** 04 Diciembre 2025  
+**Proyecto:** THEA IA - AgendaAgent v3.3  
+**Hito:** H04 PHASE 2 - Tests E2E ✅
