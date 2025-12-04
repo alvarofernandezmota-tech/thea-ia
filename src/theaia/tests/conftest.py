@@ -2,19 +2,51 @@
 Fixtures compartidas para Repository Tests y E2E Tests.
 
 Autor: Álvaro Fernández Mota
-Fecha: 19 Nov 2025 (actualizado 24 Nov 2025)
-Hito: H02 FASE 8 - Advanced Persistence + NoteAgent E2E
+Fecha: 19 Nov 2025 (actualizado 04 Dic 2025)
+Hito: H02 FASE 8 - Advanced Persistence + AgendaAgent E2E
 
-WINDOWS FIX: Engine por test para evitar event loop mismatch con asyncpg.
+WINDOWS FIX: Engine por test + WindowsSelectorEventLoopPolicy
 """
 import pytest
 import pytest_asyncio
 import os
+import asyncio
 from datetime import datetime, timezone
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
 from sqlalchemy import text
 from src.theaia.database.models.base import Base
 
+
+# ============================================================================
+# ✅ WINDOWS FIX: Configurar event loop policy
+# ============================================================================
+
+@pytest.fixture(scope="session")
+def event_loop_policy():
+    """
+    Configura política de event loop para Windows.
+    Soluciona problemas con asyncpg en Windows.
+    """
+    if asyncio.sys.platform == 'win32':
+        asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+    return asyncio.get_event_loop_policy()
+
+
+@pytest.fixture(scope="function")
+def event_loop(event_loop_policy):
+    """
+    Crea un nuevo event loop para cada test.
+    Garantiza que cada test tiene su propio loop limpio.
+    """
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
+    yield loop
+    loop.close()
+
+
+# ============================================================================
+# DATABASE CONFIGURATION
+# ============================================================================
 
 # Obtener DATABASE_URL desde variables de entorno (como hace settings.py)
 DATABASE_URL = os.getenv(
@@ -22,6 +54,10 @@ DATABASE_URL = os.getenv(
     "postgresql+asyncpg://postgres:postgres@localhost:5432/thea_ia_db"
 )
 
+
+# ============================================================================
+# DATABASE SETUP
+# ============================================================================
 
 @pytest_asyncio.fixture(scope="session", autouse=True)
 async def setup_test_database():
@@ -49,6 +85,10 @@ async def setup_test_database():
     await setup_engine.dispose()
     yield
 
+
+# ============================================================================
+# DATABASE SESSION FIXTURE
+# ============================================================================
 
 @pytest_asyncio.fixture
 async def db_session():
@@ -100,7 +140,7 @@ async def db_session():
 
 
 # ============================================================================
-# ✅ NUEVA FIXTURE: LIMPIEZA DE BASE DE DATOS
+# ✅ LIMPIEZA DE BASE DE DATOS
 # ============================================================================
 
 @pytest_asyncio.fixture(autouse=True)
