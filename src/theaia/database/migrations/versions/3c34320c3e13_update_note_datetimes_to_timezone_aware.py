@@ -1,17 +1,18 @@
 """update_note_datetimes_to_timezone_aware
 
-Revision ID: <GENERADO_AUTO>
-Revises: <REVISION_ANTERIOR>
-Create Date: <FECHA_AUTO>
+Revision ID: 3c34320c3e13
+Revises: 9ed4975f2bd7
+Create Date: 2025-11-24 20:21:01
 
 """
 from alembic import op
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql
 
+
 # revision identifiers, used by Alembic.
-revision = '<DEJA_EL_GENERADO>'
-down_revision = '<DEJA_EL_GENERADO>'
+revision = '3c34320c3e13'
+down_revision = '8436012190df'  # Cambiar de 9ed4975f2bd7 a 8436012190df
 branch_labels = None
 depends_on = None
 
