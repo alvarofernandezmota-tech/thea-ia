@@ -102,5 +102,7 @@
   "src/theaia/agents/agenda_agent/tests/test_handler.py::TestTriggerDetermination": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::TestResponseGeneration": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::TestFullFlows": true,
-  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestLegacyMethods": true
+  "src/theaia/agents/agenda_agent/tests/test_handler.py::TestLegacyMethods": true,
+  "src/theaia/tests/agents/agenda_agent/test_router_integration.py::test_agenda_intents_registered": true,
+  "src/theaia/tests/integration/test_nlp_debug.py": true
 }

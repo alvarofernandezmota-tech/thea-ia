@@ -1,772 +1,355 @@
 """
-AgendaAgent Handler v3.3 - PRODUCTION READY
-Fully integrated with FSM v2.0 + ML + Service Layer (EventService + EventTools)
+AgendaAgent Handler - Main Entry Point
 
-UPGRADE v3.2 → v3.3 (04 DIC 2025 - TAREA 2):
-- ✅ EventService integrated (business logic layer)
-- ✅ EventTools integrated (CrewAI tools)
-- ✅ EventRepository replaced by Service Layer pattern
-- ✅ Separation of concerns: Handler → Service → Repository
-- ✅ All v3.2 features maintained (FSM, ML, validations)
-- ✅ Backward compatible with existing FSM and validation logic
-- ✅ Performance tracking maintained
-- ✅ Error handling preserved
-
-PREVIOUS FEATURES (v3.2 maintained):
-- ✅ Real database persistence (PostgreSQL)
-- ✅ Robust validations (future dates, time format, lengths)
-- ✅ Graceful error handling (DB errors, validation errors)
-- ✅ Multi-tenant enforcement
-- ✅ Session management (dependency injection)
-- ✅ Legacy code removed (~100 LOC cleanup)
-
-Responsable: Álvaro Fernández Mota (CEO THEA IA)
-Fecha: 04 Diciembre 2025
-Filosofía: TRES (Álvaro + Jarvis + THEA IA)
-Status: H04-H05 TAREA 2 COMPLETE - Production Ready
+Handles user messages and orchestrates the complete agenda management flow.
+Integrates all components: parsing, orchestration, conversation management, and formatting.
 """
 
-from typing import Dict, List, Any, Optional
-from datetime import datetime, timedelta, timezone
-import re
+from typing import Dict, Any, Optional
 import logging
-
-# Base Agent
-from src.theaia.agents.base_agent import BaseAgent, AgentConfig
-
-# FSM v2.0 Integration
-from src.theaia.agents.agenda_agent.model.agenda_fsm import AgendaFSM
-from src.theaia.agents.agenda_agent.model.agent_states import AgendaStates
-
-# ML Integration
-from src.theaia.ml.entity_extractor.pipeline import EntityExtractor
-from src.theaia.ml.entity_extractor.date_parser import DateTimeExtractor
-
-# Service Layer Integration (NEW v3.3)
-from src.theaia.agents.agenda_agent.services.event_service import EventService
-from src.theaia.agents.agenda_agent.tools.event_tools import EventTools
 from sqlalchemy.ext.asyncio import AsyncSession
 
-# Date parsing
-try:
-    from dateutil import parser as date_parser
-except ImportError:
-    date_parser = None
+from .orchestrator import AgendaOrchestrator
+from .conversation_manager import ConversationManager
+from .response_formatter import ResponseFormatter
+from .services.event_service import EventService
+from .tools.event_tools import EventTools
+from ...database.repositories.event_repository import EventRepository
 
 
-class AgendaAgent(BaseAgent):
+logger = logging.getLogger(__name__)
+
+
+class AgendaAgent:
     """
-    Agent for managing calendar events, appointments, and meetings.
+    Main AgendaAgent handler.
     
-    v3.3 Features (PRODUCTION READY):
-    - ✅ EventService fully integrated (business logic layer)
-    - ✅ EventTools integrated (CrewAI compatibility)
-    - ✅ Service Layer pattern (Handler → Service → Repository)
-    - ✅ Database persistence (PostgreSQL)
-    - ✅ FSM v2.0 with 15 states
-    - ✅ ML Entity Extraction (dates, times, locations)
-    - ✅ Robust validations (future dates, formats, lengths)
-    - ✅ Graceful error handling (rollback, recovery)
-    - ✅ Multi-tenant support enforced
-    - ✅ Performance <100ms for queries
-    - ✅ Clean code (290 LOC)
-
-    Architecture v3.3:
-    - FSM instance PER USER (not singleton)
-    - EventService injected via session (NEW v3.3)
-    - EventTools available for CrewAI integration (NEW v3.3)
-    - ML extraction centralized (shared service)
-    - Validations at multiple levels (FSM + handler + service)
-    - Error handling with rollback strategies
-
-    Handles:
-    - Event creation with ML auto-extraction
-    - Event listing with filters
-    - Event editing/cancellation
-    - Natural language date/time parsing
-    - Database persistence with validation via Service Layer
+    Entry point for all agenda-related user messages.
+    Orchestrates the complete flow from message to response.
     """
-
+    
     def __init__(
         self,
-        config: Optional[AgentConfig] = None,
-        session: Optional[AsyncSession] = None
+        session: AsyncSession,
+        timezone: str = "UTC",
+        language: str = "es"
     ):
         """
-        Initialize AgendaAgent.
-
+        Initialize AgendaAgent with all required components.
+        
         Args:
-            config: Agent configuration (optional)
-            session: AsyncSession for database operations (required for persistence)
+            session: SQLAlchemy async session
+            timezone: User's timezone (default: UTC)
+            language: Response language ("es" or "en")
         """
-        if config is None:
-            config = AgentConfig(name="AgendaAgent")
-
-        super().__init__(config)
-
-        # FSM v2.0 Integration - PER USER
-        self.fsm_instances: Dict[str, AgendaFSM] = {}
-        self.logger.info("FSM v2.0 system initialized (per-user instances)")
-
-        # ML Integration - SHARED
-        self.entity_extractor = EntityExtractor()
-        self.date_extractor = DateTimeExtractor()
-        self.logger.info("ML Entity Extractors initialized")
-
-        # Service Layer Integration (NEW v3.3)
         self.session = session
-        self.event_service = EventService(session) if session else None
-        self.event_tools = EventTools(session) if session else None
+        self.timezone = timezone
+        self.language = language
         
-        if self.event_service:
-            self.logger.info("✅ EventService integrated (business logic layer enabled)")
-            self.logger.info("✅ EventTools integrated (CrewAI tools available)")
-        else:
-            self.logger.warning("⚠️ EventService not initialized (session required for persistence)")
-
-        self.logger.info("AgendaAgent v3.3 initialized (PRODUCTION READY)")
-
-    def get_supported_intents(self) -> List[str]:
-        """Get list of supported intents."""
-        return [
-            "agenda", "cita", "reunión", "evento", "agendar", "calendario",
-            "appointment", "meeting", "schedule", "crear", "listar", "buscar"
-        ]
-
-    # ========================================
-    # MAIN HANDLER METHOD
-    # ========================================
-
-    async def handle(self, user_id: str, message: str, context: dict) -> dict:
-        """
-        Main entry point for AgendaAgent.
+        # Initialize repositories
+        self.event_repository = EventRepository(session)
         
-        v3.3: Integrated Service Layer (EventService) with validation and error handling.
+        # Initialize services
+        self.event_service = EventService(self.event_repository)
         
-        Flow:
-        1. Get/Create FSM instance for user
-        2. Extract entities with ML
-        3. Validate entities (v3.2+)
-        4. Determine FSM trigger
-        5. Execute FSM transition
-        6. Generate response
-        7. Save to database via EventService if event completed (NEW v3.3)
+        # Initialize tools
+        self.event_tools = EventTools(session)
         
-        Args:
-            user_id: User identifier
-            message: User message text
-            context: Conversation context dict
-            
-        Returns:
-            Response dictionary with status, response, state, context, entities, performance_ms
-        """
-        start_time = datetime.now()
-        
-        try:
-            self.logger.info(f"AgendaAgent.handle() called for user {user_id}")
-            
-            # Ensure context has required fields
-            if 'user_id' not in context:
-                context['user_id'] = user_id
-            if 'tenant_id' not in context:
-                context['tenant_id'] = 'default'
-            
-            # 1. Get FSM instance
-            fsm = self._get_fsm(user_id)
-            current_state = fsm.current_state
-            self.logger.debug(f"Current FSM state: {current_state}")
-            
-            # 2. Extract entities with ML
-            entities = self._extract_entities(message)
-            context['ml_entities'] = entities
-            
-            # 3. Validate entities (v3.2+)
-            try:
-                self._validate_entities_for_state(current_state, message, entities, context)
-            except ValueError as ve:
-                self.logger.warning(f"Entity validation failed: {ve}")
-                return self._error_response(
-                    str(ve),
-                    current_state,
-                    context,
-                    start_time,
-                    status="validation_error"
-                )
-            
-            # 4. Determine trigger
-            trigger = self._determine_trigger(current_state, message, entities)
-            self.logger.debug(f"Determined trigger: {trigger}")
-            
-            # 5. Execute FSM transition
-            success = fsm.transition(trigger, context)
-            
-            if not success:
-                self.logger.warning(f"FSM transition '{trigger}' failed from state {current_state}")
-                return self._error_response(
-                    "No pude procesar esa acción. ¿Puedes reformular?",
-                    current_state,
-                    context,
-                    start_time
-                )
-            
-            # 6. Generate response
-            response_text = self._generate_response(fsm.current_state, context)
-            
-            # 7. Save to database via EventService if event completed (NEW v3.3)
-            if fsm.current_state == AgendaStates.EVENT_SAVED:
-                try:
-                    event_id = await self._save_event_to_db(user_id, fsm._event_draft, context)
-                    context['db_event_id'] = event_id
-                    context['event_saved'] = True
-                    
-                    # Reset FSM to IDLE
-                    fsm.transition('finish', context)
-                    
-                    self.logger.info(f"✅ Event {event_id} saved successfully via EventService for user {user_id}")
-                    
-                except ValueError as ve:
-                    # Validation error - rollback FSM
-                    self.logger.warning(f"Validation failed saving event: {ve}")
-                    fsm.current_state = AgendaStates.PROCESSING
-                    
-                    return self._error_response(
-                        f"Error de validación: {str(ve)}. Intenta nuevamente.",
-                        AgendaStates.PROCESSING,
-                        context,
-                        start_time,
-                        status="validation_error"
-                    )
-                    
-                except Exception as db_error:
-                    # Database error - rollback FSM
-                    self.logger.error(f"Database error saving event: {db_error}", exc_info=True)
-                    fsm.current_state = AgendaStates.PROCESSING
-                    
-                    return self._error_response(
-                        "Error guardando evento. Por favor intenta nuevamente.",
-                        AgendaStates.PROCESSING,
-                        context,
-                        start_time,
-                        status="db_error",
-                        error_details=str(db_error)
-                    )
-            
-            # Success response
-            performance_ms = self._calculate_performance(start_time)
-            
-            return {
-                "response": response_text,
-                "state": str(fsm.current_state),
-                "context": context,
-                "status": "ok",
-                "entities": entities,
-                "performance_ms": performance_ms,
-                "level": 1
-            }
-            
-        except Exception as e:
-            self.logger.error(f"Error in AgendaAgent.handle(): {e}", exc_info=True)
-            return self._error_response(
-                f"Error procesando tu solicitud: {str(e)}",
-                "error",
-                context,
-                start_time
-            )
-
-    # ========================================
-    # VALIDATION METHODS (v3.2+)
-    # ========================================
-
-    def _validate_entities_for_state(
-        self,
-        state: AgendaStates,
-        message: str,
-        entities: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> None:
-        """
-        Validate entities based on current FSM state.
-        
-        v3.3: Maintained from v3.2 - validation logic unchanged.
-        
-        Raises:
-            ValueError: If validation fails
-        """
-        # Validate date if providing date
-        if state == AgendaStates.AWAITING_DATE:
-            date_entity = entities.get('extracted_date')
-            if not date_entity and entities.get('dates'):
-                date_entity = entities['dates'][0] if entities['dates'] else None
-            
-            if date_entity:
-                self._validate_future_date(date_entity)
-                context['event_date'] = str(date_entity)
-        
-        # Validate time if providing time
-        if state == AgendaStates.AWAITING_TIME:
-            time_entity = entities.get('extracted_time')
-            if time_entity:
-                self._validate_time_format(time_entity)
-                context['event_time'] = time_entity
-        
-        # Validate title if providing title
-        if state == AgendaStates.AWAITING_TITLE:
-            title = message.strip()
-            if title:
-                self._validate_title(title)
-                context['event_title'] = title
-        
-        # Validate location if providing location
-        if state == AgendaStates.AWAITING_LOCATION:
-            location = message.strip()
-            if location and location.lower() not in ['no', 'skip', 'omitir', 'ninguna']:
-                self._validate_location(location)
-                context['event_location'] = location
-
-    def _validate_future_date(self, date_obj: Any) -> bool:
-        """
-        Validate that date is in the future.
-        
-        v3.3: Maintained from v3.2 - validation logic unchanged.
-        
-        Args:
-            date_obj: Date to validate (datetime, date, or string)
-        
-        Returns:
-            True if valid
-            
-        Raises:
-            ValueError: If date is in the past
-        """
-        today = datetime.now(timezone.utc).date()
-        
-        # Convert to date object if needed
-        if isinstance(date_obj, datetime):
-            date_obj = date_obj.date()
-        elif isinstance(date_obj, str):
-            try:
-                if date_parser:
-                    date_obj = date_parser.parse(date_obj).date()
-                else:
-                    # Fallback: try basic parsing
-                    date_obj = datetime.strptime(date_obj, "%Y-%m-%d").date()
-            except:
-                raise ValueError(f"Formato de fecha inválido: '{date_obj}'")
-        
-        if date_obj < today:
-            raise ValueError(f"Fecha pasada: {date_obj}. Usa una fecha futura.")
-        
-        return True
-
-    def _validate_time_format(self, time_str: str) -> bool:
-        """
-        Validate time format.
-        
-        v3.3: Maintained from v3.2 - validation logic unchanged.
-        
-        Args:
-            time_str: Time string to validate
-        
-        Returns:
-            True if valid
-            
-        Raises:
-            ValueError: If format is invalid
-        """
-        patterns = [
-            r'^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$',      # 14:30, 9:00
-            r'^([1-9]|1[0-2])(am|pm)$',                 # 3pm, 11am
-            r'^([1-9]|1[0-2]):[0-5][0-9](am|pm)$'      # 3:30pm
-        ]
-        
-        time_lower = time_str.lower().strip()
-        
-        for pattern in patterns:
-            if re.match(pattern, time_lower):
-                return True
-        
-        raise ValueError(f"Formato hora inválido: '{time_str}'. Usa HH:MM o 3pm")
-
-    def _validate_title(self, title: str) -> bool:
-        """
-        Validate event title.
-        
-        v3.3: Maintained from v3.2 - validation logic unchanged.
-        
-        Args:
-            title: Title to validate
-        
-        Returns:
-            True if valid
-            
-        Raises:
-            ValueError: If validation fails
-        """
-        if not title or not title.strip():
-            raise ValueError("Título no puede estar vacío")
-        
-        if len(title) > 200:
-            raise ValueError(f"Título muy largo (máx 200 caracteres, actual: {len(title)})")
-        
-        return True
-
-    def _validate_location(self, location: str) -> bool:
-        """
-        Validate event location.
-        
-        v3.3: Maintained from v3.2 - validation logic unchanged.
-        
-        Args:
-            location: Location to validate
-        
-        Returns:
-            True if valid
-            
-        Raises:
-            ValueError: If validation fails
-        """
-        if len(location) > 500:
-            raise ValueError(f"Ubicación muy larga (máx 500 caracteres, actual: {len(location)})")
-        
-        return True
-
-    # ========================================
-    # DATABASE METHODS (UPDATED v3.3)
-    # ========================================
-
-    async def _save_event_to_db(
-        self,
-        user_id: str,
-        event_data: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> int:
-        """
-        Save event to database using EventService (Service Layer pattern).
-        
-        v3.3 UPDATE: Uses EventService instead of direct EventRepository access.
-        This provides:
-        - Business logic encapsulation
-        - Additional validation layer
-        - Consistent error handling
-        - Better separation of concerns
-        
-        Args:
-            user_id: User identifier
-            event_data: Event data from FSM draft
-            context: Full context with tenant_id
-        
-        Returns:
-            Created event ID
-            
-        Raises:
-            ValueError: If EventService not initialized or validation fails
-            Exception: If database operation fails
-        """
-        # Check EventService availability (NEW v3.3)
-        if not self.event_service:
-            raise ValueError("EventService not initialized (session required)")
-        
-        # Parse user_id to int
-        try:
-            user_id_int = int(user_id) if user_id.isdigit() else int(user_id.split('_')[-1])
-        except:
-            user_id_int = 1  # Fallback for testing
-        
-        # Build event data for Service Layer
-        db_event_data = {
-            "user_id": user_id_int,
-            "tenant_id": context.get('tenant_id', 'default'),
-            "title": event_data.get('title'),
-            "start_datetime": self._parse_datetime(
-                event_data.get('date'),
-                event_data.get('time')
-            ),
-            "location": event_data.get('location'),
-            "status": "pending",
-            "event_type": event_data.get('event_type', 'personal'),
-            "reminder_minutes": event_data.get('reminder_minutes', 15)
-        }
-        
-        # Validate required fields (handler-level validation)
-        if not db_event_data['title']:
-            raise ValueError("Título requerido")
-        
-        if not db_event_data['start_datetime']:
-            raise ValueError("Fecha y hora requeridas")
-        
-        # Create event via Service Layer (NEW v3.3)
-        # EventService handles additional business logic and repository interaction
-        created_event = await self.event_service.create_event(db_event_data)
-        
-        self.logger.info(
-            f"Event created via EventService: id={created_event.id}, "
-            f"user={user_id}, tenant={db_event_data['tenant_id']}"
+        # Initialize orchestrator
+        self.orchestrator = AgendaOrchestrator(
+            event_service=self.event_service,
+            event_tools=self.event_tools,
+            timezone=timezone
         )
         
-        return created_event.id
-
-    def _parse_datetime(self, date_str: str, time_str: str) -> datetime:
-        """
-        Parse date and time strings to datetime object.
+        # Initialize conversation manager
+        self.conversation_manager = ConversationManager()
         
-        v3.3: Maintained from v3.2 - parsing logic unchanged.
+        # Initialize response formatter
+        self.response_formatter = ResponseFormatter(language=language)
         
-        Args:
-            date_str: Date string (YYYY-MM-DD or relative)
-            time_str: Time string (HH:MM or 3pm)
+        # FSM instances (for multi-user support)
+        self.fsm_instances: Dict[int, Dict[str, Any]] = {}
         
-        Returns:
-            Timezone-aware datetime object
-            
-        Raises:
-            ValueError: If parsing fails
-        """
-        try:
-            # Combine date and time
-            combined = f"{date_str} {time_str}"
-            
-            if date_parser:
-                dt = date_parser.parse(combined)
-            else:
-                # Fallback: basic parsing
-                dt = datetime.strptime(combined, "%Y-%m-%d %H:%M")
-            
-            # Ensure timezone-aware
-            if dt.tzinfo is None:
-                dt = dt.replace(tzinfo=timezone.utc)
-            
-            return dt
-            
-        except Exception as e:
-            raise ValueError(f"Error parseando fecha/hora: {e}")
-
-    # ========================================
-    # AUXILIARY METHODS
-    # ========================================
-
-    def _extract_entities(self, message: str) -> Dict[str, Any]:
-        """
-        Extract entities from message using ML.
-        
-        v3.3: Maintained from v3.2 - extraction logic unchanged.
-        """
-        entities = {}
-        
-        try:
-            # ML Entity Extraction
-            ml_entities = self.entity_extractor.extract(message)
-            entities.update(ml_entities)
-            
-            # Date/Time Extraction
-            date_entities = self.date_extractor.extract(message)
-            if date_entities:
-                entities['dates'] = entities.get('dates', []) + date_entities
-            
-            # Legacy extraction for compatibility
-            legacy_datetime = self._extract_datetime_legacy(message)
-            if legacy_datetime:
-                if 'date' in legacy_datetime:
-                    entities['extracted_date'] = legacy_datetime['date']
-                if 'time' in legacy_datetime:
-                    entities['extracted_time'] = legacy_datetime['time']
-            
-            self.logger.debug(f"Extracted entities: {entities}")
-            
-        except Exception as e:
-            self.logger.warning(f"Entity extraction failed: {e}")
-        
-        return entities
-
-    def _extract_datetime_legacy(self, message: str) -> Optional[Dict[str, Any]]:
-        """
-        Legacy datetime extraction (backward compatibility).
-        
-        v3.3: Maintained from v3.2 - legacy extraction unchanged.
-        """
-        message_lower = message.lower()
-        extracted = {}
-
-        # Extract relative dates
-        if "hoy" in message_lower or "today" in message_lower:
-            extracted["date"] = datetime.now().date()
-        elif "mañana" in message_lower or "tomorrow" in message_lower:
-            extracted["date"] = (datetime.now() + timedelta(days=1)).date()
-        elif "pasado mañana" in message_lower:
-            extracted["date"] = (datetime.now() + timedelta(days=2)).date()
-
-        # Extract time
-        time_patterns = [
-            (r'(\d{1,2}):(\d{2})', 'hm'),
-            (r'(\d{1,2})\s*(am|pm)', 'h_ampm'),
-        ]
-
-        for pattern, pattern_type in time_patterns:
-            match = re.search(pattern, message_lower)
-            if match:
-                hour = int(match.group(1))
-                minute = 0 if pattern_type == 'h_ampm' else int(match.group(2))
-                
-                if pattern_type == 'h_ampm':
-                    am_pm = match.group(2)
-                    if am_pm == 'pm' and hour < 12:
-                        hour += 12
-                    elif am_pm == 'am' and hour == 12:
-                        hour = 0
-
-                extracted["time"] = f"{hour:02d}:{minute:02d}"
-                break
-
-        return extracted if extracted else None
-
-    def _determine_trigger(
+        logger.info(f"AgendaAgent initialized with timezone={timezone}, language={language}")
+    
+    async def handle_message(
         self,
-        current_state: AgendaStates,
         message: str,
-        entities: Dict[str, Any]
+        context: Dict[str, Any]
     ) -> str:
         """
-        Determine FSM trigger based on current state and message.
+        Main entry point for handling user messages.
         
-        v3.3: Maintained from v3.2 - trigger logic unchanged.
+        Args:
+            message: User's natural language message
+            context: Context dictionary containing:
+                - user_id: int
+                - tenant_id: str
+                - conversation_id: str (optional, for multi-turn)
+                
+        Returns:
+            Formatted response string
         """
-        message_lower = message.lower()
+        user_id = context.get("user_id")
+        tenant_id = context.get("tenant_id")
+        conversation_id = context.get("conversation_id")
         
-        # Cancel trigger
-        if any(word in message_lower for word in ["cancelar", "cancel", "salir", "exit"]):
-            return 'cancel'
+        if not user_id or not tenant_id:
+            logger.error("Missing user_id or tenant_id in context")
+            return self.response_formatter.format_error(
+                "Error de configuración: falta información de usuario",
+                error_type="general"
+            )
         
-        # IDLE state
-        if current_state == AgendaStates.IDLE:
-            if any(word in message_lower for word in ["crear", "nuevo", "agendar", "programar", "create"]):
-                return 'start_create'
-            elif any(word in message_lower for word in ["listar", "mostrar", "ver", "list", "show"]):
-                return 'start_list'
-            return 'unknown'
+        logger.info(f"Processing message from user {user_id}: {message[:50]}...")
         
-        # AWAITING states
-        elif current_state == AgendaStates.AWAITING_TITLE:
-            return 'provide_title' if message.strip() else 'unknown'
-        
-        elif current_state == AgendaStates.AWAITING_DATE:
-            if entities.get('extracted_date') or entities.get('dates'):
-                return 'provide_date'
-            return 'unknown'
-        
-        elif current_state == AgendaStates.AWAITING_TIME:
-            if entities.get('extracted_time'):
-                return 'provide_time'
-            return 'unknown'
-        
-        elif current_state == AgendaStates.AWAITING_LOCATION:
-            if any(word in message_lower for word in ["no", "skip", "omitir", "ninguna"]):
-                return 'skip_location'
-            return 'provide_location' if message.strip() else 'skip_location'
-        
-        elif current_state == AgendaStates.PROCESSING:
-            return 'save_event'
-        
-        return 'unknown'
-
-    def _generate_response(self, state: AgendaStates, context: Dict[str, Any]) -> str:
+        try:
+            # Check if this is part of an ongoing conversation
+            if conversation_id:
+                return await self._handle_conversation_turn(
+                    message,
+                    conversation_id,
+                    context
+                )
+            
+            # New message - process through orchestrator
+            result = await self.orchestrator.process_message(message, context)
+            
+            # Check if we need to start a conversation for missing info
+            if not result["success"] and result.get("missing_fields"):
+                return await self._start_conversation(result, context)
+            
+            # Return the response (already formatted by orchestrator/tools)
+            return result["response"]
+            
+        except Exception as e:
+            logger.error(f"Error handling message: {str(e)}", exc_info=True)
+            return self.response_formatter.format_error(
+                f"Error procesando mensaje: {str(e)}",
+                error_type="general"
+            )
+    
+    async def _start_conversation(
+        self,
+        incomplete_result: Dict[str, Any],
+        context: Dict[str, Any]
+    ) -> str:
         """
-        Generate response text based on FSM state.
+        Start a new multi-turn conversation for incomplete request.
         
-        v3.3: Maintained from v3.2 - response generation unchanged.
+        Args:
+            incomplete_result: Result from orchestrator with missing fields
+            context: User context
+            
+        Returns:
+            Prompt for next missing field
         """
-        responses = {
-            AgendaStates.IDLE: "¿En qué puedo ayudarte con tu agenda?",
-            AgendaStates.AWAITING_TITLE: "¿Cuál es el título del evento?",
-            AgendaStates.AWAITING_DATE: "¿Para qué fecha? (ej: mañana, lunes, 25 de noviembre)",
-            AgendaStates.AWAITING_TIME: "¿A qué hora? (ej: 3pm, 15:00)",
-            AgendaStates.AWAITING_LOCATION: "¿Dónde será? (o escribe 'no' para omitir)",
-            AgendaStates.PROCESSING: "Procesando tu evento...",
-            AgendaStates.EVENT_SAVED: self._format_event_saved_response(context),
-            AgendaStates.LISTING_EVENTS: "Mostrando tus eventos...",
-            AgendaStates.CANCELLED: "Operación cancelada. ¿En qué más puedo ayudarte?"
-        }
+        user_id = context["user_id"]
+        intent = incomplete_result["intent"]
+        partial_entities = incomplete_result.get("partial_entities", {})
+        missing_fields = incomplete_result["missing_fields"]
         
-        return responses.get(state, "Estado no reconocido")
-
-    def _format_event_saved_response(self, context: Dict[str, Any]) -> str:
-        """
-        Format response for event saved state.
+        # Start conversation
+        conversation_id = self.conversation_manager.start_conversation(
+            user_id=user_id,
+            intent=intent,
+            partial_entities=partial_entities,
+            missing_fields=missing_fields
+        )
         
-        v3.3: Maintained from v3.2 - formatting logic unchanged.
-        """
-        title = context.get('title', context.get('event_title', 'Evento'))
-        date = context.get('date', context.get('event_date', 'fecha'))
-        time = context.get('time', context.get('event_time', 'hora'))
-        location = context.get('location', context.get('event_location'))
-        event_id = context.get('db_event_id')
+        # Store conversation_id in context for next turn
+        context["conversation_id"] = conversation_id
         
-        response = f"✅ Evento '{title}' guardado para {date} a las {time}"
+        # Generate prompt for first missing field
+        prompt = self.conversation_manager.generate_prompt(conversation_id)
         
-        if location:
-            response += f" en {location}"
+        logger.info(f"Started conversation {conversation_id} for user {user_id}")
         
-        if event_id:
-            response += f" (ID: {event_id})"
-        
-        return response
-
-    # ========================================
-    # HELPER METHODS
-    # ========================================
-
-    def _get_fsm(self, user_id: str) -> AgendaFSM:
-        """
-        Get or create FSM instance for user.
-        
-        v3.3: Maintained from v3.2 - FSM management unchanged.
-        """
-        if user_id not in self.fsm_instances:
-            self.fsm_instances[user_id] = AgendaFSM()
-            self.logger.debug(f"Created FSM instance for user {user_id}")
-
-        return self.fsm_instances[user_id]
-
-    def _calculate_performance(self, start_time: datetime) -> int:
-        """
-        Calculate performance in milliseconds.
-        
-        v3.3: Maintained from v3.2 - performance tracking unchanged.
-        """
-        end_time = datetime.now()
-        return int((end_time - start_time).total_seconds() * 1000)
-
-    def _error_response(
+        return prompt
+    
+    async def _handle_conversation_turn(
         self,
         message: str,
-        state: Any,
-        context: Dict[str, Any],
-        start_time: datetime,
-        status: str = "error",
-        error_details: Optional[str] = None
-    ) -> dict:
+        conversation_id: str,
+        context: Dict[str, Any]
+    ) -> str:
         """
-        Generate error response dictionary.
+        Handle a turn in an ongoing multi-turn conversation.
         
-        v3.3: Maintained from v3.2 - error handling unchanged.
+        Args:
+            message: User's message (providing missing info)
+            conversation_id: Active conversation ID
+            context: User context
+            
+        Returns:
+            Response (next prompt or completion message)
         """
-        response = {
-            "response": message,
-            "state": str(state),
-            "context": context,
-            "status": status,
-            "performance_ms": self._calculate_performance(start_time),
-            "level": 0 if status == "error" else 1
+        conversation = self.conversation_manager.get_conversation(conversation_id)
+        
+        if not conversation:
+            logger.warning(f"Conversation {conversation_id} not found")
+            return self.response_formatter.format_error(
+                "Conversación no encontrada. Por favor inicia una nueva solicitud.",
+                error_type="not_found"
+            )
+        
+        # Parse the message to extract the missing field value
+        intent = conversation["intent"]
+        missing_fields = conversation["missing_fields"]
+        
+        if not missing_fields:
+            # Conversation already complete
+            self.conversation_manager.end_conversation(conversation_id)
+            return "✅ Información completa. Procesando..."
+        
+        # Assume user is providing the first missing field
+        next_field = missing_fields[0]
+        
+        # Update conversation with new value
+        new_entities = {next_field: message}
+        self.conversation_manager.update_conversation(
+            conversation_id,
+            new_entities=new_entities
+        )
+        
+        # Check if conversation is now complete
+        if self.conversation_manager.is_conversation_complete(conversation_id):
+            # Execute the action with complete information
+            return await self._complete_conversation(conversation_id, context)
+        
+        # Still missing fields - ask for next one
+        prompt = self.conversation_manager.generate_prompt(conversation_id)
+        return prompt
+    
+    async def _complete_conversation(
+        self,
+        conversation_id: str,
+        context: Dict[str, Any]
+    ) -> str:
+        """
+        Complete conversation and execute the action.
+        
+        Args:
+            conversation_id: Conversation ID
+            context: User context
+            
+        Returns:
+            Result message
+        """
+        conversation = self.conversation_manager.get_conversation(conversation_id)
+        
+        if not conversation:
+            return self.response_formatter.format_error(
+                "Error: Conversación no encontrada",
+                error_type="not_found"
+            )
+        
+        # Build complete message from collected entities
+        entities = conversation["partial_entities"]
+        intent = conversation["intent"]
+        
+        # Create a synthetic message for orchestrator
+        # (In production, you'd reconstruct from entities)
+        synthetic_message = self._reconstruct_message(intent, entities)
+        
+        # Process through orchestrator
+        result = await self.orchestrator.process_message(synthetic_message, context)
+        
+        # End conversation
+        self.conversation_manager.end_conversation(conversation_id)
+        context.pop("conversation_id", None)
+        
+        logger.info(f"Completed conversation {conversation_id}")
+        
+        return result["response"]
+    
+    def _reconstruct_message(self, intent: str, entities: Dict[str, Any]) -> str:
+        """
+        Reconstruct a message from intent and entities.
+        
+        Args:
+            intent: Intent type
+            entities: Collected entities
+            
+        Returns:
+            Synthetic message string
+        """
+        # This is a simplified reconstruction
+        # In production, you'd have a more sophisticated approach
+        
+        if intent == "create_event":
+            title = entities.get("title", "")
+            datetime_str = entities.get("datetime_str", "")
+            location = entities.get("location", "")
+            
+            msg = f"crear evento {title}"
+            if datetime_str:
+                msg += f" {datetime_str}"
+            if location:
+                msg += f" en {location}"
+            
+            return msg
+        
+        elif intent == "update_event":
+            event_id = entities.get("event_id", "")
+            return f"modificar evento #{event_id}"
+        
+        elif intent == "delete_event":
+            event_id = entities.get("event_id", "")
+            return f"eliminar evento #{event_id}"
+        
+        else:
+            return ""
+    
+    async def get_user_events(
+        self,
+        user_id: int,
+        tenant_id: str,
+        hours: int = 24
+    ) -> str:
+        """
+        Get user's upcoming events (convenience method).
+        
+        Args:
+            user_id: User ID
+            tenant_id: Tenant ID
+            hours: Hours ahead to look (default: 24)
+            
+        Returns:
+            Formatted events list
+        """
+        try:
+            events = await self.event_service.get_upcoming_events(
+                user_id=user_id,
+                tenant_id=tenant_id,
+                hours=hours
+            )
+            
+            return self.response_formatter.format_event_list(events)
+            
+        except Exception as e:
+            logger.error(f"Error getting events: {str(e)}", exc_info=True)
+            return self.response_formatter.format_error(
+                f"Error obteniendo eventos: {str(e)}",
+                error_type="general"
+            )
+    
+    async def cleanup(self):
+        """Cleanup resources (call on shutdown)."""
+        # Cleanup old conversations
+        self.conversation_manager.cleanup_old_conversations(max_age_minutes=30)
+        logger.info("AgendaAgent cleanup completed")
+    
+    def get_stats(self) -> Dict[str, Any]:
+        """
+        Get agent statistics.
+        
+        Returns:
+            Statistics dictionary
+        """
+        return {
+            "active_conversations": len(self.conversation_manager.conversations),
+            "timezone": self.timezone,
+            "language": self.language,
         }
-        
-        if error_details:
-            response["error_details"] = error_details
-        
-        return response
-
-    def cleanup(self) -> None:
-        """
-        Cleanup agent resources.
-        
-        v3.3: Maintained from v3.2 - cleanup unchanged.
-        """
-        self.logger.info("Cleaning up AgendaAgent resources")
-        self.fsm_instances.clear()

@@ -19,7 +19,6 @@ from src.theaia.database.models.event import Event
 # Logger
 logger = logging.getLogger(__name__)
 
-
 class EventRepository(BaseRepository[Event]):
     """
     Repository para operaciones CRUD de eventos/recordatorios.

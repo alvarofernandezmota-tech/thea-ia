@@ -1,23 +1,28 @@
 """
-TheaRouter: Orquestador multiagente central de Thea IA.
-- Router de intents a agentes especializados.
-- Mantiene el contexto de sesión y estado conversacional por usuario (FSM).
-- 100% compatible con testing automático: exporta `CoreRouter` como alias legacy.
+TheaRouter v2.0 - Powered by CoreOrchestrator
+Orquestador multiagente central de Thea IA con arquitectura escalable.
 
-H03 FASE 1 Improvements:
-- Pipeline estructurado: preprocess → intent → entities → routing
-- Performance tracking (<100ms target)
-- Dataclasses tipadas (Message, ProcessedMessage)
-- Entity extraction con EntityExtractionPipeline
-- Error handling robusto con fallback
-- Logging estructurado
+Mejoras v2.0:
+- Integración con CoreOrchestrator para gestión centralizada
+- Registro dinámico de agentes
+- Conversación multi-turno robusta
+- NLP centralizado
+- Response formatting consistente
+- 100% compatible con tests legacy (CoreRouter alias)
+
+Autor: Álvaro Fernández Mota
+Fecha: 04 Dic 2025
+Arquitectura: TRES (Álvaro + Jarvis + THEA IA)
 """
 
 from typing import Dict, Tuple, Optional
 from dataclasses import dataclass
 from datetime import datetime, timezone
 
-# ==================== DATACLASSES H03 ====================
+from .orchestrator import CoreOrchestrator
+
+
+# ==================== DATACLASSES H03 COMPATIBLES ====================
 
 @dataclass
 class Message:
@@ -28,12 +33,13 @@ class Message:
     session_id: str = ""
     timestamp: datetime = None
     metadata: Optional[Dict] = None
-    
+
     def __post_init__(self):
         if self.timestamp is None:
             self.timestamp = datetime.now(timezone.utc)
         if not self.session_id:
             self.session_id = self.user_id
+
 
 @dataclass
 class ProcessedMessage:
@@ -47,35 +53,12 @@ class ProcessedMessage:
     fsm_state: str = "idle"
     status: str = "ok"
 
-# ==================== IMPORTS ORIGINALES ====================
 
-from src.theaia.core.session_manager import SessionManager
-from src.theaia.ml.intent_detector.inference import IntentDetector
-from src.theaia.ml.entity_extractor.pipeline import EntityExtractionPipeline
-from src.theaia.agents.note_agent.handler import NoteAgent
-from src.theaia.agents.help_agent.handler import HelpAgent
-from src.theaia.agents.event_agent_new.handler import EventAgent
-from src.theaia.agents.fallback_agent.handler import FallbackAgent
-from src.theaia.agents.query_agent.handler import QueryAgent
-from src.theaia.agents.reminder_agent.handler import ReminderAgent
-
-try:
-    from src.theaia.agents.schedule_agent.handler import ScheduleAgent
-    HAS_SCHEDULE_AGENT = True
-except ImportError:
-    ScheduleAgent = None
-    HAS_SCHEDULE_AGENT = False
-
-# ==================== HELPER FUNCTIONS H03 ====================
+# ==================== HELPER FUNCTIONS ====================
 
 def preprocess_text(text: str) -> str:
     """
-    Limpia y normaliza texto de entrada (H03).
-    
-    Operaciones:
-    - Lowercase
-    - Strip whitespace
-    - Normalize multiple spaces
+    Limpia y normaliza texto de entrada.
     
     Args:
         text: Texto crudo
@@ -86,203 +69,138 @@ def preprocess_text(text: str) -> str:
     if not text:
         return ""
     
-    # Lowercase
-    text = text.lower()
-    
-    # Strip edges
-    text = text.strip()
-    
-    # Normalize multiple spaces to single
+    text = text.lower().strip()
     text = " ".join(text.split())
     
     return text
 
-# ==================== THEA ROUTER ====================
+
+# ==================== THEA ROUTER V2 ====================
 
 class TheaRouter:
     """
-    Orquesta el flujo de mensajes, detecta intents y delega en el agente adecuado.
-    Guarda y restaura el contexto/fsm de usuario con SessionManager.
+    Router v2.0 con CoreOrchestrator integrado.
     
-    H03 Improvements:
-    - Pipeline estructurado
-    - Performance tracking
-    - Entity extraction con EntityExtractionPipeline
+    Características:
+    - Orquestación centralizada con CoreOrchestrator
+    - Registro dinámico de agentes
+    - Conversación multi-turno
+    - NLP avanzado
+    - Compatible con tests legacy
     """
     
     def __init__(self):
-        self.session_manager = SessionManager()
-        self.intent_detector = IntentDetector()
-        self.entity_extractor = EntityExtractionPipeline()  # NUEVO H03 TAREA 1.1.2
-        self.fallback_agent = FallbackAgent("global")
+        """Inicializa router con orchestrator."""
         
-        # Agent Registry MVP - 5 agentes con múltiples intents
-        self.agent_registry = {
-            # EventAgent (AgendaAgent) - Eventos con fecha/hora
-            "crear_evento": EventAgent,
-            "evento": EventAgent,
-            "agendar": EventAgent,
-            "calendario": EventAgent,
-            "listar_eventos": EventAgent,
-            "mis_eventos": EventAgent,
-            "editar_evento": EventAgent,
-            "cancelar_evento": EventAgent,
-            
-            # NoteAgent - Notas permanentes
-            "nota": NoteAgent,
-            "crear_nota": NoteAgent,
-            "guardar": NoteAgent,
-            "anotar": NoteAgent,
-            
-            # ReminderAgent - Avisos puntuales
-            "recordatorio": ReminderAgent,
-            "recordar": ReminderAgent,
-            "avisar": ReminderAgent,
-            "recuerdame": ReminderAgent,
-            
-            # QueryAgent - Búsqueda cross-domain
-            "consulta": QueryAgent,
-            "buscar": QueryAgent,
-            "query": QueryAgent,
-            "listar": QueryAgent,
-            
-            # HelpAgent - Ayuda
-            "ayuda": HelpAgent,
-            "help": HelpAgent,
-            
-            # FallbackAgent - Default
-            "unknown": FallbackAgent,
-            "fallback": FallbackAgent,
-        }
+        # Core orchestrator
+        self.orchestrator = CoreOrchestrator(
+            language="es",
+            session_timeout_minutes=30
+        )
         
-        if HAS_SCHEDULE_AGENT and ScheduleAgent:
-            self.agent_registry["horario"] = ScheduleAgent
-
-    def handle(self, user_id: str, message: str):
+        # Registrar agentes
+        self._register_agents()
+        
+        print("[TheaRouter v2.0] Initialized with CoreOrchestrator")
+        print(f"[TheaRouter v2.0] Registered agents: {len(self.orchestrator.get_available_agents())}")
+    
+    
+    def _register_agents(self):
+        """Registra todos los agentes disponibles en el orchestrator."""
+        
+        # AgendaAgent - Completamente implementado con adapter
+        try:
+            from src.theaia.agents.agenda_agent.orchestrator_adapter import AgendaAgentAdapter
+            
+            self.orchestrator.register_agent(
+                name="agenda_agent",
+                agent_class=AgendaAgentAdapter,
+                intents=[
+                    "create_event",
+                    "query_events",
+                    "update_event",
+                    "delete_event",
+                    "mark_complete"
+                ],
+                description="Gestión completa de eventos de calendario",
+                priority=10
+            )
+            
+            print("[TheaRouter v2.0] ✅ AgendaAgent registered successfully")
+            
+        except ImportError as e:
+            print(f"[TheaRouter v2.0] ⚠️  AgendaAgent not available: {e}")
+        
+        # TODO: Registrar más agentes cuando estén listos
+        # Ejemplo estructura para futuros agentes:
+        #
+        # try:
+        #     from src.theaia.agents.note_agent.adapter import NoteAgentAdapter
+        #     
+        #     self.orchestrator.register_agent(
+        #         name="note_agent",
+        #         agent_class=NoteAgentAdapter,
+        #         intents=["create_note", "query_notes", "update_note", "delete_note"],
+        #         description="Gestión de notas y apuntes",
+        #         priority=8
+        #     )
+        #     
+        #     print("[TheaRouter v2.0] ✅ NoteAgent registered")
+        # except ImportError:
+        #     print("[TheaRouter v2.0] ⚠️  NoteAgent not available")
+    
+    
+    def handle(self, user_id: str, message: str) -> Dict:
         """
-        Pipeline mejorado H03:
-        1. Preprocess → limpieza y normalización
-        2. Intent Detection → clasificación
-        3. Entity Extraction → extracción con EntityExtractionPipeline (H03 NUEVO)
-        4. Agent Routing → selección de agente
-        5. FSM + Context → mantenimiento de estado
-        6. Performance Tracking → métricas <100ms
+        Pipeline principal de procesamiento.
+        
+        Compatible con código legacy - devuelve mismo formato.
         
         Args:
             user_id: ID del usuario
-            message: Mensaje de texto del usuario
+            message: Mensaje de texto
             
         Returns:
-            Dict con status, message, state, context, intent, entities, processing_time_ms
+            Dict con status, message, state, context, etc.
         """
-        start_time = datetime.now(timezone.utc)
-        
-        # --- 1. PREPROCESSING (H03) ---
+        # Preprocess
         cleaned_message = preprocess_text(message)
         
-        # --- 2. INTENT DETECTION (H03 mejorado) ---
+        # Procesar con orchestrator (sync wrapper)
+        import asyncio
         try:
-            raw = self.intent_detector.detect(cleaned_message)
-            # Normalización defensiva
-            if isinstance(raw, (list, tuple)):
-                intents = [str(i).strip().lower() for i in raw if str(i).strip()]
-            else:
-                intents = [str(raw).strip().lower()] if str(raw).strip() else []
-            
-            # Confidence básico por ahora
-            confidence = 0.8 if intents else 0.0
-            
-        except Exception as e:
-            print(f"[IntentDetector ERROR]: {e}")
-            intents = []
-            confidence = 0.0
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
         
-        # Determine current intent antes de agent selection
-        if intents and intents[0] in self.agent_registry:
-            current_intent = intents[0]
-        elif intents and intents[0] == "ayuda":
-            current_intent = "ayuda"
-        else:
-            current_intent = "fallback"
-            confidence = 0.0
-        
-        # --- 3. ENTITY EXTRACTION (H03 NUEVO - TAREA 1.1.2) ---
-        try:
-            # Sync wrapper para el método async
-            import asyncio
-            try:
-                loop = asyncio.get_event_loop()
-            except RuntimeError:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-            
-            entities = loop.run_until_complete(
-                self.entity_extractor.extract(cleaned_message, current_intent)
+        orchestrator_response = loop.run_until_complete(
+            self.orchestrator.process_message(
+                user_id=user_id,
+                message=cleaned_message,
+                metadata={"original_text": message}
             )
-        except Exception as e:
-            print(f"[EntityExtractor ERROR]: {e}")
-            entities = {}
+        )
         
-        # --- 4. AGENT SELECTION ---
-        if intents and intents[0] in self.agent_registry:
-            AgentClass = self.agent_registry[current_intent]
-            agent = AgentClass(user_id)
-            agent_name = AgentClass.__name__
-        elif intents and intents[0] == "ayuda":
-            agent = self.agent_registry["ayuda"](user_id)
-            agent_name = "HelpAgent"
-        else:
-            agent = self.fallback_agent
-            agent_name = "FallbackAgent"
-        
-        # --- 5. FSM + CONTEXT MANAGEMENT ---
-        context = self.session_manager.get_context(user_id)
-        fsm_state = context.get("fsm_state", "idle")
-        
-        # Execute agent
-        try:
-            response, new_state, updated_context = agent.handle(user_id, message, context)
-            status = "ok"
-        except Exception as e:
-            print(f"[ERROR agent {current_intent}]: {e}")
-            response = "Ha habido un error inesperado, ¿puedes repetir tu petición?"
-            new_state = "error"
-            updated_context = context
-            current_intent = "fallback"
-            agent_name = "FallbackAgent"
-            status = "error"
-        
-        # Update context
-        updated_context["fsm_state"] = new_state
-        updated_context["last_intent"] = current_intent
-        self.session_manager.update_context(user_id, updated_context)
-        
-        # --- 6. PERFORMANCE TRACKING (H03) ---
-        end_time = datetime.now(timezone.utc)
-        processing_time_ms = int((end_time - start_time).total_seconds() * 1000)
-        
-        # Log performance warning if >100ms
-        if processing_time_ms > 100:
-            print(f"[PERFORMANCE WARNING] Processing took {processing_time_ms}ms (target: <100ms)")
-        
-        # --- 7. STRUCTURED RESPONSE (H03 mejorado) ---
+        # Convertir a formato legacy para compatibilidad
         return {
-            "status": status,
-            "message": response,
-            "state": new_state,
-            "context": updated_context,
-            "intent": current_intent,
-            "confidence": confidence,
-            "agent": agent_name,
-            "entities": entities,  # AHORA CON DATOS REALES
-            "processing_time_ms": processing_time_ms,
+            "status": "ok" if orchestrator_response.state != "error" else "error",
+            "message": orchestrator_response.message,
+            "state": orchestrator_response.state,
+            "context": orchestrator_response.context,
+            "intent": orchestrator_response.intent,
+            "confidence": orchestrator_response.confidence,
+            "agent": orchestrator_response.active_agent or "fallback",
+            "entities": orchestrator_response.context.get("entities", {}),
+            "processing_time_ms": orchestrator_response.metadata.get("processing_time_ms", 0),
             "original_text": message,
             "cleaned_text": cleaned_message,
         }
-
+    
+    
     async def process(self, message: Message) -> ProcessedMessage:
         """
-        Método compatible con tests H03 (async wrapper).
+        Método async compatible con tests H03.
         
         Args:
             message: Message dataclass
@@ -290,24 +208,71 @@ class TheaRouter:
         Returns:
             ProcessedMessage dataclass
         """
-        result = self.handle(message.user_id, message.text)
+        # Procesar con orchestrator
+        orchestrator_response = await self.orchestrator.process_message(
+            user_id=message.user_id,
+            message=message.text,
+            metadata={"tenant_id": message.tenant_id}
+        )
         
         return ProcessedMessage(
-            intent=result["intent"],
-            entities=result["entities"],
-            confidence=result["confidence"],
-            agent_target=result["agent"],
-            processing_time_ms=result["processing_time_ms"],
-            original_text=result["original_text"],
-            fsm_state=result["state"],
-            status=result["status"]
+            intent=orchestrator_response.intent,
+            entities=orchestrator_response.context.get("entities", {}),
+            confidence=orchestrator_response.confidence,
+            agent_target=orchestrator_response.active_agent or "fallback",
+            processing_time_ms=orchestrator_response.metadata.get("processing_time_ms", 0),
+            original_text=message.text,
+            fsm_state=orchestrator_response.state,
+            status="ok" if orchestrator_response.state != "error" else "error"
         )
-
+    
+    
     def reset_session(self, user_id: str):
         """
-        Elimina completamente el contexto FSM y variables de sesión de un usuario.
+        Resetea la sesión de un usuario.
+        
+        Args:
+            user_id: ID del usuario
         """
-        self.session_manager.reset_context(user_id)
+        import asyncio
+        try:
+            loop = asyncio.get_event_loop()
+        except RuntimeError:
+            loop = asyncio.new_event_loop()
+            asyncio.set_event_loop(loop)
+        
+        # Buscar conversación activa y limpiarla
+        for conv_id, conv in self.orchestrator.conversation_manager._conversations.items():
+            if conv.user_id == user_id:
+                loop.run_until_complete(
+                    self.orchestrator.conversation_manager.clear_conversation(conv_id)
+                )
+                break
+        
+        print(f"[TheaRouter v2.0] Session reset for user {user_id}")
+    
+    
+    def get_stats(self) -> Dict:
+        """
+        Obtiene estadísticas del router.
+        
+        Returns:
+            Dict con stats del orchestrator
+        """
+        stats = self.orchestrator.get_stats()
+        stats["router_version"] = "2.0"
+        return stats
+    
+    
+    def get_available_agents(self) -> list:
+        """
+        Lista agentes disponibles.
+        
+        Returns:
+            Lista de agentes registrados
+        """
+        return self.orchestrator.get_available_agents()
+
 
 # ==================== ALIAS DE COMPATIBILIDAD TESTING ====================
 # Exporta CoreRouter para que todos los tests legacy importen correctamente.

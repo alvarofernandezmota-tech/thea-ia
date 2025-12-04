@@ -1,5 +1,8 @@
-# src/theaia/agents/agenda_agent/model/__init__.py
+"""
+Model module for AgendaAgent
+Contains state definitions and enums.
+"""
 
-from .agenda_fsm import AgendaFSM
+from .agent_states import AgentState
 
-__all__ = ["AgendaFSM"]
+__all__ = ["AgentState"]
