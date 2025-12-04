@@ -53,9 +53,9 @@ from src.theaia.core.session_manager import SessionManager
 from src.theaia.ml.intent_detector.inference import IntentDetector
 from src.theaia.ml.entity_extractor.pipeline import EntityExtractionPipeline
 from src.theaia.agents.note_agent.handler import NoteAgent
-from src.theaia.agents.help_agent import HelpAgent
+from src.theaia.agents.help_agent.handler import HelpAgent
 from src.theaia.agents.event_agent_new.handler import EventAgent
-from src.theaia.agents.fallback_agent import FallbackAgent
+from src.theaia.agents.fallback_agent.handler import FallbackAgent
 from src.theaia.agents.query_agent.handler import QueryAgent
 from src.theaia.agents.reminder_agent.handler import ReminderAgent
 
@@ -115,13 +115,46 @@ class TheaRouter:
         self.intent_detector = IntentDetector()
         self.entity_extractor = EntityExtractionPipeline()  # NUEVO H03 TAREA 1.1.2
         self.fallback_agent = FallbackAgent("global")
+        
+        # Agent Registry MVP - 5 agentes con múltiples intents
         self.agent_registry = {
-            "nota": NoteAgent,
-            "ayuda": HelpAgent,
+            # EventAgent (AgendaAgent) - Eventos con fecha/hora
+            "crear_evento": EventAgent,
             "evento": EventAgent,
-            "consulta": QueryAgent,
+            "agendar": EventAgent,
+            "calendario": EventAgent,
+            "listar_eventos": EventAgent,
+            "mis_eventos": EventAgent,
+            "editar_evento": EventAgent,
+            "cancelar_evento": EventAgent,
+            
+            # NoteAgent - Notas permanentes
+            "nota": NoteAgent,
+            "crear_nota": NoteAgent,
+            "guardar": NoteAgent,
+            "anotar": NoteAgent,
+            
+            # ReminderAgent - Avisos puntuales
             "recordatorio": ReminderAgent,
+            "recordar": ReminderAgent,
+            "avisar": ReminderAgent,
+            "recuerdame": ReminderAgent,
+            
+            # QueryAgent - Búsqueda cross-domain
+            "consulta": QueryAgent,
+            "buscar": QueryAgent,
+            "query": QueryAgent,
+            "listar": QueryAgent,
+            
+            # HelpAgent - Ayuda
+            "ayuda": HelpAgent,
+            "help": HelpAgent,
+            
+            # FallbackAgent - Default
+            "unknown": FallbackAgent,
+            "fallback": FallbackAgent,
         }
+        
         if HAS_SCHEDULE_AGENT and ScheduleAgent:
             self.agent_registry["horario"] = ScheduleAgent
 
@@ -275,7 +308,6 @@ class TheaRouter:
         Elimina completamente el contexto FSM y variables de sesión de un usuario.
         """
         self.session_manager.reset_context(user_id)
-
 
 # ==================== ALIAS DE COMPATIBILIDAD TESTING ====================
 # Exporta CoreRouter para que todos los tests legacy importen correctamente.

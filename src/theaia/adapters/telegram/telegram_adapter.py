@@ -5,6 +5,7 @@ Integración Telegram Bot con PostgreSQL Database
 Autor: Álvaro Fernández Mota
 Fecha: 12 Nov 2025
 Hito: H02.2 - Telegram Integration
+Actualizado: 03 Dic 2025 - H03 CoreRouter Integration ✅
 """
 
 import asyncio
@@ -27,7 +28,6 @@ from src.theaia.database.repositories import (
     MessageHistoryRepository,
 )
 from src.theaia.core.router import CoreRouter
-
 
 class TelegramAdapter:
     """
@@ -238,7 +238,7 @@ Escribe cualquier cosa en lenguaje natural 💬
         
         Flow:
         1. Obtiene usuario + conversación de PostgreSQL
-        2. Procesa mensaje con CoreRouter (FSM)
+        2. Procesa mensaje con CoreRouter (FSM) ✅ H03 INTEGRADO
         3. Actualiza state conversación
         4. Guarda mensaje + respuesta en message_history
         5. Envía respuesta a Telegram
@@ -275,25 +275,31 @@ Escribe cualquier cosa en lenguaje natural 💬
                     initial_state="idle"
                 )
                 
-                # 3. Procesar con CoreRouter (FSM)
-                # TODO H03: Implementar CoreRouter.process() completo
-                # Por ahora: respuesta placeholder
-                
+                # 3. Procesar con CoreRouter (FSM) ✅ H03 INTEGRADO
                 current_state = conversation.current_state
                 context_data = conversation.context_data or {}
                 
-                # Placeholder: Eco simple
-                bot_response = f"🤖 Recibí: '{user_message}'\n\nEstado actual: {current_state}"
-                new_state = "idle"
-                intent_detected = "echo"  # Placeholder
-                confidence_score = 0.5
+                # Procesar con CoreRouter REAL
+                router_result = self.router.handle(
+                    user_id=str(user.id),
+                    message=user_message
+                )
+                
+                # Extraer resultado CoreRouter
+                bot_response = router_result["message"]
+                new_state = router_result["state"]
+                intent_detected = router_result["intent"]
+                confidence_score = router_result["confidence"]
+                
+                # Merge context CoreRouter + Database
+                context_data.update(router_result.get("context", {}))
                 
                 # 4. Actualizar conversación
                 await conv_repo.update_state(
                     conversation_id=conversation.id,
                     tenant_id=self.tenant_id,
                     new_state=new_state,
-                    context={"last_message": user_message}
+                    context=context_data
                 )
                 
                 # 5. Auditoría mensaje
@@ -331,6 +337,7 @@ Escribe cualquier cosa en lenguaje natural 💬
         print("🤖 THEA IA - TelegramAdapter iniciando...")
         print(f"📁 Tenant: {self.tenant_id}")
         print(f"🔗 Database: PostgreSQL conectado")
+        print(f"🧠 CoreRouter: 5 agentes MVP cargados")
         print("✅ Bot corriendo...\n")
         
         await self.application.initialize()
@@ -344,7 +351,6 @@ Escribe cualquier cosa en lenguaje natural 💬
         await self.application.stop()
         await self.application.shutdown()
         print("✅ Bot detenido")
-
 
 # Punto de entrada
 async def main():
@@ -374,7 +380,6 @@ async def main():
         print("\n⚠️ Interrupción detectada")
     finally:
         await adapter.stop()
-
 
 if __name__ == "__main__":
     asyncio.run(main())
