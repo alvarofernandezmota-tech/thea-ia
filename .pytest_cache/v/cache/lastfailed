@@ -60,7 +60,6 @@
   "src/theaia/tests/e2e/test_query_agent_e2e.py::TestQueryAgentE2E::test_query_statistics_month": true,
   "src/theaia/tests/e2e/test_query_agent_e2e.py::TestQueryAgentE2E::test_query_all_pending": true,
   "src/theaia/tests/e2e/test_query_agent_e2e.py::TestQueryAgentE2E::test_query_empty_results": true,
-  "src/theaia/tests/integration/test_agenda_router_integration.py": true,
   "src/theaia/tests/e2e/test_event_agent_e2e.py::TestEventAgentE2E::test_list_events_real_db": true,
   "src/theaia/agents/schedule_agent/tests/test_handler.py::test_can_handle_valid_intents": true,
   "src/theaia/agents/schedule_agent/tests/test_handler.py::test_schedule_flow": true,
@@ -104,5 +103,6 @@
   "src/theaia/agents/agenda_agent/tests/test_handler.py::TestFullFlows": true,
   "src/theaia/agents/agenda_agent/tests/test_handler.py::TestLegacyMethods": true,
   "src/theaia/tests/agents/agenda_agent/test_router_integration.py::test_agenda_intents_registered": true,
-  "src/theaia/tests/integration/test_nlp_debug.py": true
+  "src/theaia/tests/integration/test_agenda_router_integration.py::TestAgendaRouterIntegration": true,
+  "src/theaia/tests/integration/test_nlp_debug.py::test_debug_nlp_extraction": true
 }
