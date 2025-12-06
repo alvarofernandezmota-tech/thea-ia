@@ -106,16 +106,18 @@ class BaseStateMachine(ABC):
     def get_valid_transitions_set(self) -> Set[str]:
         """Get set of valid transitions from current state (returns Set, not List)"""
         try:
-            # Try using get_transitions method
-            transitions = self.machine.get_transitions(self.state, source_state=self.state)
-            if transitions:
-                return {t.trigger for t in transitions}
+            # transitions library stores transitions as dict: {state: [transition_obj, ...]}
+            # Access machine.transitions which is a dict of state -> list of transitions
+            current_state_transitions = self.machine.transitions.get(self.state, [])
             
-            # Fallback: iterate through all transitions
-            valid_triggers = set()
-            for transition in self.machine.transitions[self.state]:
-                valid_triggers.add(transition.trigger)
-            return valid_triggers
+            # Extract trigger names from transition objects
+            triggers = set()
+            for transition in current_state_transitions:
+                # Transition objects have a 'trigger' attribute
+                if hasattr(transition, 'trigger'):
+                    triggers.add(transition.trigger)
+            
+            return triggers
         except Exception as e:
             logger.debug(f"Error getting valid transitions: {e}")
             return set()
