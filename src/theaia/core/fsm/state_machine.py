@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Set
 from transitions import Machine
 import logging
+from datetime import datetime
+import uuid
 
 # H03 FASE 1 - BLOQUE 1.2 - Imports
 from src.theaia.core.fsm.callbacks_mixin import CallbacksMixin
@@ -92,6 +94,50 @@ class BaseStateMachine(ABC):
     def _on_error(self, event):
         logger.error(f"[Thea FSM] Error en FSM de {self.user_id}: {event}")
 
+    # ==================== H03 NEW METHODS ====================
+    
+    def validate_state(self, state: str) -> bool:
+        """Validate if state exists in machine"""
+        try:
+            return state in self.machine.states
+        except Exception:
+            return False
+
+    def get_valid_transitions_set(self) -> Set[str]:
+        """Get set of valid transitions from current state (returns Set, not List)"""
+        try:
+            triggers = self.machine.get_triggers(self.state)
+            return {t.name for t in triggers} if triggers else set()
+        except Exception:
+            return set()
+
+    def can_transition_to(self, trigger: str) -> bool:
+        """Check if trigger is valid from current state"""
+        return trigger in self.get_valid_transitions_set()
+
+    def transition_safe(self, trigger: str, **kwargs) -> bool:
+        """Execute transition with validation and error handling"""
+        if not self.can_transition_to(trigger):
+            raise Exception(f"Trigger '{trigger}' not allowed from state '{self.state}'")
+        
+        try:
+            trigger_method = getattr(self, trigger)
+            trigger_method(**kwargs)
+            logger.info(f"[{self.user_id}] Transition '{trigger}' completed")
+            return True
+        except Exception as e:
+            logger.error(f"[{self.user_id}] Transition '{trigger}' failed: {e}", exc_info=True)
+            raise
+
+    def get_state_info(self) -> Dict[str, Any]:
+        """Get detailed info about current state"""
+        return {
+            'current_state': self.state,
+            'valid_transitions': list(self.get_valid_transitions_set()),
+            'context': self.context,
+            'timestamp': datetime.now().isoformat(),
+        }
+
 
 # ============================================================
 #  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03
@@ -105,13 +151,21 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
     - Pre/Post/Error callbacks disponibles
     - Context injection en callbacks
     - ContextMergingEngine para merge strategies
+    - Session tracking integrado
+    - Type hints completos
     """
 
-    def __init__(self, user_id: str):
+    def __init__(self, user_id: str, session_id: Optional[str] = None):
         self.pending_message = None
         self.candidate_intents = []
         self.active_agent = None
         self.context_merging_engine = ContextMergingEngine(max_history=10)  # H03 NUEVO
+        
+        # H03 SESSION TRACKING (NEW)
+        self.session_id = session_id or str(uuid.uuid4())
+        self.created_at = datetime.now()
+        self.last_activity = datetime.now()
+        
         super().__init__(user_id, "initial")
         
         # H03: Registrar callbacks
@@ -275,3 +329,26 @@ class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
             return "Por favor, elige una opción válida entre 'agenda' o 'notas'."
         self.delegate_to_agent()
         return f"Procesando tu solicitud como {intent}"
+
+    # ==================== H03 SESSION TRACKING ====================
+    
+    def track_activity(self):
+        """Track last activity timestamp"""
+        self.last_activity = datetime.now()
+
+    def get_session_duration(self) -> float:
+        """Get session duration in seconds"""
+        return (datetime.now() - self.created_at).total_seconds()
+
+    def export_state(self) -> Dict[str, Any]:
+        """Export complete state for persistence/debugging"""
+        return {
+            'user_id': self.user_id,
+            'session_id': self.session_id,
+            'current_state': self.state,
+            'context': self.context,
+            'valid_transitions': list(self.get_valid_transitions_set()),
+            'session_duration_seconds': self.get_session_duration(),
+            'created_at': self.created_at.isoformat(),
+            'last_activity': self.last_activity.isoformat(),
+        }
