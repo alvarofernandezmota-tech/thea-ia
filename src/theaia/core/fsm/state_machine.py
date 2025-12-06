@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================
-#  BASE FSM — Thea IA 3.0
+#  BASE FSM – Thea IA 3.0
 # ============================================================
 class BaseStateMachine(ABC):
     """Clase base abstracta para todas las máquinas de estado en Thea IA 3.0"""
@@ -106,18 +106,20 @@ class BaseStateMachine(ABC):
     def get_valid_transitions_set(self) -> Set[str]:
         """Get set of valid transitions from current state (returns Set, not List)"""
         try:
-            # transitions library stores transitions as dict: {state: [transition_obj, ...]}
-            # Access machine.transitions which is a dict of state -> list of transitions
-            current_state_transitions = self.machine.transitions.get(self.state, [])
+            # machine.transitions is a dict: {trigger_name: [transition_obj, ...]}
+            # We need to iterate over all triggers and check if they're valid from current state
+            valid_triggers = set()
             
-            # Extract trigger names from transition objects
-            triggers = set()
-            for transition in current_state_transitions:
-                # Transition objects have a 'trigger' attribute
-                if hasattr(transition, 'trigger'):
-                    triggers.add(transition.trigger)
+            for trigger_name, transition_list in self.machine.transitions.items():
+                for transition_obj in transition_list:
+                    # Check if transition source matches current state or is '*' (any state)
+                    if hasattr(transition_obj, 'source'):
+                        source = transition_obj.source
+                        if source == self.state or source == '*':
+                            valid_triggers.add(trigger_name)
+                            break
             
-            return triggers
+            return valid_triggers
         except Exception as e:
             logger.debug(f"Error getting valid transitions: {e}")
             return set()
@@ -151,7 +153,7 @@ class BaseStateMachine(ABC):
 
 
 # ============================================================
-#  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03
+#  CONVERSATION FSM – FSM central de Thea IA 3.0 + H03
 # ============================================================
 class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
     """
