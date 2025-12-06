@@ -1,7 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Dict, Any, List, Optional, Tuple, Set
 from transitions import Machine
 import logging
+from datetime import datetime
+import uuid
 
 # H03 FASE 1 - BLOQUE 1.2 - Imports
 from src.theaia.core.fsm.callbacks_mixin import CallbacksMixin
@@ -10,268 +12,212 @@ from src.theaia.core.fsm.context_merging import ContextMergingEngine
 logger = logging.getLogger(__name__)
 
 
-# ============================================================
-#  BASE FSM — Thea IA 3.0
-# ============================================================
 class BaseStateMachine(ABC):
-    """Clase base abstracta para todas las máquinas de estado en Thea IA 3.0"""
-
-    def __init__(self, user_id: str, initial_state: str = "initial"):
+    """Base class for all state machines"""
+    
+    VALID_STATES = []
+    INITIAL_STATE = "initial"
+    
+    def __init__(self, user_id: str):
         self.user_id = user_id
+        self.state = self.INITIAL_STATE
         self.context = {}
-        self.machine = None
-        self._setup_machine(initial_state)
-
-    @abstractmethod
-    def get_states(self) -> List[str]:
-        pass
-
-    @abstractmethod
-    def setup_transitions(self):
-        pass
-
-    # ----------------- SETUP -----------------
-    def _setup_machine(self, initial_state: str):
-        """Inicializa la máquina de estados."""
-        states = self.get_states()
+        self._setup_machine()
+    
+    def _setup_machine(self):
+        """Setup the transitions machine"""
         self.machine = Machine(
             model=self,
-            states=states,
-            initial=initial_state,
-            auto_transitions=False,
-            send_event=True
+            states=self.VALID_STATES,
+            initial=self.INITIAL_STATE,
+            auto_transitions=False
         )
-        self.setup_transitions()
-        self._setup_universal_transitions()
-
-    def _setup_universal_transitions(self):
-        """Transiciones comunes disponibles en cualquier estado."""
-        self.machine.add_transition(
-            trigger="reset",
-            source="*",
-            dest="initial",
-            after="_on_reset"
-        )
-        self.machine.add_transition(
-            trigger="error",
-            source="*",
-            dest="error_state",
-            after="_on_error"
-        )
-
-    # ----------------- MÉTODOS BASE -----------------
-    def can_transition(self, trigger: str) -> bool:
-        try:
-            return trigger in [t.name for t in self.machine.get_triggers(self.state)]
-        except Exception:
-            return False
-
-    def get_valid_transitions(self) -> List[str]:
-        try:
-            return [t.name for t in self.machine.get_triggers(self.state)]
-        except Exception:
-            return []
-
-    def update_context(self, **kwargs):
-        self.context.update(kwargs)
-        logger.debug(f"[Thea FSM] Contexto actualizado: {kwargs}")
-
-    def clear_context(self):
-        essentials = {k: v for k, v in self.context.items() if k in ("user_id", "session_id")}
-        self.context.clear()
-        self.context.update(essentials)
-
-    def get_context(self, key: Optional[str] = None, default=None):
-        return self.context.get(key, default) if key else self.context
-
-    # ----------------- CALLBACKS -----------------
-    def _on_reset(self, event):
-        logger.info(f"[Thea FSM] Máquina reseteada para {self.user_id}")
-        self.clear_context()
-
-    def _on_error(self, event):
-        logger.error(f"[Thea FSM] Error en FSM de {self.user_id}: {event}")
-
-
-# ============================================================
-#  CONVERSATION FSM — FSM central de Thea IA 3.0 + H03
-# ============================================================
-class ConversationStateMachine(CallbacksMixin, BaseStateMachine):
-    """
-    Máquina de estados central para el manejo conversacional.
     
-    H03 Improvements:
-    - Hereda de CallbacksMixin para callbacks avanzados
-    - Pre/Post/Error callbacks disponibles
-    - Context injection en callbacks
-    - ContextMergingEngine para merge strategies
-    """
+    def validate_state(self, state: str) -> bool:
+        """Validate if a state is valid"""
+        return state in self.VALID_STATES
+    
+    def get_valid_transitions_set(self) -> Set[str]:
+        """Get set of valid transitions from current state"""
+        valid_transitions = set()
+        
+        if hasattr(self.machine, 'models'):
+            for model in self.machine.models:
+                if hasattr(model, '_transitions'):
+                    for trigger in model._transitions.get(self.state, []):
+                        valid_transitions.add(trigger)
+        
+        # Always add reset and error as universal transitions
+        valid_transitions.add('reset')
+        valid_transitions.add('error')
+        
+        return valid_transitions
+    
+    def can_transition_to(self, trigger: str) -> bool:
+        """Check if a transition is possible"""
+        return trigger in self.get_valid_transitions_set()
+    
+    def transition_safe(self, trigger: str) -> bool:
+        """Safely transition using a trigger"""
+        if not self.can_transition_to(trigger):
+            raise Exception(f"Transition '{trigger}' not allowed from state '{self.state}'")
+        
+        getattr(self, trigger)()
+        return True
+    
+    def get_state_info(self) -> Dict[str, Any]:
+        """Get current state information"""
+        return {
+            "current_state": self.state,
+            "valid_transitions": list(self.get_valid_transitions_set()),
+            "context": self.context.copy(),
+            "timestamp": datetime.now().isoformat()
+        }
+    
+    def update_context(self, **kwargs):
+        """Update context with new values"""
+        self.context.update(kwargs)
+    
+    def get_context(self, key: str = None, default: Any = None) -> Any:
+        """Get context value by key or all context"""
+        if key is None:
+            return self.context.copy()
+        return self.context.get(key, default)
+    
+    def clear_context(self):
+        """Clear all context except session_id"""
+        session_id = self.context.get('session_id')
+        self.context.clear()
+        if session_id:
+            self.context['session_id'] = session_id
 
-    def __init__(self, user_id: str):
+
+class ConversationStateMachine(BaseStateMachine, CallbacksMixin, ContextMergingEngine):
+    """State machine for conversation flow management"""
+    
+    VALID_STATES = [
+        'initial',
+        'awaiting_disambiguation',
+        'agent_delegated',
+        'completed',
+        'error_state',
+        'session_timeout'
+    ]
+    
+    def __init__(self, user_id: str, session_id: str = None):
+        super().__init__(user_id)
+        self.session_id = session_id or str(uuid.uuid4())
+        self.created_at = datetime.now()
+        self.last_activity = datetime.now()
+        self.active_agent = None
         self.pending_message = None
         self.candidate_intents = []
-        self.active_agent = None
-        self.context_merging_engine = ContextMergingEngine(max_history=10)  # H03 NUEVO
-        super().__init__(user_id, "initial")
         
-        # H03: Registrar callbacks
-        self._register_h03_callbacks()
-
-    def get_states(self) -> List[str]:
-        """Los 5 estados principales del núcleo FSM."""
-        return [
-            "initial",
-            "awaiting_disambiguation",
-            "agent_delegated",
-            "completed",
-            "session_timeout",
-            "error_state"
-        ]
-
-    def setup_transitions(self):
-        """Configura las transiciones conversacionales."""
-        self.machine.add_transition(
-            trigger="request_disambiguation",
-            source="initial",
-            dest="awaiting_disambiguation",
-            after="_after_disambiguation"
-        )
-        self.machine.add_transition(
-            trigger="delegate_to_agent",
-            source=["initial", "awaiting_disambiguation"],
-            dest="agent_delegated",
-            after="_after_delegation"
-        )
-        self.machine.add_transition(
-            trigger="resolve_disambiguation",
-            source="awaiting_disambiguation",
-            dest="agent_delegated",
-            after="_after_resolution"
-        )
-        self.machine.add_transition(
-            trigger="complete_conversation",
-            source=["agent_delegated", "awaiting_disambiguation"],
-            dest="completed",
-            after="_on_completion"
-        )
-        self.machine.add_transition(
-            trigger="timeout_session",
-            source="*",
-            dest="session_timeout",
-            after="_on_timeout"
-        )
-
-    # ==================== H03 CONTEXT MERGING ====================
-    
-    def merge_context(self, new_context: Dict[str, Any], strategy: str = "merge") -> Dict[str, Any]:
-        """
-        Merges nuevo context con el actual usando estrategia especificada.
+        # Initialize context
+        self.update_context(session_id=self.session_id)
         
-        Args:
-            new_context: Nuevo context a mergear
-            strategy: Estrategia ("overwrite", "append", "merge", "windowing")
-            
-        Returns:
-            Context mergeado
-        """
-        merged = self.context_merging_engine.merge(self.context, new_context, strategy)
-        self.context = merged
-        logger.debug(f"[{self.user_id}] Context merged using strategy '{strategy}'")
-        return merged
-
-    def get_context_stats(self) -> Dict[str, Any]:
-        """Retorna estadísticas del context actual."""
-        return self.context_merging_engine.get_context_stats(self.context)
-
-    def prune_context(self, keep_keys: List[str]):
-        """Poda context manteniendo solo keys especificadas."""
-        self.context = self.context_merging_engine.prune_context(self.context, keep_keys)
-        logger.debug(f"[{self.user_id}] Context pruned")
-
-    # ==================== CALLBACKS LEGACY ====================
+        # Setup transitions
+        self._setup_transitions()
     
-    def _after_disambiguation(self, event):
+    def _setup_transitions(self):
+        """Setup state machine transitions"""
+        self.machine = Machine(
+            model=self,
+            states=self.VALID_STATES,
+            initial=self.INITIAL_STATE,
+            auto_transitions=False
+        )
+        
+        # From initial state
+        self.machine.add_transition('request_disambiguation', 'initial', 'awaiting_disambiguation',
+                                   before=self._on_request_disambiguation)
+        self.machine.add_transition('delegate_to_agent', 'initial', 'agent_delegated',
+                                   before=self._on_delegate_to_agent)
+        
+        # From awaiting_disambiguation
+        self.machine.add_transition('delegate_to_agent', 'awaiting_disambiguation', 'agent_delegated',
+                                   before=self._on_delegate_to_agent)
+        self.machine.add_transition('resolve_disambiguation', 'awaiting_disambiguation', 'agent_delegated',
+                                   before=self._on_resolve_disambiguation)
+        self.machine.add_transition('complete_conversation', 'awaiting_disambiguation', 'completed',
+                                   before=self._on_complete_conversation)
+        
+        # From agent_delegated
+        self.machine.add_transition('complete_conversation', 'agent_delegated', 'completed',
+                                   before=self._on_complete_conversation)
+        
+        # Global transitions
+        self.machine.add_transition('reset', '*', 'initial', before=self._on_reset)
+        self.machine.add_transition('error', '*', 'error_state', before=self._on_error)
+        self.machine.add_transition('timeout_session', '*', 'session_timeout', before=self._on_timeout)
+    
+    # Callback methods
+    def _on_request_disambiguation(self):
+        """Handle disambiguation request"""
         self.update_context(disambiguation_started=True)
-
-    def _after_delegation(self, event):
+    
+    def _on_delegate_to_agent(self):
+        """Handle delegation to agent"""
         self.update_context(active_agent=self.active_agent)
-
-    def _after_resolution(self, event):
+    
+    def _on_resolve_disambiguation(self):
+        """Handle disambiguation resolution"""
         self.update_context(disambiguation_resolved=True)
-
-    def _on_completion(self, event):
-        logger.info(f"[{self.user_id}] Conversación completada.")
+    
+    def _on_complete_conversation(self):
+        """Handle conversation completion"""
         self.update_context(status="completed")
-
-    def _on_timeout(self, event):
-        logger.warning(f"[{self.user_id}] Sesión expirada.")
+    
+    def _on_reset(self):
+        """Handle reset"""
         self.clear_context()
-
-    # ==================== H03 CALLBACKS REGISTRATION ====================
+        self.active_agent = None
+        self.pending_message = None
+        self.candidate_intents = []
     
-    def _register_h03_callbacks(self):
-        """
-        Registra callbacks H03 de ejemplo.
-        Puedes comentar/descomentar según necesites.
-        """
-        # Ejemplo: Log antes de cada transición
-        self.register_universal_pre_callback(self._h03_log_before_transition)
-        
-        # Ejemplo: Log después de cada transición exitosa
-        self.register_universal_post_callback(self._h03_log_after_transition)
-        
-        # Ejemplo: Log errores en transiciones
-        self.register_universal_error_callback(self._h03_log_transition_error)
+    def _on_error(self):
+        """Handle error state"""
+        pass
     
-    def _h03_log_before_transition(self, from_state: str, to_state: str, context: Dict[str, Any]) -> bool:
-        """Pre-callback H03: Log antes de transición."""
-        logger.info(f"[H03 Pre-Callback] {self.user_id}: {from_state} → {to_state}")
-        return True  # Permitir transición
+    def _on_timeout(self):
+        """Handle session timeout"""
+        self.clear_context()
     
-    def _h03_log_after_transition(self, from_state: str, to_state: str, context: Dict[str, Any]):
-        """Post-callback H03: Log después de transición exitosa."""
-        logger.info(f"[H03 Post-Callback] {self.user_id}: Transición completada: {from_state} → {to_state}")
+    # Session tracking methods
+    def get_session_duration(self) -> float:
+        """Get session duration in seconds"""
+        return (datetime.now() - self.created_at).total_seconds()
     
-    def _h03_log_transition_error(self, from_state: str, to_state: str, error: Exception, context: Dict[str, Any]):
-        """Error-callback H03: Log errores."""
-        logger.error(f"[H03 Error-Callback] {self.user_id}: Error en transición {from_state} → {to_state}: {error}")
-
-    # ==================== GESTIÓN PENDIENTES ====================
+    def track_activity(self):
+        """Update last activity timestamp"""
+        self.last_activity = datetime.now()
     
+    def export_state(self) -> Dict[str, Any]:
+        """Export complete state"""
+        return {
+            "user_id": self.user_id,
+            "session_id": self.session_id,
+            "current_state": self.state,
+            "context": self.context.copy(),
+            "session_duration_seconds": self.get_session_duration(),
+            "created_at": self.created_at.isoformat(),
+            "last_activity": self.last_activity.isoformat(),
+            "valid_transitions": list(self.get_valid_transitions_set())
+        }
+    
+    # Pending message management
     def set_pending_message(self, message: str, intents: List[str]):
+        """Set pending message and candidate intents"""
         self.pending_message = message
         self.candidate_intents = intents
         self.update_context(pending_message=message, candidate_intents=intents)
-
-    def get_pending_data(self) -> Tuple[Optional[str], List[str]]:
+    
+    def get_pending_data(self) -> tuple:
+        """Get pending message and intents"""
         return self.pending_message, self.candidate_intents
-
+    
     def clear_pending_data(self):
+        """Clear pending data"""
         self.pending_message = None
         self.candidate_intents = []
-
-    # ====================================================
-    #  Métodos de compatibilidad con los tests antiguos
-    # ====================================================
-    def _test_handle_ambiguity(self, intents):
-        self.set_pending_message("input_test", intents)
-        self.request_disambiguation()
-        return f"¿Quieres guardar esto como {intents[0]} o {intents[1]}?"
-
-    def _test_delegate_to_agent(self, agent):
-        self.active_agent = agent
-        if self.state != "agent_delegated":
-            self.delegate_to_agent()
-        return f"Procesando tu solicitud como {agent}"
-
-    def _test_complete_task(self):
-        if self.state != "completed":
-            self.complete_conversation()
-        return "Tarea completada"
-
-    def _test_resolve_disambiguation(self, intent: str) -> str:
-        """Simula resolución de ambigüedad usada por tests E2E y unitarios."""
-        if intent not in ["agenda", "notas"]:
-            return "Por favor, elige una opción válida entre 'agenda' o 'notas'."
-        self.delegate_to_agent()
-        return f"Procesando tu solicitud como {intent}"
+        self.update_context(pending_message=None, candidate_intents=[])
