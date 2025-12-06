@@ -106,9 +106,18 @@ class BaseStateMachine(ABC):
     def get_valid_transitions_set(self) -> Set[str]:
         """Get set of valid transitions from current state (returns Set, not List)"""
         try:
-            triggers = self.machine.get_triggers(self.state)
-            return {t.name for t in triggers} if triggers else set()
-        except Exception:
+            # Try using get_transitions method
+            transitions = self.machine.get_transitions(self.state, source_state=self.state)
+            if transitions:
+                return {t.trigger for t in transitions}
+            
+            # Fallback: iterate through all transitions
+            valid_triggers = set()
+            for transition in self.machine.transitions[self.state]:
+                valid_triggers.add(transition.trigger)
+            return valid_triggers
+        except Exception as e:
+            logger.debug(f"Error getting valid transitions: {e}")
             return set()
 
     def can_transition_to(self, trigger: str) -> bool:
