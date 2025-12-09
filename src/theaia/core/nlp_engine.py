@@ -2,14 +2,17 @@
 Core NLP Engine - Motor de procesamiento de lenguaje natural centralizado
 Servicio compartido por todos los agentes del ecosistema.
 
+
 Autor: Álvaro Fernández Mota
 Fecha: 04 Dic 2025
 Arquitectura: TRES (Álvaro + Jarvis + THEA IA)
 """
 
+
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass
 from datetime import datetime
+
 
 
 @dataclass
@@ -21,6 +24,7 @@ class NLPResult:
     suggestions: List[str]
     language: str
     processing_time_ms: int
+
 
 
 class CoreNLPEngine:
@@ -44,61 +48,162 @@ class CoreNLPEngine:
         """
         self.default_language = default_language
         
-        # Diccionarios por intent (ES)
+        # Diccionarios por intent (ES) - MEJORADO 09-DIC-2025
         self.intent_keywords_es = {
             # AGENDA
             "create_event": {
-                "primary": ["crear", "agendar", "programar", "nuevo"],
-                "secondary": ["evento", "cita", "reunión", "meeting"],
-                "verbs": ["crear", "agendar", "programar", "añadir", "poner"]
+                "primary": [
+                    "crear", "agendar", "programar", "nuevo",
+                    "planificar", "reservar", "concertar", "convocar",
+                    "pedir", "fijar", "establecer", "organizar"
+                ],
+                "secondary": [
+                    "evento", "cita", "reunión", "meeting",
+                    "sesión", "junta", "asamblea", "encuentro",
+                    "conferencia", "clase", "charla", "presentación",
+                    "taller", "seminario"
+                ],
+                "verbs": [
+                    "crear", "agendar", "programar", "añadir", "poner",
+                    "planificar", "reservar", "concertar", "convocar",
+                    "marcar", "anotar", "emplazar"
+                ]
             },
             "query_events": {
-                "primary": ["mostrar", "listar", "ver", "cuál", "qué"],
-                "secondary": ["eventos", "citas", "reuniones", "agenda"],
-                "verbs": ["mostrar", "listar", "ver", "buscar"]
+                "primary": [
+                    "mostrar", "listar", "ver", "cuál", "qué",
+                    "consultar", "verificar", "revisar", "buscar"
+                ],
+                "secondary": [
+                    "eventos", "citas", "reuniones", "agenda",
+                    "calendario", "sesiones", "juntas", "conferencias",
+                    "tareas", "actividades"
+                ],
+                "verbs": [
+                    "mostrar", "listar", "ver", "buscar",
+                    "consultar", "verificar", "revisar", "encontrar",
+                    "localizar"
+                ]
             },
             "update_event": {
-                "primary": ["modificar", "editar", "cambiar", "actualizar"],
-                "secondary": ["evento", "cita", "reunión"],
-                "verbs": ["modificar", "editar", "cambiar", "mover"]
+                "primary": [
+                    "modificar", "editar", "cambiar", "actualizar",
+                    "alterar", "variar", "trasladar", "mover",
+                    "reprogramar", "postponer", "aplazar"
+                ],
+                "secondary": [
+                    "evento", "cita", "reunión",
+                    "sesión", "junta", "conferencia",
+                    "horario", "fecha", "hora", "título"
+                ],
+                "verbs": [
+                    "modificar", "editar", "cambiar", "mover",
+                    "actualizar", "alterar", "trasladar",
+                    "reprogramar", "postponer", "aplazar"
+                ]
             },
             "delete_event": {
-                "primary": ["eliminar", "borrar", "cancelar", "quitar"],
-                "secondary": ["evento", "cita", "reunión"],
-                "verbs": ["eliminar", "borrar", "cancelar"]
+                "primary": [
+                    "eliminar", "borrar", "cancelar", "quitar",
+                    "suprimir", "anular", "descartar", "obliterar"
+                ],
+                "secondary": [
+                    "evento", "cita", "reunión",
+                    "sesión", "junta", "conferencia",
+                    "actividad", "tarea", "programación"
+                ],
+                "verbs": [
+                    "eliminar", "borrar", "cancelar", "quitar",
+                    "suprimir", "anular", "descartar", "remover"
+                ]
             },
             
             # NOTES
             "create_note": {
-                "primary": ["nota", "apunte", "anotar", "guardar"],
-                "secondary": ["sobre", "de", "para"],
-                "verbs": ["crear", "guardar", "anotar", "escribir"]
+                "primary": [
+                    "nota", "apunte", "anotar", "guardar",
+                    "memorándum", "anotación", "recordatorio",
+                    "escribir", "documentar"
+                ],
+                "secondary": [
+                    "sobre", "de", "para",
+                    "documento", "paper", "texto",
+                    "contenido", "información"
+                ],
+                "verbs": [
+                    "crear", "guardar", "anotar", "escribir",
+                    "documentar", "registrar", "apuntar", "redactar"
+                ]
             },
             "query_notes": {
-                "primary": ["mostrar", "listar", "ver"],
-                "secondary": ["notas", "apuntes"],
-                "verbs": ["mostrar", "listar", "buscar"]
+                "primary": [
+                    "mostrar", "listar", "ver",
+                    "consultar", "buscar", "verificar"
+                ],
+                "secondary": [
+                    "notas", "apuntes",
+                    "anotaciones", "documentos", "papers",
+                    "textos", "contenidos"
+                ],
+                "verbs": [
+                    "mostrar", "listar", "buscar",
+                    "encontrar", "localizar", "consultar"
+                ]
             },
             
             # REMINDERS
             "create_reminder": {
-                "primary": ["recordar", "recordatorio", "avisar", "alertar"],
-                "secondary": ["me", "que"],
-                "verbs": ["recordar", "avisar", "alertar"]
+                "primary": [
+                    "recordar", "recordatorio", "avisar", "alertar",
+                    "notificar", "comunicar", "advertir", "aviador",
+                    "alarma", "notificación"
+                ],
+                "secondary": [
+                    "me", "que",
+                    "recuerdo", "aviso", "alerta",
+                    "notificación", "alarma", "comunicación"
+                ],
+                "verbs": [
+                    "recordar", "avisar", "alertar",
+                    "notificar", "comunicar", "advertir"
+                ]
             },
             
             # QUERY
             "query": {
-                "primary": ["buscar", "consultar", "encontrar"],
-                "secondary": ["dónde", "cuándo", "qué", "cómo"],
-                "verbs": ["buscar", "consultar", "encontrar"]
+                "primary": [
+                    "buscar", "consultar", "encontrar",
+                    "localizar", "investigar", "indagar",
+                    "pesquisar", "rastrear"
+                ],
+                "secondary": [
+                    "dónde", "cuándo", "qué", "cómo",
+                    "información", "datos", "detalles",
+                    "resultado", "respuesta"
+                ],
+                "verbs": [
+                    "buscar", "consultar", "encontrar",
+                    "localizar", "investigar", "indagar",
+                    "pesquisar", "rastrear", "examinar"
+                ]
             },
             
             # HELP
             "help": {
-                "primary": ["ayuda", "ayudar", "auxilio"],
-                "secondary": ["puedes", "hacer", "comandos"],
-                "verbs": ["ayudar"]
+                "primary": [
+                    "ayuda", "ayudar", "auxilio",
+                    "soporte", "asistencia", "favor",
+                    "sos", "emergencia"
+                ],
+                "secondary": [
+                    "puedes", "hacer", "comandos",
+                    "opciones", "funciones", "capacidades",
+                    "lista", "manual", "guía"
+                ],
+                "verbs": [
+                    "ayudar", "asistir", "apoyar",
+                    "colaborar", "socorrer", "facilitar"
+                ]
             }
         }
         
