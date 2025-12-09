@@ -1,6 +1,6 @@
 # src/theaia/tests/core/test_callbacks.py
 
-from src.theaia.core.callbacks import (
+from src.theaia.core.callbacks_manager import (
     handle_agenda, handle_scheduler, handle_event, handle_note,
     handle_query, handle_help, handle_fallback, handle_completed, handle_error
 )
