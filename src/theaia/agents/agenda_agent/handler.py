@@ -1,355 +1,300 @@
 """
-AgendaAgent Handler - Main Entry Point
+Handlers para AgendaAgent - Funciones auxiliares
 
-Handles user messages and orchestrates the complete agenda management flow.
-Integrates all components: parsing, orchestration, conversation management, and formatting.
+Este módulo contiene helpers para procesar intents específicos:
+- Extracción de entidades
+- Validación de datos
+- Acceso a repositorio (cuando esté disponible)
+- Formateo de respuestas
+
+Autor: Álvaro Fernández Mota
+Fecha: 09 Dic 2025
 """
 
-from typing import Dict, Any, Optional
+from typing import Dict, Optional, List, Tuple
+from datetime import datetime, timedelta
+import re
 import logging
-from sqlalchemy.ext.asyncio import AsyncSession
-
-from .orchestrator import AgendaOrchestrator
-from .conversation_manager import ConversationManager
-from .response_formatter import ResponseFormatter
-from .services.event_service import EventService
-from .tools.event_tools import EventTools
-from ...database.repositories.event_repository import EventRepository
-
 
 logger = logging.getLogger(__name__)
 
 
-class AgendaAgent:
-    """
-    Main AgendaAgent handler.
+class EventEntityExtractor:
+    """Extrae entidades de evento del mensaje"""
     
-    Entry point for all agenda-related user messages.
-    Orchestrates the complete flow from message to response.
-    """
-    
-    def __init__(
-        self,
-        session: AsyncSession,
-        timezone: str = "UTC",
-        language: str = "es"
-    ):
+    @staticmethod
+    def extract_title(message: str) -> Optional[str]:
         """
-        Initialize AgendaAgent with all required components.
+        Extrae el título del evento del mensaje.
         
-        Args:
-            session: SQLAlchemy async session
-            timezone: User's timezone (default: UTC)
-            language: Response language ("es" or "en")
+        Ejemplos:
+            "agendar reunión de seguimiento" → "reunión de seguimiento"
+            "crear evento llamado 'Sprint Planning'" → "Sprint Planning"
+        
+        TODO: Implementar en A.3
         """
-        self.session = session
-        self.timezone = timezone
-        self.language = language
-        
-        # Initialize repositories
-        self.event_repository = EventRepository(session)
-        
-        # Initialize services
-        self.event_service = EventService(self.event_repository)
-        
-        # Initialize tools
-        self.event_tools = EventTools(session)
-        
-        # Initialize orchestrator
-        self.orchestrator = AgendaOrchestrator(
-            event_service=self.event_service,
-            event_tools=self.event_tools,
-            timezone=timezone
-        )
-        
-        # Initialize conversation manager
-        self.conversation_manager = ConversationManager()
-        
-        # Initialize response formatter
-        self.response_formatter = ResponseFormatter(language=language)
-        
-        # FSM instances (for multi-user support)
-        self.fsm_instances: Dict[int, Dict[str, Any]] = {}
-        
-        logger.info(f"AgendaAgent initialized with timezone={timezone}, language={language}")
+        # Placeholder: por ahora retorna None
+        return None
     
-    async def handle_message(
-        self,
+    
+    @staticmethod
+    def extract_date(message: str) -> Optional[datetime]:
+        """
+        Extrae la fecha del evento.
+        
+        Ejemplos:
+            "mañana" → tomorrow
+            "próximo lunes" → next Monday
+            "el 15 de enero" → Jan 15
+            "en 3 días" → today + 3 days
+        
+        TODO: Implementar en A.3 (usar DateTimeParser)
+        """
+        # Placeholder
+        return None
+    
+    
+    @staticmethod
+    def extract_time(message: str) -> Optional[str]:
+        """
+        Extrae la hora del evento.
+        
+        Ejemplos:
+            "a las 3pm" → "15:00"
+            "las 3 de la tarde" → "15:00"
+            "15:00" → "15:00"
+        
+        TODO: Implementar en A.3
+        """
+        # Placeholder
+        return None
+    
+    
+    @staticmethod
+    def extract_participants(message: str) -> List[str]:
+        """
+        Extrae participantes del evento.
+        
+        Ejemplos:
+            "con Juan y María" → ["Juan", "María"]
+            "invitar a juan@email.com" → ["juan@email.com"]
+        
+        TODO: Implementar en A.3
+        """
+        # Placeholder: retorna lista vacía
+        return []
+    
+    
+    @staticmethod
+    def extract_location(message: str) -> Optional[str]:
+        """
+        Extrae ubicación del evento.
+        
+        Ejemplos:
+            "en sala 5" → "sala 5"
+            "reunión online" → "online"
+        
+        TODO: Implementar en A.3
+        """
+        # Placeholder
+        return None
+    
+    
+    @staticmethod
+    def extract_description(message: str) -> Optional[str]:
+        """
+        Extrae descripción del evento.
+        
+        TODO: Implementar en A.3
+        """
+        # Placeholder
+        return None
+
+
+class EventValidator:
+    """Valida datos de evento"""
+    
+    @staticmethod
+    def validate_event_data(
+        title: Optional[str],
+        date: Optional[datetime],
+        time: Optional[str]
+    ) -> Tuple[bool, Optional[str]]:
+        """
+        Valida que el evento tenga datos mínimos requeridos.
+        
+        Retorna:
+            Tuple (is_valid, error_message)
+        """
+        if not title or not title.strip():
+            return False, "El evento necesita un título"
+        
+        if not date:
+            return False, "Especifica cuándo quieres el evento"
+        
+        # TODO: Validar más campos cuando A.3 esté completo
+        
+        return True, None
+
+
+class EventResponseFormatter:
+    """Formatea respuestas del agente"""
+    
+    @staticmethod
+    def format_event_created(
+        event_title: str,
+        event_date: Optional[datetime],
+        event_time: Optional[str]
+    ) -> str:
+        """Formatea mensaje de evento creado"""
+        msg = f"✅ Evento '{event_title}' creado"
+        if event_date:
+            msg += f" para {event_date.strftime('%d de %B')}"
+        if event_time:
+            msg += f" a las {event_time}"
+        return msg
+    
+    
+    @staticmethod
+    def format_events_list(events: List[Dict]) -> str:
+        """Formatea listado de eventos"""
+        if not events:
+            return "📅 No tienes eventos próximos"
+        
+        msg = "📅 Tus eventos:\n"
+        for i, event in enumerate(events, 1):
+            title = event.get("title", "Sin título")
+            msg += f"{i}. {title}\n"
+        
+        return msg
+    
+    
+    @staticmethod
+    def format_event_updated(event_title: str) -> str:
+        """Formatea mensaje de evento actualizado"""
+        return f"✏️ Evento '{event_title}' actualizado"
+    
+    
+    @staticmethod
+    def format_event_deleted(event_title: str) -> str:
+        """Formatea mensaje de evento eliminado"""
+        return f"🗑️ Evento '{event_title}' cancelado"
+
+
+class EventContextBuilder:
+    """Construye contexto para el flujo de evento"""
+    
+    @staticmethod
+    def build_create_context(
         message: str,
-        context: Dict[str, Any]
-    ) -> str:
+        entities: Optional[Dict] = None
+    ) -> Dict:
         """
-        Main entry point for handling user messages.
+        Construye contexto para crear evento.
         
-        Args:
-            message: User's natural language message
-            context: Context dictionary containing:
-                - user_id: int
-                - tenant_id: str
-                - conversation_id: str (optional, for multi-turn)
-                
-        Returns:
-            Formatted response string
+        Contiene:
+        - Datos extraídos del mensaje
+        - Estado actual
+        - Siguiente paso esperado
         """
-        user_id = context.get("user_id")
-        tenant_id = context.get("tenant_id")
-        conversation_id = context.get("conversation_id")
+        entities = entities or {}
         
-        if not user_id or not tenant_id:
-            logger.error("Missing user_id or tenant_id in context")
-            return self.response_formatter.format_error(
-                "Error de configuración: falta información de usuario",
-                error_type="general"
-            )
-        
-        logger.info(f"Processing message from user {user_id}: {message[:50]}...")
-        
-        try:
-            # Check if this is part of an ongoing conversation
-            if conversation_id:
-                return await self._handle_conversation_turn(
-                    message,
-                    conversation_id,
-                    context
-                )
-            
-            # New message - process through orchestrator
-            result = await self.orchestrator.process_message(message, context)
-            
-            # Check if we need to start a conversation for missing info
-            if not result["success"] and result.get("missing_fields"):
-                return await self._start_conversation(result, context)
-            
-            # Return the response (already formatted by orchestrator/tools)
-            return result["response"]
-            
-        except Exception as e:
-            logger.error(f"Error handling message: {str(e)}", exc_info=True)
-            return self.response_formatter.format_error(
-                f"Error procesando mensaje: {str(e)}",
-                error_type="general"
-            )
-    
-    async def _start_conversation(
-        self,
-        incomplete_result: Dict[str, Any],
-        context: Dict[str, Any]
-    ) -> str:
-        """
-        Start a new multi-turn conversation for incomplete request.
-        
-        Args:
-            incomplete_result: Result from orchestrator with missing fields
-            context: User context
-            
-        Returns:
-            Prompt for next missing field
-        """
-        user_id = context["user_id"]
-        intent = incomplete_result["intent"]
-        partial_entities = incomplete_result.get("partial_entities", {})
-        missing_fields = incomplete_result["missing_fields"]
-        
-        # Start conversation
-        conversation_id = self.conversation_manager.start_conversation(
-            user_id=user_id,
-            intent=intent,
-            partial_entities=partial_entities,
-            missing_fields=missing_fields
-        )
-        
-        # Store conversation_id in context for next turn
-        context["conversation_id"] = conversation_id
-        
-        # Generate prompt for first missing field
-        prompt = self.conversation_manager.generate_prompt(conversation_id)
-        
-        logger.info(f"Started conversation {conversation_id} for user {user_id}")
-        
-        return prompt
-    
-    async def _handle_conversation_turn(
-        self,
-        message: str,
-        conversation_id: str,
-        context: Dict[str, Any]
-    ) -> str:
-        """
-        Handle a turn in an ongoing multi-turn conversation.
-        
-        Args:
-            message: User's message (providing missing info)
-            conversation_id: Active conversation ID
-            context: User context
-            
-        Returns:
-            Response (next prompt or completion message)
-        """
-        conversation = self.conversation_manager.get_conversation(conversation_id)
-        
-        if not conversation:
-            logger.warning(f"Conversation {conversation_id} not found")
-            return self.response_formatter.format_error(
-                "Conversación no encontrada. Por favor inicia una nueva solicitud.",
-                error_type="not_found"
-            )
-        
-        # Parse the message to extract the missing field value
-        intent = conversation["intent"]
-        missing_fields = conversation["missing_fields"]
-        
-        if not missing_fields:
-            # Conversation already complete
-            self.conversation_manager.end_conversation(conversation_id)
-            return "✅ Información completa. Procesando..."
-        
-        # Assume user is providing the first missing field
-        next_field = missing_fields[0]
-        
-        # Update conversation with new value
-        new_entities = {next_field: message}
-        self.conversation_manager.update_conversation(
-            conversation_id,
-            new_entities=new_entities
-        )
-        
-        # Check if conversation is now complete
-        if self.conversation_manager.is_conversation_complete(conversation_id):
-            # Execute the action with complete information
-            return await self._complete_conversation(conversation_id, context)
-        
-        # Still missing fields - ask for next one
-        prompt = self.conversation_manager.generate_prompt(conversation_id)
-        return prompt
-    
-    async def _complete_conversation(
-        self,
-        conversation_id: str,
-        context: Dict[str, Any]
-    ) -> str:
-        """
-        Complete conversation and execute the action.
-        
-        Args:
-            conversation_id: Conversation ID
-            context: User context
-            
-        Returns:
-            Result message
-        """
-        conversation = self.conversation_manager.get_conversation(conversation_id)
-        
-        if not conversation:
-            return self.response_formatter.format_error(
-                "Error: Conversación no encontrada",
-                error_type="not_found"
-            )
-        
-        # Build complete message from collected entities
-        entities = conversation["partial_entities"]
-        intent = conversation["intent"]
-        
-        # Create a synthetic message for orchestrator
-        # (In production, you'd reconstruct from entities)
-        synthetic_message = self._reconstruct_message(intent, entities)
-        
-        # Process through orchestrator
-        result = await self.orchestrator.process_message(synthetic_message, context)
-        
-        # End conversation
-        self.conversation_manager.end_conversation(conversation_id)
-        context.pop("conversation_id", None)
-        
-        logger.info(f"Completed conversation {conversation_id}")
-        
-        return result["response"]
-    
-    def _reconstruct_message(self, intent: str, entities: Dict[str, Any]) -> str:
-        """
-        Reconstruct a message from intent and entities.
-        
-        Args:
-            intent: Intent type
-            entities: Collected entities
-            
-        Returns:
-            Synthetic message string
-        """
-        # This is a simplified reconstruction
-        # In production, you'd have a more sophisticated approach
-        
-        if intent == "create_event":
-            title = entities.get("title", "")
-            datetime_str = entities.get("datetime_str", "")
-            location = entities.get("location", "")
-            
-            msg = f"crear evento {title}"
-            if datetime_str:
-                msg += f" {datetime_str}"
-            if location:
-                msg += f" en {location}"
-            
-            return msg
-        
-        elif intent == "update_event":
-            event_id = entities.get("event_id", "")
-            return f"modificar evento #{event_id}"
-        
-        elif intent == "delete_event":
-            event_id = entities.get("event_id", "")
-            return f"eliminar evento #{event_id}"
-        
-        else:
-            return ""
-    
-    async def get_user_events(
-        self,
-        user_id: int,
-        tenant_id: str,
-        hours: int = 24
-    ) -> str:
-        """
-        Get user's upcoming events (convenience method).
-        
-        Args:
-            user_id: User ID
-            tenant_id: Tenant ID
-            hours: Hours ahead to look (default: 24)
-            
-        Returns:
-            Formatted events list
-        """
-        try:
-            events = await self.event_service.get_upcoming_events(
-                user_id=user_id,
-                tenant_id=tenant_id,
-                hours=hours
-            )
-            
-            return self.response_formatter.format_event_list(events)
-            
-        except Exception as e:
-            logger.error(f"Error getting events: {str(e)}", exc_info=True)
-            return self.response_formatter.format_error(
-                f"Error obteniendo eventos: {str(e)}",
-                error_type="general"
-            )
-    
-    async def cleanup(self):
-        """Cleanup resources (call on shutdown)."""
-        # Cleanup old conversations
-        self.conversation_manager.cleanup_old_conversations(max_age_minutes=30)
-        logger.info("AgendaAgent cleanup completed")
-    
-    def get_stats(self) -> Dict[str, Any]:
-        """
-        Get agent statistics.
-        
-        Returns:
-            Statistics dictionary
-        """
-        return {
-            "active_conversations": len(self.conversation_manager.conversations),
-            "timezone": self.timezone,
-            "language": self.language,
+        context = {
+            "action": "create_event",
+            "state": "gathering_info",
+            "extracted": {
+                "title": entities.get("title"),
+                "date": entities.get("date"),
+                "time": entities.get("time"),
+                "participants": entities.get("participants", []),
+                "location": entities.get("location"),
+            },
+            "missing_fields": [],
+            "message": message
         }
+        
+        # Identificar campos faltantes
+        if not context["extracted"]["title"]:
+            context["missing_fields"].append("title")
+        if not context["extracted"]["date"]:
+            context["missing_fields"].append("date")
+        
+        return context
+    
+    
+    @staticmethod
+    def build_query_context(
+        message: str,
+        filters: Optional[Dict] = None
+    ) -> Dict:
+        """Construye contexto para consultar eventos"""
+        filters = filters or {}
+        
+        return {
+            "action": "query_events",
+            "state": "searching",
+            "filters": {
+                "date": filters.get("date"),
+                "participant": filters.get("participant"),
+                "location": filters.get("location"),
+            },
+            "message": message
+        }
+    
+    
+    @staticmethod
+    def build_update_context(event_id: Optional[str] = None) -> Dict:
+        """Construye contexto para actualizar evento"""
+        return {
+            "action": "update_event",
+            "state": "identifying_event",
+            "event_id": event_id,
+            "updates": {}
+        }
+
+
+class EventRepository:
+    """
+    Interfaz para acceder a eventos en BD.
+    
+    TODO: Implementar cuando EventService esté disponible
+    """
+    
+    def __init__(self, user_id: str):
+        self.user_id = user_id
+        # TODO: Conectar a BD real
+    
+    
+    async def create_event(self, event_data: Dict) -> Optional[Dict]:
+        """Crear evento en BD"""
+        logger.info(f"Creating event for user {self.user_id}")
+        # TODO: Implementar en A.5
+        return None
+    
+    
+    async def get_events(
+        self,
+        date_filter: Optional[datetime] = None
+    ) -> List[Dict]:
+        """Consultar eventos de usuario"""
+        logger.info(f"Querying events for user {self.user_id}")
+        # TODO: Implementar en A.5
+        return []
+    
+    
+    async def update_event(
+        self,
+        event_id: str,
+        updates: Dict
+    ) -> Optional[Dict]:
+        """Actualizar evento"""
+        logger.info(f"Updating event {event_id}")
+        # TODO: Implementar en A.5
+        return None
+    
+    
+    async def delete_event(self, event_id: str) -> bool:
+        """Eliminar evento"""
+        logger.info(f"Deleting event {event_id}")
+        # TODO: Implementar en A.5
+        return True
