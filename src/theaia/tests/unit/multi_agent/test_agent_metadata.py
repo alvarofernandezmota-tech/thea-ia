@@ -270,7 +270,7 @@ class TestPerformanceMetrics:
             failed_requests=10
         )
         
-        assert metrics.error_rate == 0.1
+        assert metrics.error_rate == pytest.approx(0.1)
     
     def test_rates_with_zero_requests(self):
         """Test rates when no requests have been made"""
