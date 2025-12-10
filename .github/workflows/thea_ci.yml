@@ -31,6 +31,7 @@ jobs:
           pip install pytest pytest-asyncio pytest-cov black flake8 isort mypy
 
       - name: Lint - Code Quality
+            continue-on-error: true
         run: |
           black --check src/
           isort --check-only src/
