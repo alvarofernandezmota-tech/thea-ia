@@ -23,7 +23,7 @@ pre-commit==3.6.0
 
 # Documentación
 mkdocs==1.5.3
-mkdocs-material==9.4.8
+mkdocs-material==9.5.14
 mkdocs-mermaid2-plugin==1.1.1
 
 # Debugging
