@@ -23,7 +23,7 @@ pre-commit==3.6.0
 
 # Documentación
 mkdocs==1.5.3
-mkdocs-material==9.4.8
+mkdocs-material==9.5.14
 mkdocs-mermaid2-plugin==1.1.1
 
 # Debugging
@@ -42,15 +42,10 @@ sqlalchemy-utils==0.41.1
 locust==2.17.0
 
 # Security scanning
-safety==2.3.5
+# safety==2.3.5
 bandit==1.7.5
 
 # Code quality
-pylint==3.0.3
+# pylint==3.0.3
 coverage==7.3.2
 
-pytest
-pytest-asyncio
-flake8
-black
-isort
