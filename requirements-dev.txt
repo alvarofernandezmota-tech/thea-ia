@@ -42,10 +42,10 @@ sqlalchemy-utils==0.41.1
 locust==2.17.0
 
 # Security scanning
-safety==2.3.5
+# safety==2.3.5
 bandit==1.7.5
 
 # Code quality
-pylint==3.0.3
+# pylint==3.0.3
 coverage==7.3.2
 
