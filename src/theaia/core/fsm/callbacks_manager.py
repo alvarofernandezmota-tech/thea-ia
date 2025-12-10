@@ -1,11 +1,17 @@
+"""
+Enhanced Callback Manager for FSM
+H06.7 - Advanced Callbacks & Hooks System
+"""
 from enum import Enum
 from typing import Callable, Any, Optional, List, Dict
 from dataclasses import dataclass, field
 import asyncio
 import logging
 from datetime import datetime
+from functools import partial
 
 logger = logging.getLogger(__name__)
+
 
 class CallbackPriority(Enum):
     """Prioridades de ejecución de callbacks"""
@@ -15,6 +21,7 @@ class CallbackPriority(Enum):
     LOW = 3
     LOWEST = 4
 
+
 class CallbackHookType(Enum):
     """Tipos de hooks FSM"""
     BEFORE_TRANSITION = "before_transition"
@@ -23,6 +30,7 @@ class CallbackHookType(Enum):
     ON_EXIT_STATE = "on_exit_state"
     ON_ERROR = "on_error"
     ON_STATE_TIMEOUT = "on_state_timeout"
+
 
 @dataclass
 class EnhancedCallback:
@@ -35,6 +43,7 @@ class EnhancedCallback:
     retry_on_error: bool = False
     max_retries: int = 3
     metadata: Dict[str, Any] = field(default_factory=dict)
+
 
 class EnhancedCallbackManager:
     """
@@ -173,14 +182,10 @@ class EnhancedCallbackManager:
                         )
                     return await callback.func(context, **kwargs)
                 else:
-                    # Ejecutar sync en thread pool para no bloquear
+                    # ✅ FIX: Usar partial para pasar kwargs a sync callbacks
                     loop = asyncio.get_event_loop()
-                    return await loop.run_in_executor(
-                        None,
-                        callback.func,
-                        context,
-                        **kwargs
-                    )
+                    func_with_args = partial(callback.func, context, **kwargs)
+                    return await loop.run_in_executor(None, func_with_args)
                     
             except asyncio.TimeoutError:
                 logger.warning(
