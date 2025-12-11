@@ -9,6 +9,7 @@ import logging
 from .agent_metadata import AgentMetadata, AgentCapability, AgentStatus
 from .agent_registry import AgentRegistry
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -78,7 +79,8 @@ class DiscoveryService:
     def discover_by_capability(
         self,
         capability: AgentCapability,
-        max_results: Optional[int] = None
+        max_results: Optional[int] = None,
+        strategy: LoadBalancingStrategy = LoadBalancingStrategy.LEAST_LOADED
     ) -> List[AgentMetadata]:
         """
         Discover agents by capability (convenience method)
@@ -86,13 +88,15 @@ class DiscoveryService:
         Args:
             capability: Required capability
             max_results: Maximum number of results
+            strategy: Load balancing strategy for agent selection
             
         Returns:
-            List of matching agents
+            List of matching agents sorted by strategy
         """
         query = DiscoveryQuery(
             capabilities={capability},
-            max_results=max_results
+            max_results=max_results,
+            load_balancing=strategy
         )
         return self.discover(query)
     

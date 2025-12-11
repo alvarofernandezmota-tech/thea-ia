@@ -134,6 +134,18 @@ class AgentRegistry:
         with self._lock:
             return self._agents.get(agent_id)
     
+    def get_agent(self, agent_id: str) -> Optional[AgentMetadata]:
+        """
+        Get agent metadata by ID (alias for get method)
+        
+        Args:
+            agent_id: ID of agent
+            
+        Returns:
+            AgentMetadata if found, None otherwise
+        """
+        return self.get(agent_id)
+    
     def get_all(self) -> List[AgentMetadata]:
         """Get all registered agents"""
         with self._lock:
@@ -193,6 +205,30 @@ class AgentRegistry:
                 self._agents[agent_id].decrement_load()
             
             return True
+    
+    def increment_load(self, agent_id: str) -> bool:
+        """
+        Increment agent load (convenience method)
+        
+        Args:
+            agent_id: ID of agent
+            
+        Returns:
+            True if successful, False if agent not found
+        """
+        return self.update_load(agent_id, increment=True)
+    
+    def decrement_load(self, agent_id: str) -> bool:
+        """
+        Decrement agent load (convenience method)
+        
+        Args:
+            agent_id: ID of agent
+            
+        Returns:
+            True if successful, False if agent not found
+        """
+        return self.update_load(agent_id, increment=False)
     
     def get_healthy_agents(self) -> List[AgentMetadata]:
         """Get all healthy agents"""
