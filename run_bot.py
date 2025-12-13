@@ -18,6 +18,6 @@ from theaia.adapters.telegram.bot import main
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("🤖 THEA IA - Telegram Bot")
+    print("🤖 THEA IA - Telegram Bot (Conversational)")
     print("=" * 60)
     main()
