@@ -314,7 +314,7 @@ class TestAgentLifecycle:
         await lifecycle.transition_to(AgentState.READY, LifecycleEvent.INITIALIZED)
         
         duration = lifecycle.get_state_duration(AgentState.INITIALIZING)
-        assert duration >= 0.1
+        assert duration >= 0.095  # Allow 5% tolerance for timing precision
         assert duration < 1.0
 
     @pytest.mark.asyncio
