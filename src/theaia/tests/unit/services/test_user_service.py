@@ -7,8 +7,8 @@ import pytest
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from theaia.services.user_service import UserService
-from theaia.database.models import User
+from src.theaia.services.user_service import UserService
+from src.theaia.database.models import User
 
 
 @pytest.fixture
