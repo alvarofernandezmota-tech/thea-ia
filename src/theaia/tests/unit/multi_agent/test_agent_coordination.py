@@ -138,6 +138,7 @@ class TestConsensusEngine:
         engine = ConsensusEngine()
         proposal_id = await engine.propose(
             proposer_id="agent_1",
+            description="Test expired proposal",
             timeout_seconds=0.1
         )
         
@@ -155,6 +156,7 @@ class TestConsensusEngine:
         engine = ConsensusEngine()
         proposal_id = await engine.propose(
             proposer_id="agent_1",
+            description="Test get result",
             required_votes=1
         )
         
@@ -174,6 +176,7 @@ class TestConsensusEngine:
         for i in range(3):
             await engine.propose(
                 proposer_id=f"agent_{i}",
+                description=f"Test proposal {i}",
                 timeout_seconds=0.1
             )
         
