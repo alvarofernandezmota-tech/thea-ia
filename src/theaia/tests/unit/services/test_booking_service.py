@@ -7,9 +7,9 @@ import pytest
 from datetime import datetime, timedelta
 from uuid import uuid4
 
-from theaia.services.booking_service import BookingService
-from theaia.services.user_service import UserService
-from theaia.database.models import Appointment
+from src.theaia.services.booking_service import BookingService
+from src.theaia.services.user_service import UserService
+from src.theaia.database.models import Appointment
 
 
 @pytest.fixture
