@@ -1,161 +1,116 @@
 """
-H08.1 - LLM Client Integration
-Wrapper for OpenAI API with retry logic and error handling
+LLM Client - Groq OpenAI-compatible Integration
 """
 
 import os
-import asyncio
-from typing import Optional, List, Dict, Any
-from dataclasses import dataclass
+from typing import Optional, List, Dict
+from dotenv import load_dotenv
+from openai import OpenAI
 
-# Try to import OpenAI (optional for mock support)
-try:
-    from openai import AsyncOpenAI
-    HAS_OPENAI = True
-except ImportError:
-    HAS_OPENAI = False
+# Load environment variables
+load_dotenv()
 
 
-@dataclass
 class LLMConfig:
-    """Configuration for LLM client"""
-    provider: str = "openai"
-    model: str = "gpt-4-turbo"
-    temperature: float = 0.7
-    max_tokens: int = 2000
-    timeout: int = 30
-    max_retries: int = 3
-
-
-class PromptTemplate:
-    """Manages prompt templates"""
+    """LLM Configuration"""
     
-    SYSTEM_PROMPT = """You are THEA, an advanced AI assistant powered by a multi-agent system.
-
-You have access to:
-- Advanced state machine (H06)
-- Multi-agent coordination (H07)
-- Database with user information (H02)
-
-Be helpful, respectful, and honest."""
-
-    @staticmethod
-    def format_message(role: str, content: str) -> Dict[str, str]:
-        """Format message for API"""
-        return {"role": role, "content": content}
-    
-    @staticmethod
-    def build_context(history: List[Dict], user_info: Optional[Dict] = None) -> str:
-        """Build context string from history"""
-        context = "Recent conversation:\n"
-        for msg in history[-3:]:
-            role = msg.get("role", "unknown").upper()
-            content = msg.get("content", "")[:50]
-            context += f"{role}: {content}\n"
-        return context
+    def __init__(
+        self,
+        model: str = "llama-3.1-8b-instant",
+        temperature: float = 0.7,
+        max_tokens: int = 2048
+    ):
+        self.model = model
+        self.temperature = temperature
+        self.max_tokens = max_tokens
 
 
 class LLMClient:
-    """Client for LLM interactions"""
+    """LLM Client using Groq OpenAI-compatible API"""
     
-    def __init__(self, config: Optional[LLMConfig] = None):
-        """Initialize LLM client"""
-        self.config = config or LLMConfig()
-        self.conversation_history: List[Dict[str, str]] = []
-        
-        # Try to use real OpenAI if available
-        if HAS_OPENAI:
-            api_key = os.getenv("OPENAI_API_KEY")
-            if api_key:
-                self.client = AsyncOpenAI(api_key=api_key)
-            else:
-                self.client = None
-        else:
-            self.client = None
-    
-    async def generate_response(
-        self,
-        user_message: str,
-        system_prompt: Optional[str] = None,
-        context: Optional[str] = None
-    ) -> str:
-        """Generate response from LLM"""
-        
-        # If no OpenAI client, use mock
-        if not self.client:
-            return await self._mock_response(user_message)
+    def __init__(self, config: LLMConfig):
+        self.config = config
         
         try:
-            # Build messages list
-            messages = []
+            api_key = os.getenv("GROQ_API_KEY")
+            if not api_key:
+                raise ValueError("GROQ_API_KEY not found in .env")
             
-            # Add system prompt
-            sys_content = system_prompt or PromptTemplate.SYSTEM_PROMPT
-            if context:
-                sys_content += f"\n\nContext:\n{context}"
-            
-            messages.append({"role": "system", "content": sys_content})
-            
-            # Add last few messages from history
-            messages.extend(self.conversation_history[-4:])
-            
-            # Add current message
-            messages.append({"role": "user", "content": user_message})
-            
-            # Call OpenAI
-            response = await self.client.chat.completions.create(
+            # Use OpenAI client with Groq endpoint
+            self.client = OpenAI(
+                api_key=api_key,
+                base_url="https://api.groq.com/openai/v1"
+            )
+        except Exception as e:
+            raise Exception(f"Groq initialization error: {e}")
+        
+        self.conversation_history: List[Dict[str, str]] = []
+    
+    async def chat(
+        self,
+        message: str,
+        system_prompt: Optional[str] = None
+    ) -> str:
+        """Send message to Groq and get response"""
+        
+        # Add user message to history
+        self.conversation_history.append({
+            "role": "user",
+            "content": message
+        })
+        
+        # Build messages for API
+        messages: List[Dict[str, str]] = []
+        
+        # Add system prompt if provided
+        if system_prompt:
+            messages.append({
+                "role": "system",
+                "content": system_prompt
+            })
+        
+        # Add conversation history (keep last 10 for context)
+        messages.extend(self.conversation_history[-10:])
+        
+        try:
+            # Call Groq API (OpenAI compatible)
+            response = self.client.chat.completions.create(
                 model=self.config.model,
                 messages=messages,
                 temperature=self.config.temperature,
-                max_tokens=self.config.max_tokens,
-                timeout=self.config.timeout
+                max_tokens=self.config.max_tokens
             )
             
-            # Extract and store response
-            assistant_message = response.choices[0].message.content
-            self.conversation_history.append({"role": "user", "content": user_message})
-            self.conversation_history.append({"role": "assistant", "content": assistant_message})
+            # Extract answer
+            answer = response.choices[0].message.content
             
-            return assistant_message
+            # Add assistant response to history
+            self.conversation_history.append({
+                "role": "assistant",
+                "content": answer
+            })
+            
+            return answer
         
         except Exception as e:
-            # Fallback to mock on error
-            return await self._mock_response(user_message)
+            error_msg = f"❌ Groq Error: {str(e)}"
+            print(error_msg)
+            return error_msg
     
-    async def _mock_response(self, user_message: str) -> str:
-        """Return mock response for testing"""
-        mock_map = {
-            "hello": "Hello! I'm THEA, your AI assistant.",
-            "name": "I'm THEA.",
-            "help": "I can help with many things!",
-            "test": "This is a test response.",
-        }
-        
-        user_lower = user_message.lower()
-        response = None
-        
-        for key, value in mock_map.items():
-            if key in user_lower:
-                response = value
-                break
-        
-        if not response:
-            response = f"You said: '{user_message}'. That's interesting!"
-        
-        # Store in history
-        self.conversation_history.append({"role": "user", "content": user_message})
-        self.conversation_history.append({"role": "assistant", "content": response})
-        
-        return response
-    
-    def clear_history(self) -> None:
+    def clear_history(self):
         """Clear conversation history"""
         self.conversation_history = []
     
-    def get_history(self) -> List[Dict[str, str]]:
+    def get_history(self, last_n: Optional[int] = None) -> List[Dict]:
         """Get conversation history"""
-        return self.conversation_history.copy()
+        if last_n:
+            return self.conversation_history[-last_n:]
+        return self.conversation_history
     
     def get_history_length(self) -> int:
-        """Get number of messages in history"""
+        """Get total conversation history length"""
         return len(self.conversation_history)
+    
+    async def close(self):
+        """Cleanup resources"""
+        pass
