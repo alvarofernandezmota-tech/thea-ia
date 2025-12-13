@@ -7,9 +7,9 @@ import pytest
 from datetime import datetime, timedelta, time, date
 from dateutil.parser import parse as parse_date
 
-from theaia.services.availability_engine import AvailabilityEngine
-from theaia.services.user_service import UserService
-from theaia.services.booking_service import BookingService
+from src.theaia.services.availability_engine import AvailabilityEngine
+from src.theaia.services.user_service import UserService
+from src.theaia.services.booking_service import BookingService
 
 
 @pytest.fixture
