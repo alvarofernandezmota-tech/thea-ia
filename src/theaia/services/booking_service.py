@@ -15,7 +15,7 @@ class BookingService:
     
     def __init__(self):
         """Initialize booking service"""
-        self.appointments = {}
+        self.appointments: Dict[int, Dict] = {}
         self.appointment_counter = 0
     
     def create_appointment(
@@ -51,7 +51,7 @@ class BookingService:
             
             # Create appointment dict (mock)
             self.appointment_counter += 1
-            appointment = {
+            appointment: Dict = {
                 'id': self.appointment_counter,
                 'user_id': user_id,
                 'start_time': start_time,
@@ -306,7 +306,7 @@ class BookingService:
             start_of_day = date.replace(hour=0, minute=0, second=0, microsecond=0)
             end_of_day = start_of_day + timedelta(days=1)
             
-            appointments = []
+            appointments: List[Dict] = []
             for apt in self.appointments.values():
                 if apt['status'] != 'scheduled':
                     continue
