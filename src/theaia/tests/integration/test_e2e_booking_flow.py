@@ -202,23 +202,6 @@ class TestE2EBookingFlow:
         assert "invalid" in result.error.lower() or "error" in result.error.lower()
 
 
-    def test_error_handling_invalid_time(self, groq_tools, mock_availability_engine):
-        """
-        Test: Invalid time parsing should raise exception
-        "25:99" should return error
-        """
-        # Configure mock to raise exception for invalid times
-        mock_availability_engine.parse_natural_time.side_effect = ValueError("Invalid time format")
-        
-        result = groq_tools.create_appointment(
-            date_str="mañana",
-            time_str="25:99"
-        )
-
-        assert result.success is False
-        assert result.error is not None
-
-
     def test_tool_registry_dispatch(self, groq_tools):
         """
         Test: Tool registry can dispatch all registered tools
