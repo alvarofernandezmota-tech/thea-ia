@@ -32,6 +32,7 @@ def sample_user_data():
         "first_name": "Test",
         "last_name": "User",
         "timezone": "America/New_York",
+        "tenant_id": "test-tenant-001",  # ✅ ADDED
     }
 
 
@@ -46,6 +47,7 @@ class TestUserServiceCreate:
             first_name=sample_user_data["first_name"],
             last_name=sample_user_data["last_name"],
             timezone=sample_user_data["timezone"],
+            tenant_id=sample_user_data["tenant_id"],  # ✅ ADDED
         )
         
         assert user is not None
@@ -53,6 +55,7 @@ class TestUserServiceCreate:
         assert user.username == sample_user_data["username"]
         assert user.first_name == sample_user_data["first_name"]
         assert user.timezone == sample_user_data["timezone"]
+        assert user.tenant_id == sample_user_data["tenant_id"]  # ✅ ADDED
         assert user.created_at is not None
 
     def test_create_user_with_minimal_data(self, user_service):
@@ -60,11 +63,13 @@ class TestUserServiceCreate:
         user = user_service.create_user(
             telegram_id="987654321",
             username="minimal_user",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         
         assert user is not None
         assert user.telegram_id == "987654321"
         assert user.username == "minimal_user"
+        assert user.tenant_id == "test-tenant-001"  # ✅ ADDED
         assert user.timezone is None or user.timezone == "UTC"
 
     def test_create_user_duplicate_telegram_id(self, user_service, sample_user_data):
@@ -82,6 +87,7 @@ class TestUserServiceCreate:
         user = user_service.create_user(
             telegram_id="111111111",
             username="test_interaction",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         after_creation = datetime.utcnow()
         
@@ -242,10 +248,12 @@ class TestUserServiceInteractionTracking:
         user1 = user_service.create_user(
             telegram_id="111",
             username="user1",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         user2 = user_service.create_user(
             telegram_id="222",
             username="user2",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         
         # Mark user1 as inactive (older than 30 days)
@@ -303,6 +311,7 @@ class TestUserServiceEdgeCases:
             user_service.create_user(
                 telegram_id="123",
                 username="",
+                tenant_id="test-tenant-001",  # ✅ ADDED
             )
 
     def test_create_user_empty_telegram_id(self, user_service):
@@ -311,6 +320,7 @@ class TestUserServiceEdgeCases:
             user_service.create_user(
                 telegram_id="",
                 username="test",
+                tenant_id="test-tenant-001",  # ✅ ADDED
             )
 
     def test_create_user_invalid_timezone(self, user_service):
@@ -320,6 +330,7 @@ class TestUserServiceEdgeCases:
                 telegram_id="123",
                 username="test",
                 timezone="Invalid/Timezone",
+                tenant_id="test-tenant-001",  # ✅ ADDED
             )
 
     def test_user_data_integrity(self, user_service, sample_user_data):
@@ -343,6 +354,7 @@ class TestUserServiceEdgeCases:
             return user_service.create_user(
                 telegram_id=str(user_id),
                 username=f"user_{user_id}",
+                tenant_id="test-tenant-001",  # ✅ ADDED
             )
         
         with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
