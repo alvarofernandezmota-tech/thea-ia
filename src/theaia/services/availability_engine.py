@@ -53,7 +53,7 @@ class AvailabilityEngine:
                 logger.warning(f"⚠️ Date is in the past: {date}")
                 return []
             
-            # Generate slots for entire day (00:00 - 23:00)
+            # Generate slots for entire day (00:00 - 23:59)
             # User can schedule ANYTIME - no day/hour restrictions
             all_slots = self._generate_slots_for_day(
                 date,
@@ -110,10 +110,12 @@ class AvailabilityEngine:
         
         # Combine date with start time
         current_slot = datetime.combine(date.date(), start_time)
-        end_datetime = datetime.combine(date.date(), end_time)
+        # End of day boundary (00:00 next day)
+        end_of_day = datetime.combine(date.date() + timedelta(days=1), time(0, 0))
         
         # Generate slots for entire time range
-        while current_slot + timedelta(minutes=duration_minutes) <= end_datetime:
+        # Include slots that end at or before end_of_day
+        while current_slot + timedelta(minutes=duration_minutes) <= end_of_day:
             slots.append(current_slot)
             current_slot += timedelta(minutes=self.slot_duration)
         
