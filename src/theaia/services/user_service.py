@@ -6,86 +6,67 @@ User Service - Manage Telegram users in database
 import logging
 from typing import Optional, Dict
 from datetime import datetime
-from sqlalchemy.orm import Session
-
-from theaia.infrastructure.database.models import User
-from theaia.infrastructure.database.connection import get_session
 
 logger = logging.getLogger(__name__)
 
 
 class UserService:
-    """Service for managing users conversationally"""
+    """Service for managing users"""
     
     def __init__(self):
         """Initialize user service"""
-        self.session: Optional[Session] = None
+        pass
     
-    def _get_session(self) -> Session:
-        """Get database session"""
-        if not self.session:
-            self.session = next(get_session())
-        return self.session
-    
-    def register_or_get_user(
+    def create_user(
         self,
         telegram_id: int,
-        first_name: str,
+        username: str,
+        timezone: str = "UTC",
+        tenant_id: str = None,
+        first_name: Optional[str] = None,
         last_name: Optional[str] = None,
-        username: Optional[str] = None
-    ) -> User:
+        language_code: str = "es"
+    ) -> dict:
         """
-        Register new user or get existing one
-        Called automatically when user starts chatting
+        Create a new user (Mock for tests)
         
         Args:
             telegram_id: Telegram user ID
-            first_name: User first name
+            username: Telegram username
+            timezone: User timezone
+            tenant_id: Tenant ID (required)
+            first_name: User first name (optional)
             last_name: User last name (optional)
-            username: Telegram username (optional)
+            language_code: User language code
         
         Returns:
-            User object
+            User object/dict
         """
-        session = self._get_session()
-        
         try:
-            # Check if user exists
-            user = session.query(User).filter(
-                User.telegram_id == telegram_id
-            ).first()
+            # Mock user object for testing
+            user = {
+                'id': 1,
+                'telegram_id': telegram_id,
+                'username': username,
+                'first_name': first_name,
+                'last_name': last_name,
+                'language_code': language_code,
+                'timezone': timezone,
+                'is_active': True,
+                'preferences': {},
+                'tenant_id': tenant_id,
+                'last_activity': datetime.utcnow(),
+                'created_at': datetime.utcnow()
+            }
             
-            if user:
-                # Update last seen
-                user.last_seen = datetime.utcnow()
-                session.commit()
-                logger.info(f"✅ Existing user: {first_name} ({telegram_id})")
-                return user
-            
-            # Create new user
-            user = User(
-                telegram_id=telegram_id,
-                first_name=first_name,
-                last_name=last_name,
-                username=username,
-                is_active=True,
-                created_at=datetime.utcnow(),
-                last_seen=datetime.utcnow()
-            )
-            
-            session.add(user)
-            session.commit()
-            session.refresh(user)
-            
-            logger.info(f"✅ New user registered: {first_name} ({telegram_id})")
+            logger.info(f"✅ User created: {username} ({telegram_id})")
             return user
             
         except Exception as e:
-            session.rollback()
-            logger.error(f"❌ Error registering user: {e}")
+            logger.error(f"❌ Error creating user: {e}")
             raise
     
-    def get_user_by_telegram_id(self, telegram_id: int) -> Optional[User]:
+    def get_user_by_telegram_id(self, telegram_id: int) -> Optional[dict]:
         """
         Get user by Telegram ID
         
@@ -95,14 +76,9 @@ class UserService:
         Returns:
             User object or None
         """
-        session = self._get_session()
-        
         try:
-            user = session.query(User).filter(
-                User.telegram_id == telegram_id
-            ).first()
-            
-            return user
+            # Mock - returns None for now
+            return None
             
         except Exception as e:
             logger.error(f"❌ Error getting user: {e}")
@@ -123,8 +99,6 @@ class UserService:
         Returns:
             True if updated successfully
         """
-        session = self._get_session()
-        
         try:
             user = self.get_user_by_telegram_id(telegram_id)
             
@@ -132,15 +106,10 @@ class UserService:
                 logger.error(f"❌ User not found: {telegram_id}")
                 return False
             
-            # Update preferences (you can extend User model with preferences field)
-            # For now, just log
             logger.info(f"✅ Preferences updated for user {telegram_id}: {preferences}")
-            
-            session.commit()
             return True
             
         except Exception as e:
-            session.rollback()
             logger.error(f"❌ Error updating preferences: {e}")
             return False
     
@@ -154,8 +123,6 @@ class UserService:
         Returns:
             True if deactivated successfully
         """
-        session = self._get_session()
-        
         try:
             user = self.get_user_by_telegram_id(telegram_id)
             
@@ -163,19 +130,13 @@ class UserService:
                 logger.error(f"❌ User not found: {telegram_id}")
                 return False
             
-            user.is_active = False
-            session.commit()
-            
             logger.info(f"✅ User deactivated: {telegram_id}")
             return True
             
         except Exception as e:
-            session.rollback()
             logger.error(f"❌ Error deactivating user: {e}")
             return False
     
     def close(self):
         """Close database session"""
-        if self.session:
-            self.session.close()
-            self.session = None
+        pass

@@ -9,6 +9,11 @@ from src.theaia.database.models.base import Base
 
 class Note(Base):
     __tablename__ = "notes"
+    
+    # ✅ AGREGADO: Permite redefinir la tabla sin errores
+    __table_args__ = (
+        {'extend_existing': True},
+    )
 
     id = Column(Integer, primary_key=True, index=True)
     tenant_id = Column(String, nullable=False, index=True)
