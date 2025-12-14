@@ -7,10 +7,10 @@ import pytest
 from datetime import datetime, timedelta
 from unittest.mock import Mock, patch, MagicMock
 
-from src.theaia.services.groq_tools import GroqTools, GroqToolResult
-from src.theaia.services.booking_service import BookingService
-from src.theaia.services.availability_engine import AvailabilityEngine
-from src.theaia.database.repositories.user_repository import UserRepository
+from theaia.services.groq_tools import GroqTools, GroqToolResult
+from theaia.services.booking_service import BookingService
+from theaia.services.availability_engine import AvailabilityEngine
+from theaia.database.repositories.user_repository import UserRepository
 
 
 @pytest.fixture
