@@ -7,9 +7,7 @@ Conversational calendar logic without commands
 import logging
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta, time
-from sqlalchemy.orm import Session
 
-from theaia.database.connection import get_session
 from theaia.services.booking_service import BookingService
 
 logger = logging.getLogger(__name__)
@@ -20,7 +18,6 @@ class AvailabilityEngine:
     
     def __init__(self):
         """Initialize availability engine"""
-        self.session: Optional[Session] = None
         self.booking_service = BookingService()
         
         # NO business hours restrictions - User decides everything
@@ -32,12 +29,6 @@ class AvailabilityEngine:
         
         # Minimum advance booking time (hours)
         self.min_advance_hours = 2
-    
-    def _get_session(self) -> Session:
-        """Get database session"""
-        if not self.session:
-            self.session = next(get_session())
-        return self.session
     
     def get_available_slots(
         self,
@@ -372,6 +363,3 @@ class AvailabilityEngine:
         """Close resources"""
         if self.booking_service:
             self.booking_service.close()
-        if self.session:
-            self.session.close()
-            self.session = None
