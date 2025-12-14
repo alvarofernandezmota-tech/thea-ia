@@ -32,11 +32,12 @@ def booking_service():
 
 @pytest.fixture
 def sample_user(user_service):
-    """Create a sample user."""
+    """Create a sample user with tenant_id."""
     return user_service.create_user(
-        telegram_id="123456789",
+        telegram_id=123456789,
         username="test_user",
         timezone="America/New_York",
+        tenant_id="test-tenant-001",  # ✅ ADDED
     )
 
 
