@@ -32,6 +32,7 @@ def sample_user(user_service):
         username="test_user",
         first_name="Test",
         timezone="America/New_York",
+        tenant_id="test-tenant-001",  # ✅ ADDED
     )
 
 
@@ -485,10 +486,12 @@ class TestBookingServiceEdgeCases:
         user1 = user_service.create_user(
             telegram_id="111",
             username="user1",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         user2 = user_service.create_user(
             telegram_id="222",
             username="user2",
+            tenant_id="test-tenant-001",  # ✅ ADDED
         )
         
         # Both create at same time - should not conflict
