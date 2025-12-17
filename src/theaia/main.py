@@ -7,7 +7,7 @@ from typing import Dict, Any
 
 # --- Importaciones del Núcleo de Thea ---
 # Ahora importamos el cerebro central: CoreManager
-from src.theaia.core.manager import CoreManager
+from theaia.core.manager import CoreManager
 
 # ============================================================
 # 1️⃣ Inicializar el Núcleo de Thea IA
