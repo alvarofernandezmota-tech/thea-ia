@@ -19,7 +19,7 @@ class LLMConfig:
     
     def __init__(
         self,
-        model: str = "llama-3.1-8b-instant",
+        model: str = "llama-3.3-70b-versatile",
         temperature: float = 0.7,
         max_tokens: int = 2048
     ):
@@ -314,7 +314,7 @@ class LLMClient:
                             
                             # Preparar resultado para el modelo
                             tool_results.append({
-                                "type": "tool_result",
+                                "role": "tool",
                                 "tool_call_id": tool_call.id,
                                 "content": json.dumps({
                                     "success": result.success,
@@ -329,7 +329,7 @@ class LLMClient:
                         except Exception as tool_error:
                             logger.error(f"❌ Error ejecutando {tool_name}: {str(tool_error)}")
                             tool_results.append({
-                                "type": "tool_result",
+                                "role": "tool",
                                 "tool_call_id": tool_call.id,
                                 "content": json.dumps({
                                     "success": False,
@@ -337,11 +337,7 @@ class LLMClient:
                                 })
                             })
                     
-                    # Agregar resultados de tools al historial
-                    current_messages.append({
-                        "role": "user",
-                        "content": tool_results
-                    })
+                    current_messages.extend(tool_results)
                 
                 else:
                     # Respuesta final (no hay tool calls)
@@ -377,3 +373,5 @@ class LLMClient:
         """Cleanup resources"""
         self.conversation_history = []
         logger.debug("👋 LLMClient cerrado")
+
+

@@ -233,11 +233,7 @@ class GroqTools:
             logger.debug(f"📅 Parsed date: {target_date}")
             
             # Get REAL slots from AvailabilityEngine
-            slots = self.availability_engine.get_available_slots(
-                user_id=self.user_id,
-                target_date=target_date,
-                slot_duration=duration_minutes,
-            )
+            slots = self.availability_engine.get_available_slots(date=target_date, duration_minutes=duration_minutes)
             
             if not slots:
                 logger.info(f"⚠️ No slots available for {date_str}")
@@ -572,3 +568,4 @@ class GroqTools:
 GroqToolsIntegration = GroqTools
 
 __all__ = ["GroqTools", "GroqToolResult", "GroqToolsIntegration"]
+
