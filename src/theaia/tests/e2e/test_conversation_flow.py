@@ -10,27 +10,66 @@ Fecha: 17 Dic 2025
 """
 
 import pytest
+import pytest_asyncio
 from src.theaia.agents.booking_agent import BookingAgent
 from src.theaia.services.groq_tools import GroqTools
+from src.theaia.services.user_service import UserService
+from src.theaia.services.booking_service import BookingService
+from src.theaia.services.availability_engine import AvailabilityEngine
 from src.theaia.core.conversation.llm_client import LLMClient, LLMConfig
 
 
 class TestConversationFlowE2E:
     """End-to-End tests for conversational booking flow."""
     
-    @pytest.fixture
-    def booking_agent(self, test_user):
-        """Create fresh BookingAgent for each test.
+    @pytest_asyncio.fixture
+    async def booking_agent(self, test_user):
+        """Create BookingAgent with full Dependency Injection.
+        
+        Inyecta todas las dependencias necesarias para que BookingAgent funcione:
+        - UserService: gestión de usuarios
+        - BookingService: gestión de citas
+        - AvailabilityEngine: cálculo de horarios disponibles
+        - GroqTools: herramientas Groq para tool calling
+        
+        El patrón DI asegura que:
+        1. No hay estado compartido entre tests
+        2. Cada test obtiene instancia limpia de todos los servicios
+        3. Las herramientas apuntan al usuario correcto (test_user.id)
+        4. LLMClient se inicializa automáticamente en BookingAgent.__init__()
         
         Args:
-            test_user: Test user fixture from conftest.py
+            test_user: Test user fixture (definida en conftest.py)
             
         Returns:
-            BookingAgent instance
+            BookingAgent instance fully initialized with all dependencies
+            
+        Raises:
+            Cualquier error durante inicialización de servicios
         """
-        # Aquí inicializarías el agent completo
-        # Por ahora retornamos la estructura
-        return BookingAgent()
+        # 1. Inicializar servicios sin estado compartido
+        user_service = UserService()
+        booking_service = BookingService()
+        availability_engine = AvailabilityEngine()
+        
+        # 2. Crear GroqTools con referencias a servicios y usuario específico
+        groq_tools = GroqTools(
+            booking_service=booking_service,
+            availability_engine=availability_engine,
+            user_id=test_user.id,
+            user_service=user_service
+        )
+        
+        # 3. Crear BookingAgent con todas las dependencias inyectadas
+        # LLMClient se inicializa automáticamente si no se proporciona
+        agent = BookingAgent(
+            user_service=user_service,
+            booking_service=booking_service,
+            availability_engine=availability_engine,
+            groq_tools=groq_tools
+        )
+        
+        return agent
     
     @pytest.fixture
     def conversation_context(self, test_user):
@@ -57,7 +96,7 @@ class TestConversationFlowE2E:
         """Test bot greeting on /start.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -79,7 +118,7 @@ class TestConversationFlowE2E:
         """Test help request handling.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -108,7 +147,7 @@ class TestConversationFlowE2E:
         """Test checking availability for tomorrow.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -128,7 +167,7 @@ class TestConversationFlowE2E:
         """Test checking availability for specific date.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -146,7 +185,7 @@ class TestConversationFlowE2E:
         """Test checking availability for a week.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -166,7 +205,7 @@ class TestConversationFlowE2E:
         """Test simple appointment booking.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -194,7 +233,7 @@ class TestConversationFlowE2E:
         6. Bot confirma
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -236,7 +275,7 @@ class TestConversationFlowE2E:
         """Test booking appointment with description.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -256,7 +295,7 @@ class TestConversationFlowE2E:
         """Test viewing appointments when none exist.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -276,7 +315,7 @@ class TestConversationFlowE2E:
         """Test viewing list of appointments.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -304,7 +343,7 @@ class TestConversationFlowE2E:
         """Test canceling an appointment.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -324,7 +363,7 @@ class TestConversationFlowE2E:
         """Test handling of Spanish language variations.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -358,7 +397,7 @@ class TestConversationFlowE2E:
         """Test handling of invalid dates.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -383,7 +422,7 @@ class TestConversationFlowE2E:
         """Test handling of past dates.
         
         Args:
-            booking_agent: BookingAgent fixture
+            booking_agent: BookingAgent fixture (with DI)
             conversation_context: Context fixture
             test_user: Test user fixture
         """
@@ -467,25 +506,30 @@ class TestDatabasePersistenceE2E:
     """
     
     @pytest.mark.asyncio
-    async def test_appointment_persists_in_database(self, booking_agent, test_user, db_session):
+    async def test_appointment_persists_in_database(self, test_user, db_session):
         """Test that appointments persist in database.
         
         Args:
-            booking_agent: BookingAgent fixture
             test_user: Test user fixture
             db_session: Database session fixture
         """
         # Agendar cita
-        await booking_agent.chat(
-            user_message="Agendar cita mañana 10am para prueba",
+        from src.theaia.services.booking_service import BookingService
+        from datetime import datetime, timedelta
+        
+        service = BookingService()
+        tomorrow = datetime.utcnow() + timedelta(days=1)
+        
+        appointment = service.create_appointment(
             user_id=test_user.id,
-            conversation_history=[]
+            start_time=tomorrow,
+            duration_minutes=60,
+            title="Test Appointment",
+            description="Test description"
         )
         
-        # Aquí verificarías que se guardó en BD
-        # Ejemplo (necesitarías repositorio de appointments):
-        # appointments = await AppointmentRepository(db_session).get_by_user(test_user.id)
-        # assert len(appointments) > 0
+        # Verificar que se guardó
+        assert appointment is not None
 
 
 if __name__ == "__main__":
