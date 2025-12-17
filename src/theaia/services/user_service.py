@@ -84,6 +84,58 @@ class UserService:
             logger.error(f"❌ Error getting user: {e}")
             return None
     
+    def get_user(self, telegram_id: int) -> Optional[dict]:
+        """
+        Get user by Telegram ID (alias for get_user_by_telegram_id)
+        
+        Args:
+            telegram_id: Telegram user ID
+        
+        Returns:
+            User object or None
+        """
+        return self.get_user_by_telegram_id(telegram_id)
+    
+    def get_or_create_user(
+        self,
+        telegram_id: int,
+        username: Optional[str] = None,
+        **kwargs
+    ) -> dict:
+        """
+        Get existing user or create new one if doesn't exist.
+        This is the key method that E2E tests need.
+        
+        Args:
+            telegram_id: Telegram user ID
+            username: Username (optional, will default to user_{telegram_id} if not provided)
+            **kwargs: Additional arguments (first_name, last_name, timezone, etc.)
+        
+        Returns:
+            User dict with id, telegram_id, username, etc.
+        """
+        try:
+            # Try to get existing user
+            user = self.get_user(telegram_id)
+            if user:
+                logger.info(f"✅ User already exists: {telegram_id}")
+                return user
+            
+            # Create new user if doesn't exist
+            if not username:
+                username = f"user_{telegram_id}"
+            
+            logger.info(f"✅ Creating new user: {username} ({telegram_id})")
+            return self.create_user(
+                telegram_id=telegram_id,
+                username=username,
+                **kwargs
+            )
+            
+        except Exception as e:
+            logger.error(f"❌ Error in get_or_create_user: {e}")
+            raise
+    
     def update_user_preferences(
         self,
         telegram_id: int,

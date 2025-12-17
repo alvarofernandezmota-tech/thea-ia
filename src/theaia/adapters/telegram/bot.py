@@ -1,10 +1,11 @@
-"""THEA IA Telegram Bot with Groq Tools Integration.
+"""THEA IA Telegram Bot with Groq Tools Integration - PASO 3 ACTUALIZADO
 
 Full-featured conversational booking bot with:
 - Natural language understanding (Groq LLM)
 - Tool calling for appointment management
 - 24/7 flexible scheduling
 - User state management
+- BookingAgent integration
 """
 
 import os
@@ -20,6 +21,7 @@ from theaia.services.groq_tools import GroqToolsIntegration
 from theaia.services.user_service import UserService
 from theaia.services.booking_service import BookingService
 from theaia.services.availability_engine import AvailabilityEngine
+from theaia.agents.booking_agent import BookingAgent
 
 # Setup logging
 logging.basicConfig(
@@ -70,19 +72,39 @@ class TelegramBotManager:
             availability_engine=self.availability_engine,
         )
 
+        # Initialize LLMClient - PASO 3 NUEVO
+        logger.info("🧠 Initializing LLMClient...")
+        self.llm_client = LLMClient(LLMConfig(model="mixtral-8x7b-32768"))
+        
+        # Setup tools in LLMClient - PASO 3 NUEVO
+        self.llm_client.setup_tools(self.groq_tools)
+        logger.info("✅ LLMClient initialized with GroqTools")
+
+        # Initialize BookingAgent - PASO 3 NUEVO
+        logger.info("🤖 Initializing BookingAgent...")
+        self.booking_agent = BookingAgent(
+            user_service=self.user_service,
+            booking_service=self.booking_service,
+            availability_engine=self.availability_engine,
+            groq_tools=self.groq_tools,
+            llm_client=self.llm_client  # Reutilizar LLMClient
+        )
+        logger.info("✅ BookingAgent initialized")
+
         # Store conversation history per user
         self.conversations = {}
 
         logger.info("🤖 Initializing THEA IA Telegram Bot with Groq Tools...")
         logger.info("🧠 Groq LLM with tool calling ready")
         logger.info("📅 Appointment management via tools enabled")
+        logger.info("🤖 BookingAgent with conversation context active")
         self._init_application()
 
     def _get_system_prompt(self) -> str:
         """System prompt for conversational booking with tools."""
         return """
 Eres THEA IA, un asistente virtual amigable y profesional para agendar citas.
-Tienes acceso a herramientas reales para gestionar citas y disponibilidad.
+Tienes acceso a herramientas reales para gestionar citas.
 
 PERSONALIDAD:
 - Amigable pero profesional
@@ -148,12 +170,12 @@ IMPORTANTE:
         # /help command
         self.app.add_handler(CommandHandler("help", self.cmd_help))
 
-        # ALL text messages → conversational handler with tools
+        # ALL text messages → conversational handler with BookingAgent
         self.app.add_handler(
             MessageHandler(filters.TEXT & ~filters.COMMAND, self.handle_message)
         )
 
-        logger.info("✅ Handlers: Conversational mode with tools 🛠️")
+        logger.info("✅ Handlers: Conversational mode with BookingAgent 🛠️")
 
     async def cmd_start(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """Handle /start - first greeting and user registration."""
@@ -162,21 +184,15 @@ IMPORTANTE:
 
         try:
             # Create or get user in database
-            db_user = self.user_service.get_user(user_id)
-            if not db_user:
-                # Create new user
-                self.user_service.create_user(
-                    telegram_id=user_id,
-                    username=user.username or f"user_{user_id}",
-                    first_name=user.first_name or "",
-                    last_name=user.last_name or "",
-                    timezone="Europe/Madrid",  # Default timezone
-                )
-                logger.info(f"✅ New user registered: {user.first_name} ({user_id})")
-            else:
-                # Update last interaction
-                self.user_service.update_last_interaction(user_id)
-                logger.info(f"✅ Returning user: {user.first_name} ({user_id})")
+            db_user = self.user_service.get_or_create_user(
+                telegram_id=user_id,
+                username=user.username or f"user_{user_id}",
+                first_name=user.first_name or "",
+                last_name=user.last_name or "",
+                timezone="Europe/Madrid",  # Default timezone
+            )
+            
+            logger.info(f"✅ User registered/updated: {user.first_name} ({user_id})")
 
             # Initialize conversation
             self.conversations[user_id] = []
@@ -215,7 +231,9 @@ IMPORTANTE:
         await update.message.reply_text(help_text)
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
-        """Handle all text messages with Groq LLM and tools."""
+        """
+        Handle all text messages with BookingAgent and tool calling - PASO 3 ACTUALIZADO
+        """
         user = update.effective_user
         user_id = user.id
         user_message = update.message.text
@@ -233,10 +251,20 @@ IMPORTANTE:
             # Show typing indicator
             await update.message.chat.send_action("typing")
 
-            # Call Groq with tools integration
-            response = await self.groq_tools.call_groq_with_tools(
-                user_input=user_message, user_id=user_id
+            # Call BookingAgent with conversation history - PASO 3 CAMBIO CLAVE
+            response = await self.booking_agent.chat(
+                user_message=user_message,
+                user_id=user_id,
+                conversation_history=self.conversations[user_id]
             )
+
+            # Add to conversation history
+            self.conversations[user_id].append({"role": "user", "content": user_message})
+            self.conversations[user_id].append({"role": "assistant", "content": response})
+
+            # Keep only last 20 messages for context (10 pairs)
+            if len(self.conversations[user_id]) > 20:
+                self.conversations[user_id] = self.conversations[user_id][-20:]
 
             # Send response
             if response:
@@ -261,7 +289,7 @@ IMPORTANTE:
     def start(self):
         """Start the bot with polling."""
         logger.info("🚀 Starting THEA IA Telegram Bot...")
-        logger.info("💬 Conversational mode with Groq Tools active")
+        logger.info("💬 Conversational mode with BookingAgent active")
         logger.info("📅 Appointments 24/7 enabled")
         logger.info("📡 Bot running. Ctrl+C to stop.")
         self.app.run_polling(allowed_updates=Update.ALL_TYPES)
