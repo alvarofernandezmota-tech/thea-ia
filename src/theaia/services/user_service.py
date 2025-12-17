@@ -1,6 +1,8 @@
 """
 User Service - Manage Telegram users in database
 100% conversational, no commands
+
+✅ FIX #3: get_or_create_user() busca ANTES de crear
 """
 
 import logging
@@ -15,7 +17,8 @@ class UserService:
     
     def __init__(self):
         """Initialize user service"""
-        pass
+        # Simple in-memory cache para usuarios (para prevenir duplicados en tests)
+        self._user_cache: Dict[int, dict] = {}
     
     def create_user(
         self,
@@ -43,9 +46,14 @@ class UserService:
             User object/dict
         """
         try:
+            # ✅ FIX: Verificar si ya existe
+            if telegram_id in self._user_cache:
+                logger.warning(f"⚠️ Usuario ya existe: {telegram_id}, retornando existente")
+                return self._user_cache[telegram_id]
+            
             # Mock user object for testing
             user = {
-                'id': 1,
+                'id': telegram_id,  # Usar telegram_id como ID para simplificar
                 'telegram_id': telegram_id,
                 'username': username,
                 'first_name': first_name,
@@ -59,11 +67,14 @@ class UserService:
                 'created_at': datetime.utcnow()
             }
             
-            logger.info(f"✅ User created: {username} ({telegram_id})")
+            # ✅ Guardar en cache
+            self._user_cache[telegram_id] = user
+            
+            logger.info(f"✅ Usuario creado: {username} ({telegram_id})")
             return user
             
         except Exception as e:
-            logger.error(f"❌ Error creating user: {e}")
+            logger.error(f"❌ Error creando usuario: {e}")
             raise
     
     def get_user_by_telegram_id(self, telegram_id: int) -> Optional[dict]:
@@ -77,11 +88,16 @@ class UserService:
             User object or None
         """
         try:
-            # Mock - returns None for now
+            # ✅ FIX #3: Buscar en cache primero
+            if telegram_id in self._user_cache:
+                logger.debug(f"✅ Usuario encontrado en cache: {telegram_id}")
+                return self._user_cache[telegram_id]
+            
+            logger.debug(f"❌ Usuario no encontrado: {telegram_id}")
             return None
             
         except Exception as e:
-            logger.error(f"❌ Error getting user: {e}")
+            logger.error(f"❌ Error obteniendo usuario: {e}")
             return None
     
     def get_user(self, telegram_id: int) -> Optional[dict]:
@@ -104,7 +120,9 @@ class UserService:
     ) -> dict:
         """
         Get existing user or create new one if doesn't exist.
-        This is the key method that E2E tests need.
+        This is the key method that prevents duplicate users.
+        
+        ✅ FIX #3: BUSCA PRIMERO, luego crea SOLO si no existe
         
         Args:
             telegram_id: Telegram user ID
@@ -115,17 +133,17 @@ class UserService:
             User dict with id, telegram_id, username, etc.
         """
         try:
-            # Try to get existing user
+            # ✅ PASO 1: BUSCAR primero
             user = self.get_user(telegram_id)
             if user:
-                logger.info(f"✅ User already exists: {telegram_id}")
+                logger.info(f"✅ Usuario ya existe: {telegram_id}, NO creando duplicado")
                 return user
             
-            # Create new user if doesn't exist
+            # ✅ PASO 2: CREAR SOLO si no existe
             if not username:
                 username = f"user_{telegram_id}"
             
-            logger.info(f"✅ Creating new user: {username} ({telegram_id})")
+            logger.info(f"✅ Creando nuevo usuario: {username} ({telegram_id})")
             return self.create_user(
                 telegram_id=telegram_id,
                 username=username,
@@ -133,7 +151,7 @@ class UserService:
             )
             
         except Exception as e:
-            logger.error(f"❌ Error in get_or_create_user: {e}")
+            logger.error(f"❌ Error en get_or_create_user: {e}")
             raise
     
     def update_user_preferences(
@@ -155,14 +173,16 @@ class UserService:
             user = self.get_user_by_telegram_id(telegram_id)
             
             if not user:
-                logger.error(f"❌ User not found: {telegram_id}")
+                logger.error(f"❌ Usuario no encontrado: {telegram_id}")
                 return False
             
-            logger.info(f"✅ Preferences updated for user {telegram_id}: {preferences}")
+            # Actualizar preferencias
+            user['preferences'].update(preferences)
+            logger.info(f"✅ Preferencias actualizadas para usuario {telegram_id}: {preferences}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Error updating preferences: {e}")
+            logger.error(f"❌ Error actualizando preferencias: {e}")
             return False
     
     def deactivate_user(self, telegram_id: int) -> bool:
@@ -179,14 +199,15 @@ class UserService:
             user = self.get_user_by_telegram_id(telegram_id)
             
             if not user:
-                logger.error(f"❌ User not found: {telegram_id}")
+                logger.error(f"❌ Usuario no encontrado: {telegram_id}")
                 return False
             
-            logger.info(f"✅ User deactivated: {telegram_id}")
+            user['is_active'] = False
+            logger.info(f"✅ Usuario desactivado: {telegram_id}")
             return True
             
         except Exception as e:
-            logger.error(f"❌ Error deactivating user: {e}")
+            logger.error(f"❌ Error desactivando usuario: {e}")
             return False
     
     def close(self):
