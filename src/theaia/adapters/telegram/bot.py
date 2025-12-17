@@ -66,15 +66,16 @@ class TelegramBotManager:
         self.availability_engine = availability_engine or AvailabilityEngine()
 
         # Initialize LLMClient (shared for all users)
+        # Using llama-3.3-70b-versatile (active model, mixtral was decommissioned)
         logger.info("🧠 Initializing LLMClient...")
-        self.llm_client = LLMClient(LLMConfig(model="mixtral-8x7b-32768"))
-        logger.info("✅ LLMClient initialized")
+        self.llm_client = LLMClient(LLMConfig(model="llama-3.3-70b-versatile"))
+        logger.info("✅ LLMClient initialized with llama-3.3-70b-versatile")
 
         # Store conversation history per user
         self.conversations = {}
 
         logger.info("🤖 Initializing THEA IA Telegram Bot...")
-        logger.info("🧠 Groq LLM ready")
+        logger.info("🧠 Groq LLM ready (llama-3.3-70b-versatile)")
         logger.info("📅 Appointment management enabled")
         logger.info("💬 100% CONVERSATIONAL MODE (NO COMMANDS)")
         logger.info("🤖 BookingAgent will create per-user GroqTools instances")
