@@ -463,79 +463,78 @@ class GroqTools:
             )
 
     def execute_tool(self, tool_name: str, **tool_args) -> GroqToolResult:
-        """
-        Execute a tool by name with arguments - FIXED PARAMETER MAPPING
-        
+        """Execute a tool by name with arguments - FIXED PARAMETER VALIDATION.
+
         Handles multiple parameter name variations that Groq might send:
         - 'date' or 'date_str'
         - 'time' or 'time_str'
         - 'duration' or 'duration_minutes'
         - 'filter' or 'status_filter'
 
-        Args:
-            tool_name: Name of the tool to execute
-            **tool_args: Arguments for the tool (flexible parameter names)
-
         Returns:
             GroqToolResult from tool execution
         """
         try:
+            # ✅ Ensure tool_args is a dict
+            if tool_args is None:
+                tool_args = {}
+                logger.warning("⚠️ tool_args was None, using empty dict")
+
             logger.info(f"🔧 Executing tool: {tool_name} with args: {tool_args}")
-            
+
             if tool_name == "check_availability":
-                # Support both 'date' and 'date_str' parameter names
                 date_str = tool_args.get("date", tool_args.get("date_str", "mañana"))
                 duration = tool_args.get("duration_minutes", tool_args.get("duration", 60))
                 return self.check_availability(date_str, duration)
-            
-            elif tool_name == "create_appointment":
-                # Support flexible parameter names
+
+            if tool_name == "create_appointment":
                 date_str = tool_args.get("date", "mañana")
                 time_str = tool_args.get("time", "15:00")
                 duration = tool_args.get("duration_minutes", tool_args.get("duration", 60))
                 title = tool_args.get("title", tool_args.get("description", "Cita"))
                 description = tool_args.get("description", "")
                 return self.create_appointment(date_str, time_str, title, duration, description)
-            
-            elif tool_name == "get_appointments":
-                # Support flexible parameter names
+
+            if tool_name == "get_appointments":
                 status_filter = tool_args.get("status_filter", tool_args.get("filter", "all"))
                 limit = tool_args.get("limit", 10)
+
+                if not isinstance(limit, int) or limit <= 0:
+                    limit = 10
+                if status_filter not in ["all", "upcoming", "past"]:
+                    status_filter = "all"
+
                 return self.get_appointments(status_filter, limit)
-            
-            elif tool_name == "cancel_appointment":
-                # Support flexible parameter names
+
+            if tool_name == "cancel_appointment":
                 appointment_id = tool_args.get("appointment_id")
                 reason = tool_args.get("reason", "Cancelado por el usuario")
-                
+
                 if not appointment_id:
                     return GroqToolResult(
                         success=False,
                         error="Missing appointment_id",
-                        message="❌ Se requiere el ID de la cita a cancelar"
+                        message="❌ Se requiere el ID de la cita a cancelar",
                     )
-                
+
                 return self.cancel_appointment(appointment_id, reason)
-            
-            else:
-                logger.warning(f"⚠️ Unknown tool: {tool_name}")
-                return GroqToolResult(
-                    success=False,
-                    error=f"Unknown tool: {tool_name}",
-                    message=f"❌ Herramienta desconocida: {tool_name}"
-                )
-        
+
+            logger.warning(f"⚠️ Unknown tool: {tool_name}")
+            return GroqToolResult(
+                success=False,
+                error=f"Unknown tool: {tool_name}",
+                message=f"❌ Herramienta desconocida: {tool_name}",
+            )
         except Exception as e:
             logger.error(f"❌ Error executing tool {tool_name}: {str(e)}", exc_info=True)
             return GroqToolResult(
                 success=False,
                 error=str(e),
-                message=f"❌ Error ejecutando herramienta {tool_name}: {str(e)}"
+                message=f"❌ Error ejecutando herramienta {tool_name}: {str(e)}",
             )
 
     async def call_groq_with_tools(self, user_input: str) -> str:
-        """
-        Call Groq LLM with tool support.
+        """Call Groq LLM with tool support.
         
         NOTE: This is kept for backward compatibility.
         BookingAgent + LLMClient.call_with_tools() is preferred.
@@ -568,4 +567,3 @@ class GroqTools:
 GroqToolsIntegration = GroqTools
 
 __all__ = ["GroqTools", "GroqToolResult", "GroqToolsIntegration"]
-
