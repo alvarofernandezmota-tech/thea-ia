@@ -1,24 +1,25 @@
 # ============================================================
-# THEA IA 3.0 — MAIN API (Integrada con CoreManager)
+# THEA IA 3.0 — MAIN API (Integrada con CoreOrchestrator)
 # ============================================================
 
 from fastapi import FastAPI, Body, HTTPException
 from typing import Dict, Any
+import asyncio
 
 # --- Importaciones del Núcleo de Thea ---
-# Ahora importamos el cerebro central: CoreManager
-from theaia.core.manager import CoreManager
+# Importamos el orchestrator central que coordina todo
+from theaia.core.orchestrator import CoreOrchestrator, OrchestratorResponse
 
 # ============================================================
 # 1️⃣ Inicializar el Núcleo de Thea IA
 # ============================================================
-# Creamos una única instancia del CoreManager al iniciar la app.
-# Él se encargará de inicializar el router, los agentes, la FSM y la DB.
+# Creamos una única instancia del CoreOrchestrator al iniciar la app.
+# Él se encargará de orquestar todos los agentes, conversaciones y el flujo.
 try:
-    core_logic = CoreManager()
+    orchestrator = CoreOrchestrator(language="es", session_timeout_minutes=30)
 except Exception as e:
-    # Si algo falla al cargar los modelos o agentes, la API no debe iniciar.
-    raise RuntimeError(f"Error fatal al inicializar el CoreManager de Thea: {e}")
+    # Si algo falla al cargar los componentes, la API no debe iniciar.
+    raise RuntimeError(f"Error fatal al inicializar el CoreOrchestrator de Thea: {e}")
 
 
 # ============================================================
@@ -26,7 +27,7 @@ except Exception as e:
 # ============================================================
 app = FastAPI(
     title="Thea IA API",
-    description="Thea IA 3.0 — API conversacional orquestada por CoreManager.",
+    description="Thea IA 3.0 — API conversacional orquestada por CoreOrchestrator.",
     version="3.0.2",
 )
 
@@ -39,30 +40,35 @@ app = FastAPI(
 async def handle_chat(user_id: str, payload: Dict[str, Any] = Body(...)):
     """
     Endpoint principal para procesar todos los mensajes del usuario.
-    Recibe el mensaje, el estado actual y el contexto, y los delega al CoreManager.
+    Recibe el mensaje y lo delega al CoreOrchestrator.
     """
     message = payload.get("message")
     if not message:
         raise HTTPException(status_code=400, detail="El campo 'message' es obligatorio.")
 
-    state = payload.get("state", "initial")
-    context = payload.get("context", {})
+    metadata = payload.get("metadata", {})
 
-    # Llamamos al manejador central del núcleo de Thea.
-    # Toda la inteligencia (FSM, Router, Agentes) se ejecuta aquí.
-    response, new_state, new_context = core_logic.handle(
-        user_id=user_id,
-        message=message,
-        state=state,
-        context=context
-    )
-
-    return {
-        "user_id": user_id,
-        "response": response,
-        "state": new_state,
-        "context": new_context,
-    }
+    # Llamamos al orchestrator para procesar el mensaje
+    try:
+        response: OrchestratorResponse = await orchestrator.process_message(
+            user_id=user_id,
+            message=message,
+            metadata=metadata
+        )
+        
+        return {
+            "user_id": user_id,
+            "response": response.message,
+            "conversation_id": response.conversation_id,
+            "state": response.state,
+            "active_agent": response.active_agent,
+            "intent": response.intent,
+            "confidence": response.confidence,
+            "context": response.context,
+            "metadata": response.metadata,
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error procesando mensaje: {str(e)}")
 
 
 # ============================================================
@@ -74,12 +80,42 @@ def health():
     """
     Endpoint para comprobar que la API y el núcleo de Thea están vivos.
     """
-    return {"status": "Thea IA API running successfully"}
+    return {
+        "status": "Thea IA API running successfully",
+        "version": "3.0.2",
+        "orchestrator": "active"
+    }
+
+
+# ============================================================
+# 5️⃣ RUTA DE AGENTES DISPONIBLES
+# ============================================================
+
+@app.get("/agents")
+def get_agents():
+    """
+    Endpoint para obtener lista de agentes disponibles.
+    """
+    return {
+        "agents": orchestrator.get_available_agents()
+    }
+
+
+# ============================================================
+# 6️⃣ RUTA DE ESTADÍSTICAS
+# ============================================================
+
+@app.get("/stats")
+def get_stats():
+    """
+    Endpoint para obtener estadísticas del orchestrator.
+    """
+    return orchestrator.get_stats()
+
 
 # ============================================================
 # ✅ Fin del archivo
 # ============================================================
-# Nota: Las rutas directas a /notas (/get_notas, /create_nota, etc.)
-# han sido eliminadas. Ahora toda la lógica de negocio se gestiona
-# a través de los agentes (como NoteAgent) y se centraliza en el
-# endpoint único /chat para mantener una arquitectura limpia y escalable.
+# Nota: Toda la lógica de negocio se gestiona a través del
+# CoreOrchestrator que coordina agentes especializados.
+# Mantiene una arquitectura limpia, escalable y centralizada.
