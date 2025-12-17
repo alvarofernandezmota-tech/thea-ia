@@ -1,11 +1,11 @@
-"""THEA IA Telegram Bot with Groq Tools Integration - PASO 3 ACTUALIZADO
+"""THEA IA Telegram Bot with Groq Tools Integration - FIXED
 
 Full-featured conversational booking bot with:
 - Natural language understanding (Groq LLM)
 - Tool calling for appointment management
 - 24/7 flexible scheduling
 - User state management
-- BookingAgent integration
+- BookingAgent integration (per-user GroqTools)
 """
 
 import os
@@ -17,7 +17,6 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 
 from theaia.core.conversation.llm_client import LLMClient, LLMConfig
-from theaia.services.groq_tools import GroqToolsIntegration
 from theaia.services.user_service import UserService
 from theaia.services.booking_service import BookingService
 from theaia.services.availability_engine import AvailabilityEngine
@@ -40,7 +39,7 @@ class TelegramBotManager:
         booking_service: BookingService = None,
         availability_engine: AvailabilityEngine = None,
     ):
-        """Initialize bot with tools integration.
+        """Initialize bot with services.
 
         Args:
             token: Telegram bot token
@@ -56,7 +55,7 @@ class TelegramBotManager:
         if not groq_api_key:
             raise ValueError("❌ GROQ_API_KEY not found in .env")
 
-        # Initialize Groq client
+        # Initialize Groq client (shared across all users)
         self.groq_client = Groq(api_key=groq_api_key)
 
         # Initialize services (with defaults if not provided)
@@ -64,40 +63,18 @@ class TelegramBotManager:
         self.booking_service = booking_service or BookingService()
         self.availability_engine = availability_engine or AvailabilityEngine()
 
-        # Initialize Groq Tools Integration
-        self.groq_tools = GroqToolsIntegration(
-            groq_client=self.groq_client,
-            user_service=self.user_service,
-            booking_service=self.booking_service,
-            availability_engine=self.availability_engine,
-        )
-
-        # Initialize LLMClient - PASO 3 NUEVO
+        # Initialize LLMClient (shared for all users)
         logger.info("🧠 Initializing LLMClient...")
         self.llm_client = LLMClient(LLMConfig(model="mixtral-8x7b-32768"))
-        
-        # Setup tools in LLMClient - PASO 3 NUEVO
-        self.llm_client.setup_tools(self.groq_tools)
-        logger.info("✅ LLMClient initialized with GroqTools")
-
-        # Initialize BookingAgent - PASO 3 NUEVO
-        logger.info("🤖 Initializing BookingAgent...")
-        self.booking_agent = BookingAgent(
-            user_service=self.user_service,
-            booking_service=self.booking_service,
-            availability_engine=self.availability_engine,
-            groq_tools=self.groq_tools,
-            llm_client=self.llm_client  # Reutilizar LLMClient
-        )
-        logger.info("✅ BookingAgent initialized")
+        logger.info("✅ LLMClient initialized")
 
         # Store conversation history per user
         self.conversations = {}
 
-        logger.info("🤖 Initializing THEA IA Telegram Bot with Groq Tools...")
-        logger.info("🧠 Groq LLM with tool calling ready")
-        logger.info("📅 Appointment management via tools enabled")
-        logger.info("🤖 BookingAgent with conversation context active")
+        logger.info("🤖 Initializing THEA IA Telegram Bot...")
+        logger.info("🧠 Groq LLM ready")
+        logger.info("📅 Appointment management enabled")
+        logger.info("🤖 BookingAgent will create per-user GroqTools instances")
         self._init_application()
 
     def _get_system_prompt(self) -> str:
@@ -160,7 +137,7 @@ IMPORTANTE:
         """Setup application and handlers."""
         self.app = Application.builder().token(self.token).build()
         self._setup_handlers()
-        logger.info("✅ Application initialized with Groq Tools Integration")
+        logger.info("✅ Application initialized")
 
     def _setup_handlers(self):
         """Register conversational handlers."""
@@ -232,7 +209,8 @@ IMPORTANTE:
 
     async def handle_message(self, update: Update, context: ContextTypes.DEFAULT_TYPE):
         """
-        Handle all text messages with BookingAgent and tool calling - PASO 3 ACTUALIZADO
+        Handle all text messages with BookingAgent and tool calling.
+        BookingAgent creates per-user GroqTools instances automatically.
         """
         user = update.effective_user
         user_id = user.id
@@ -251,8 +229,18 @@ IMPORTANTE:
             # Show typing indicator
             await update.message.chat.send_action("typing")
 
-            # Call BookingAgent with conversation history - PASO 3 CAMBIO CLAVE
-            response = await self.booking_agent.chat(
+            # Create BookingAgent instance for this user
+            # BookingAgent will create GroqTools with the user_id internally
+            booking_agent = BookingAgent(
+                user_service=self.user_service,
+                booking_service=self.booking_service,
+                availability_engine=self.availability_engine,
+                groq_client=self.groq_client,
+                llm_client=self.llm_client
+            )
+
+            # Call BookingAgent with conversation history
+            response = await booking_agent.chat(
                 user_message=user_message,
                 user_id=user_id,
                 conversation_history=self.conversations[user_id]
