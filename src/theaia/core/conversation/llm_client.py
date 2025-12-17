@@ -1,5 +1,6 @@
 """
 LLM Client - Groq OpenAI-compatible Integration with Tools Support
+✅ Full H9 Tool Support: check_availability, create_appointment, get_appointments, cancel_appointment, update_appointment
 """
 
 import os
@@ -120,7 +121,7 @@ class LLMClient:
     def _generate_tools_definitions(self) -> List[Dict]:
         """
         Genera definiciones de tools para Groq API
-        Define: check_availability, create_appointment, get_appointments, cancel_appointment
+        ✅ H9 COMPLETE: check_availability, create_appointment, get_appointments, cancel_appointment, update_appointment
         """
         return [
             {
@@ -218,6 +219,39 @@ class LLMClient:
                         "required": ["appointment_id"]
                     }
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "update_appointment",
+                    "description": "Actualiza/modifica una cita existente (cambiar hora, fecha, título o duración)",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "appointment_id": {
+                                "type": "integer",
+                                "description": "ID de la cita a actualizar"
+                            },
+                            "new_date_str": {
+                                "type": "string",
+                                "description": "Nueva fecha en formato natural (opcional)"
+                            },
+                            "new_time_str": {
+                                "type": "string",
+                                "description": "Nueva hora en formato natural (opcional)"
+                            },
+                            "new_title": {
+                                "type": "string",
+                                "description": "Nuevo título/nombre de la cita (opcional)"
+                            },
+                            "new_duration_minutes": {
+                                "type": "integer",
+                                "description": "Nueva duración en minutos (opcional)"
+                            }
+                        },
+                        "required": ["appointment_id"]
+                    }
+                }
             }
         ]
     
@@ -225,11 +259,11 @@ class LLMClient:
         """
         Normaliza parámetros de tools para asegurar compatibilidad.
         
-        ✅ FIX BUG #2: Maneja variaciones de nombres de parámetros
+        ✅ H9 COMPLETE: Incluye normalización para update_appointment
         - date_str vs date
         - time_str vs time
-        - status_filter puede venir como "confirmed" pero la tool espera "all"
-        - Asegura que los parámetros siempre tengan los nombres esperados
+        - new_date_str vs new_date
+        - new_time_str vs new_time
         
         Args:
             tool_name: Nombre del tool
@@ -266,6 +300,23 @@ class LLMClient:
             # cancel_appointment espera: appointment_id, reason
             normalized["appointment_id"] = tool_input.get("appointment_id")
             normalized["reason"] = tool_input.get("reason", "Cancelado por el usuario")
+        
+        elif tool_name == "update_appointment":
+            # ✅ NEW: update_appointment espera: appointment_id, new_date, new_time, new_title, new_duration_minutes
+            normalized["appointment_id"] = tool_input.get("appointment_id")
+            
+            # Normalizar variaciones de nombres de parámetros
+            if "new_date_str" in tool_input or "new_date" in tool_input:
+                normalized["new_date"] = tool_input.get("new_date_str") or tool_input.get("new_date")
+            
+            if "new_time_str" in tool_input or "new_time" in tool_input:
+                normalized["new_time"] = tool_input.get("new_time_str") or tool_input.get("new_time")
+            
+            if "new_title" in tool_input:
+                normalized["new_title"] = tool_input.get("new_title")
+            
+            if "new_duration_minutes" in tool_input:
+                normalized["new_duration_minutes"] = tool_input.get("new_duration_minutes")
         
         logger.debug(f"✅ Parámetros normalizados para {tool_name}: {normalized}")
         return normalized
