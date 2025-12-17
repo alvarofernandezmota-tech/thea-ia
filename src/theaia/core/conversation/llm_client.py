@@ -221,6 +221,55 @@ class LLMClient:
             }
         ]
     
+    def _normalize_tool_params(self, tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        Normaliza parámetros de tools para asegurar compatibilidad.
+        
+        ✅ FIX BUG #2: Maneja variaciones de nombres de parámetros
+        - date_str vs date
+        - time_str vs time
+        - status_filter puede venir como "confirmed" pero la tool espera "all"
+        - Asegura que los parámetros siempre tengan los nombres esperados
+        
+        Args:
+            tool_name: Nombre del tool
+            tool_input: Parámetros tal como vienen de Groq
+        
+        Returns:
+            Parámetros normalizados para execute_tool()
+        """
+        normalized = {}
+        
+        if tool_name == "check_availability":
+            # check_availability espera: date, duration_minutes
+            normalized["date"] = tool_input.get("date_str") or tool_input.get("date", "mañana")
+            normalized["duration_minutes"] = tool_input.get("duration_minutes", 60)
+            
+        elif tool_name == "create_appointment":
+            # create_appointment espera: date, time, title, duration_minutes, description
+            normalized["date"] = tool_input.get("date_str") or tool_input.get("date", "mañana")
+            normalized["time"] = tool_input.get("time_str") or tool_input.get("time", "15:00")
+            normalized["title"] = tool_input.get("description") or tool_input.get("title", "Cita")
+            normalized["duration_minutes"] = tool_input.get("duration_minutes", 60)
+            normalized["description"] = tool_input.get("description", "")
+            
+        elif tool_name == "get_appointments":
+            # get_appointments espera: status_filter, limit
+            # ✅ FIX: Mapea "confirmed" → "all" porque es conversación fluida
+            status = tool_input.get("status_filter", "all")
+            if status == "confirmed":
+                status = "all"  # Usuario dice "confirmed" pero queremos "all"
+            normalized["status_filter"] = status
+            normalized["limit"] = tool_input.get("limit", 10)
+            
+        elif tool_name == "cancel_appointment":
+            # cancel_appointment espera: appointment_id, reason
+            normalized["appointment_id"] = tool_input.get("appointment_id")
+            normalized["reason"] = tool_input.get("reason", "Cancelado por el usuario")
+        
+        logger.debug(f"✅ Parámetros normalizados para {tool_name}: {normalized}")
+        return normalized
+    
     async def call_with_tools(
         self,
         messages: List[Dict[str, str]],
@@ -304,13 +353,18 @@ class LLMClient:
                     tool_results = []
                     for tool_call in response_message.tool_calls:
                         tool_name = tool_call.function.name
-                        tool_input = json.loads(tool_call.function.arguments)
-                        
-                        logger.debug(f"📍 Ejecutando tool: {tool_name}")
                         
                         try:
-                            # Ejecutar tool
-                            result = self.tools_instance.execute_tool(tool_name, **tool_input)
+                            # Parse arguments
+                            tool_input = json.loads(tool_call.function.arguments)
+                            
+                            # ✅ FIX BUG #2: Normalizar parámetros
+                            normalized_params = self._normalize_tool_params(tool_name, tool_input)
+                            
+                            logger.debug(f"📍 Ejecutando tool: {tool_name} con params: {normalized_params}")
+                            
+                            # Ejecutar tool con parámetros normalizados
+                            result = self.tools_instance.execute_tool(tool_name, **normalized_params)
                             
                             # Preparar resultado para el modelo
                             tool_results.append({
@@ -325,6 +379,17 @@ class LLMClient:
                             })
                             
                             logger.debug(f"✅ Tool {tool_name} ejecutado exitosamente")
+                        
+                        except json.JSONDecodeError as json_error:
+                            logger.error(f"❌ Error parseando JSON para {tool_name}: {str(json_error)}")
+                            tool_results.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "content": json.dumps({
+                                    "success": False,
+                                    "error": f"Error parseando parámetros: {str(json_error)}"
+                                })
+                            })
                         
                         except Exception as tool_error:
                             logger.error(f"❌ Error ejecutando {tool_name}: {str(tool_error)}")
@@ -373,5 +438,3 @@ class LLMClient:
         """Cleanup resources"""
         self.conversation_history = []
         logger.debug("👋 LLMClient cerrado")
-
-
