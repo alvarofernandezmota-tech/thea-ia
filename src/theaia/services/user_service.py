@@ -3,6 +3,7 @@ User Service - Manage Telegram users in database
 100% conversational, no commands
 
 ✅ FIX #3: get_or_create_user() busca ANTES de crear
+✅ FIX #4: Added update_last_interaction() method
 """
 
 import logging
@@ -153,6 +154,34 @@ class UserService:
         except Exception as e:
             logger.error(f"❌ Error en get_or_create_user: {e}")
             raise
+    
+    def update_last_interaction(self, telegram_id: int) -> bool:
+        """
+        Update last interaction timestamp for user.
+        
+        ✅ FIX #4: Added missing method for tracking user activity
+        
+        Args:
+            telegram_id: Telegram user ID
+        
+        Returns:
+            True if updated successfully, False otherwise
+        """
+        try:
+            user = self.get_user(telegram_id)
+            
+            if not user:
+                logger.warning(f"⚠️ Usuario no encontrado para actualizar: {telegram_id}")
+                return False
+            
+            # Update last_activity timestamp
+            user['last_activity'] = datetime.utcnow()
+            logger.debug(f"✅ Last interaction updated for user {telegram_id}")
+            return True
+            
+        except Exception as e:
+            logger.error(f"❌ Error updating last interaction: {e}")
+            return False
     
     def update_user_preferences(
         self,
