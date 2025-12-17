@@ -1,19 +1,20 @@
 """
-Groq Tools Integration for THEA IA - PASO 2 ACTUALIZADO
+Groq Tools Integration for THEA IA - FULL H9 FUNCTIONALITY
 
 This module integrates Groq LLM with THEA IA services through tool calling.
 Tools available:
 - check_availability: Get available slots for scheduling
 - create_appointment: Create a new appointment with REAL database save
 - get_appointments: Retrieve user appointments from REAL database
-- cancel_appointment: Cancel an existing appointment in REAL database
+- cancel_appointment: Cancel an existing appointment in REAL database ✅ FIXED
+- update_appointment: Update an existing appointment ✅ NEW
 
-KEY CHANGES (PASO 2):
-✅ execute_tool() - Fixed parameter mapping
-✅ check_availability() - Returns REAL slots from AvailabilityEngine
-✅ create_appointment() - Saves to REAL database
-✅ get_appointments() - Returns REAL data from database
-✅ cancel_appointment() - Updates REAL database
+KEY CHANGES (PASO 3 - H9 COMPLETE):
+✅ cancel_appointment() - Fixed user_id parameter
+✅ update_appointment() - New function for modifying appointments
+✅ execute_tool() - Added update_appointment dispatch
+✅ TOOLS - Added update_appointment definition
+✅ Enhanced validation and error handling
 """
 
 import json
@@ -44,7 +45,7 @@ class GroqToolResult:
 class GroqTools:
     """Integration between Groq LLM and THEA IA services via tool calling."""
 
-    # Tool definitions for Groq - FIXED with correct parameter names
+    # Tool definitions for Groq - COMPLETE H9 SET
     TOOLS = [
         {
             "type": "function",
@@ -147,6 +148,39 @@ class GroqTools:
                 },
             },
         },
+        {
+            "type": "function",
+            "function": {
+                "name": "update_appointment",
+                "description": "Update an existing appointment (change time, date, title, or duration). Use this when user wants to modify/change/reschedule an appointment.",
+                "parameters": {
+                    "type": "object",
+                    "properties": {
+                        "appointment_id": {
+                            "type": "integer",
+                            "description": "ID of the appointment to update",
+                        },
+                        "new_date": {
+                            "type": "string",
+                            "description": "New date in natural language (optional, e.g., 'tomorrow', 'mañana')",
+                        },
+                        "new_time": {
+                            "type": "string",
+                            "description": "New time in natural language (optional, e.g., '15:00', '3pm')",
+                        },
+                        "new_title": {
+                            "type": "string",
+                            "description": "New title/name for the appointment (optional)",
+                        },
+                        "new_duration_minutes": {
+                            "type": "integer",
+                            "description": "New duration in minutes (optional)",
+                        },
+                    },
+                    "required": ["appointment_id"],
+                },
+            },
+        },
     ]
 
     # Tool registry for dispatch
@@ -155,6 +189,7 @@ class GroqTools:
         "create_appointment": "create_appointment",
         "get_appointments": "get_appointments",
         "cancel_appointment": "cancel_appointment",
+        "update_appointment": "update_appointment",
     }
 
     def __init__(
@@ -313,6 +348,13 @@ class GroqTools:
                 description=description or "Cita agendada por THEA IA"
             )
             
+            if not appointment:
+                return GroqToolResult(
+                    success=False,
+                    error="Conflict detected",
+                    message=f"❌ Ya existe una cita en ese horario"
+                )
+            
             logger.info(f"✅ Appointment created: {appointment}")
             
             # Format response with REAL data
@@ -328,7 +370,7 @@ class GroqTools:
                     "date_formatted": date_formatted,
                     "time_formatted": time_formatted
                 },
-                message=f"✅ Cita confirmada para {date_formatted} a las {time_formatted}"
+                message=f"✅ Cita '{title}' confirmada para {date_formatted} a las {time_formatted}"
             )
         
         except Exception as e:
@@ -377,10 +419,13 @@ class GroqTools:
                         appt_id = appt.get("id", 0)
                         start_time = appt.get("start_time")
                         title = appt.get("title", "Cita")
+                        duration = (appt.get("end_time") - appt.get("start_time")).total_seconds() / 60 if appt.get("end_time") else 60
                     else:
                         appt_id = getattr(appt, "id", 0)
                         start_time = getattr(appt, "start_time", None)
                         title = getattr(appt, "title", "Cita")
+                        end_time = getattr(appt, "end_time", None)
+                        duration = (end_time - start_time).total_seconds() / 60 if end_time else 60
                     
                     if start_time:
                         if isinstance(start_time, str):
@@ -391,6 +436,7 @@ class GroqTools:
                             "date": start_time.strftime("%d/%m/%Y"),
                             "time": start_time.strftime("%H:%M"),
                             "title": title,
+                            "duration_minutes": int(duration),
                             "datetime": start_time.isoformat()
                         })
                 except Exception as e:
@@ -400,14 +446,14 @@ class GroqTools:
             logger.info(f"✅ Found {len(formatted_appts)} appointments for user {self.user_id}")
             
             # Build message
-            message = f"📋 Tienes {len(appointments)} cita(s) agendada(s):\n"
+            message = f"📋 Tienes {len(formatted_appts)} cita(s) agendada(s):\n"
             for i, appt in enumerate(formatted_appts, 1):
-                message += f"{i}. {appt['date']} a las {appt['time']}\n"
+                message += f"{i}. ID:{appt['id']} - '{appt['title']}' el {appt['date']} a las {appt['time']} ({appt['duration_minutes']} min)\n"
             
             return GroqToolResult(
                 success=True,
                 data={
-                    "total": len(appointments),
+                    "total": len(formatted_appts),
                     "appointments": formatted_appts,
                     "user_id": self.user_id
                 },
@@ -428,7 +474,7 @@ class GroqTools:
         reason: str = "Cancelado por el usuario"
     ) -> GroqToolResult:
         """
-        Cancel appointment - UPDATES REAL DATABASE
+        Cancel appointment - UPDATES REAL DATABASE ✅ FIXED
         
         Args:
             appointment_id: ID of appointment to cancel
@@ -440,8 +486,18 @@ class GroqTools:
         try:
             logger.debug(f"❌ Cancelling appointment {appointment_id}: {reason}")
             
-            # Cancel in REAL database
-            appointment = self.booking_service.cancel_appointment(appointment_id)
+            # ✅ FIXED: Cancel in REAL database with user_id
+            success = self.booking_service.cancel_appointment(
+                appointment_id=appointment_id,
+                user_id=self.user_id  # ✅ NOW PASSING user_id
+            )
+            
+            if not success:
+                return GroqToolResult(
+                    success=False,
+                    error="Appointment not found or already cancelled",
+                    message=f"❌ No se pudo cancelar la cita #{appointment_id}. Verifica que exista y te pertenezca."
+                )
             
             logger.info(f"✅ Appointment {appointment_id} cancelled successfully")
             
@@ -449,9 +505,10 @@ class GroqTools:
                 success=True,
                 data={
                     "appointment_id": appointment_id,
-                    "status": "cancelled"
+                    "status": "cancelled",
+                    "reason": reason
                 },
-                message=f"✅ Cita cancelada exitosamente"
+                message=f"✅ Cita #{appointment_id} cancelada exitosamente"
             )
         
         except Exception as e:
@@ -462,8 +519,120 @@ class GroqTools:
                 message=f"❌ Error al cancelar cita: {str(e)}"
             )
 
+    def update_appointment(
+        self,
+        appointment_id: int,
+        new_date: Optional[str] = None,
+        new_time: Optional[str] = None,
+        new_title: Optional[str] = None,
+        new_duration_minutes: Optional[int] = None
+    ) -> GroqToolResult:
+        """
+        Update existing appointment - ✅ NEW FUNCTION
+        
+        Args:
+            appointment_id: ID of appointment to update
+            new_date: New date in natural language (optional)
+            new_time: New time in natural language (optional)
+            new_title: New title (optional)
+            new_duration_minutes: New duration (optional)
+
+        Returns:
+            GroqToolResult with updated appointment
+        """
+        try:
+            logger.debug(f"🔄 Updating appointment {appointment_id}")
+            
+            # Get existing appointment
+            existing_apt = self.booking_service.get_appointment_by_id(appointment_id)
+            if not existing_apt:
+                return GroqToolResult(
+                    success=False,
+                    error="Appointment not found",
+                    message=f"❌ Cita #{appointment_id} no encontrada"
+                )
+            
+            # Verify ownership
+            if existing_apt.get('user_id') != self.user_id:
+                return GroqToolResult(
+                    success=False,
+                    error="Unauthorized",
+                    message=f"❌ No tienes permiso para modificar esta cita"
+                )
+            
+            # Parse new datetime if provided
+            new_start_time = None
+            if new_date or new_time:
+                # Use existing time/date if not provided
+                existing_start = existing_apt['start_time']
+                
+                if new_date:
+                    target_date = self._parse_natural_date(new_date)
+                else:
+                    target_date = existing_start
+                
+                if new_time:
+                    start_time = self._parse_time(new_time)
+                    new_start_time = target_date.replace(
+                        hour=start_time.hour,
+                        minute=start_time.minute,
+                        second=0,
+                        microsecond=0
+                    )
+                else:
+                    # Keep existing time with new date
+                    new_start_time = target_date.replace(
+                        hour=existing_start.hour,
+                        minute=existing_start.minute,
+                        second=0,
+                        microsecond=0
+                    )
+            
+            # Update in database
+            updated_apt = self.booking_service.update_appointment(
+                appointment_id=appointment_id,
+                user_id=self.user_id,
+                new_start_time=new_start_time,
+                new_duration=new_duration_minutes,
+                new_title=new_title
+            )
+            
+            if not updated_apt:
+                return GroqToolResult(
+                    success=False,
+                    error="Failed to update appointment",
+                    message=f"❌ No se pudo actualizar la cita #{appointment_id}. Puede haber un conflicto de horario."
+                )
+            
+            logger.info(f"✅ Appointment {appointment_id} updated successfully")
+            
+            # Format response
+            start_time = updated_apt['start_time']
+            date_formatted = start_time.strftime("%d/%m/%Y")
+            time_formatted = start_time.strftime("%H:%M")
+            
+            return GroqToolResult(
+                success=True,
+                data={
+                    "appointment_id": appointment_id,
+                    "start_time": str(start_time),
+                    "title": updated_apt['title'],
+                    "date_formatted": date_formatted,
+                    "time_formatted": time_formatted
+                },
+                message=f"✅ Cita #{appointment_id} actualizada: '{updated_apt['title']}' el {date_formatted} a las {time_formatted}"
+            )
+        
+        except Exception as e:
+            logger.error(f"❌ Error updating appointment: {str(e)}", exc_info=True)
+            return GroqToolResult(
+                success=False,
+                error=str(e),
+                message=f"❌ Error al actualizar cita: {str(e)}"
+            )
+
     def execute_tool(self, tool_name: str, **tool_args) -> GroqToolResult:
-        """Execute a tool by name with arguments - FIXED PARAMETER VALIDATION.
+        """Execute a tool by name with arguments - COMPLETE H9 SUPPORT.
 
         Handles multiple parameter name variations that Groq might send:
         - 'date' or 'date_str'
@@ -519,6 +688,24 @@ class GroqTools:
 
                 return self.cancel_appointment(appointment_id, reason)
 
+            if tool_name == "update_appointment":
+                appointment_id = tool_args.get("appointment_id")
+                new_date = tool_args.get("new_date")
+                new_time = tool_args.get("new_time")
+                new_title = tool_args.get("new_title")
+                new_duration = tool_args.get("new_duration_minutes")
+
+                if not appointment_id:
+                    return GroqToolResult(
+                        success=False,
+                        error="Missing appointment_id",
+                        message="❌ Se requiere el ID de la cita a actualizar",
+                    )
+
+                return self.update_appointment(
+                    appointment_id, new_date, new_time, new_title, new_duration
+                )
+
             logger.warning(f"⚠️ Unknown tool: {tool_name}")
             return GroqToolResult(
                 success=False,
@@ -551,7 +738,7 @@ class GroqTools:
         try:
             messages = [{"role": "user", "content": user_input}]
             response = self.groq_client.chat.completions.create(
-                model="mixtral-8x7b-32768",
+                model="llama-3.3-70b-versatile",
                 messages=messages,
                 tools=self.TOOLS,
                 tool_choice="auto",
