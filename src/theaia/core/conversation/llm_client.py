@@ -1,6 +1,7 @@
 """
 LLM Client - Groq OpenAI-compatible Integration with Tools Support
 ✅ Full H9 Tool Support: check_availability, create_appointment, get_appointments, cancel_appointment, update_appointment
+✅ FIX: Type conversion for numeric parameters (appointment_id, duration_minutes)
 """
 
 import os
@@ -255,15 +256,50 @@ class LLMClient:
             }
         ]
     
+    def _convert_to_int(self, value: Any, param_name: str) -> Optional[int]:
+        """
+        🔧 FIX: Convierte strings a integers de manera segura
+        
+        Args:
+            value: Valor a convertir (puede ser str, int, float, None)
+            param_name: Nombre del parámetro (para logging)
+        
+        Returns:
+            Integer o None si conversión falla
+        
+        Examples:
+            >>> _convert_to_int("1", "appointment_id")
+            1
+            >>> _convert_to_int("60", "duration_minutes")
+            60
+            >>> _convert_to_int(None, "optional_id")
+            None
+        """
+        if value is None:
+            return None
+        
+        if isinstance(value, int):
+            return value
+        
+        if isinstance(value, str):
+            try:
+                return int(value)
+            except ValueError:
+                logger.warning(f"⚠️ No se pudo convertir {param_name}='{value}' a integer")
+                return None
+        
+        if isinstance(value, float):
+            return int(value)
+        
+        logger.warning(f"⚠️ Tipo inesperado para {param_name}: {type(value)}")
+        return None
+    
     def _normalize_tool_params(self, tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
         """
         Normaliza parámetros de tools para asegurar compatibilidad.
         
         ✅ H9 COMPLETE: Incluye normalización para update_appointment
-        - date_str vs date
-        - time_str vs time
-        - new_date_str vs new_date
-        - new_time_str vs new_time
+        ✅ FIX: Convierte appointment_id de string a integer automáticamente
         
         Args:
             tool_name: Nombre del tool
@@ -277,35 +313,64 @@ class LLMClient:
         if tool_name == "check_availability":
             # check_availability espera: date, duration_minutes
             normalized["date"] = tool_input.get("date_str") or tool_input.get("date", "mañana")
-            normalized["duration_minutes"] = tool_input.get("duration_minutes", 60)
+            
+            # 🔧 FIX: Convertir duration_minutes a int
+            duration = tool_input.get("duration_minutes", 60)
+            normalized["duration_minutes"] = self._convert_to_int(duration, "duration_minutes") or 60
             
         elif tool_name == "create_appointment":
             # create_appointment espera: date, time, title, duration_minutes, description
             normalized["date"] = tool_input.get("date_str") or tool_input.get("date", "mañana")
             normalized["time"] = tool_input.get("time_str") or tool_input.get("time", "15:00")
             normalized["title"] = tool_input.get("description") or tool_input.get("title", "Cita")
-            normalized["duration_minutes"] = tool_input.get("duration_minutes", 60)
+            
+            # 🔧 FIX: Convertir duration_minutes a int
+            duration = tool_input.get("duration_minutes", 60)
+            normalized["duration_minutes"] = self._convert_to_int(duration, "duration_minutes") or 60
+            
             normalized["description"] = tool_input.get("description", "")
             
         elif tool_name == "get_appointments":
             # get_appointments espera: status_filter, limit
-            # ✅ FIX: Mapea "confirmed" → "all" porque es conversación fluida
             status = tool_input.get("status_filter", "all")
             if status == "confirmed":
                 status = "all"  # Usuario dice "confirmed" pero queremos "all"
             normalized["status_filter"] = status
-            normalized["limit"] = tool_input.get("limit", 10)
+            
+            # 🔧 FIX: Convertir limit a int
+            limit = tool_input.get("limit", 10)
+            normalized["limit"] = self._convert_to_int(limit, "limit") or 10
             
         elif tool_name == "cancel_appointment":
-            # cancel_appointment espera: appointment_id, reason
-            normalized["appointment_id"] = tool_input.get("appointment_id")
+            # 🔧 FIX: Convertir appointment_id de string a int
+            appointment_id = tool_input.get("appointment_id")
+            if appointment_id is None:
+                logger.error("❌ cancel_appointment: appointment_id es requerido")
+                raise ValueError("appointment_id es requerido")
+            
+            converted_id = self._convert_to_int(appointment_id, "appointment_id")
+            if converted_id is None:
+                logger.error(f"❌ cancel_appointment: appointment_id '{appointment_id}' no es un número válido")
+                raise ValueError(f"appointment_id '{appointment_id}' debe ser un número entero")
+            
+            normalized["appointment_id"] = converted_id
             normalized["reason"] = tool_input.get("reason", "Cancelado por el usuario")
         
         elif tool_name == "update_appointment":
-            # ✅ NEW: update_appointment espera: appointment_id, new_date, new_time, new_title, new_duration_minutes
-            normalized["appointment_id"] = tool_input.get("appointment_id")
+            # 🔧 FIX: Convertir appointment_id de string a int
+            appointment_id = tool_input.get("appointment_id")
+            if appointment_id is None:
+                logger.error("❌ update_appointment: appointment_id es requerido")
+                raise ValueError("appointment_id es requerido")
             
-            # Normalizar variaciones de nombres de parámetros
+            converted_id = self._convert_to_int(appointment_id, "appointment_id")
+            if converted_id is None:
+                logger.error(f"❌ update_appointment: appointment_id '{appointment_id}' no es un número válido")
+                raise ValueError(f"appointment_id '{appointment_id}' debe ser un número entero")
+            
+            normalized["appointment_id"] = converted_id
+            
+            # Normalizar variaciones de nombres de parámetros (opcional)
             if "new_date_str" in tool_input or "new_date" in tool_input:
                 normalized["new_date"] = tool_input.get("new_date_str") or tool_input.get("new_date")
             
@@ -316,7 +381,9 @@ class LLMClient:
                 normalized["new_title"] = tool_input.get("new_title")
             
             if "new_duration_minutes" in tool_input:
-                normalized["new_duration_minutes"] = tool_input.get("new_duration_minutes")
+                # 🔧 FIX: Convertir new_duration_minutes a int
+                duration = tool_input.get("new_duration_minutes")
+                normalized["new_duration_minutes"] = self._convert_to_int(duration, "new_duration_minutes")
         
         logger.debug(f"✅ Parámetros normalizados para {tool_name}: {normalized}")
         return normalized
@@ -409,7 +476,7 @@ class LLMClient:
                             # Parse arguments
                             tool_input = json.loads(tool_call.function.arguments)
                             
-                            # ✅ FIX BUG #2: Normalizar parámetros
+                            # ✅ FIX: Normalizar parámetros (incluye conversión de tipos)
                             normalized_params = self._normalize_tool_params(tool_name, tool_input)
                             
                             logger.debug(f"📍 Ejecutando tool: {tool_name} con params: {normalized_params}")
@@ -439,6 +506,18 @@ class LLMClient:
                                 "content": json.dumps({
                                     "success": False,
                                     "error": f"Error parseando parámetros: {str(json_error)}"
+                                })
+                            })
+                        
+                        except ValueError as value_error:
+                            # 🔧 FIX: Captura errores de validación de parámetros
+                            logger.error(f"❌ Error validando parámetros para {tool_name}: {str(value_error)}")
+                            tool_results.append({
+                                "role": "tool",
+                                "tool_call_id": tool_call.id,
+                                "content": json.dumps({
+                                    "success": False,
+                                    "error": f"Error validación: {str(value_error)}"
                                 })
                             })
                         
