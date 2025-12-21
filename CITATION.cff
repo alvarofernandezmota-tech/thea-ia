@@ -1,0 +1,42 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+title: "THEA IA - Modular Conversational AI Assistant"
+version: 3.0.0
+date-released: 2025-12-21
+authors:
+  - family-names: "Fernández Mota"
+    given-names: "Álvaro"
+    email: alvarofernandezmota@gmail.com
+    orcid: "https://orcid.org/0000-0000-0000-0000"
+    affiliation: "THEA IA / CoLaboración Enterprise"
+repository-code: "https://github.com/alvarofernandezmota-tech/thea-ia"
+url: "https://github.com/alvarofernandezmota-tech/thea-ia"
+license: MIT
+keywords:
+  - chatbot
+  - conversational-ai
+  - fsm
+  - nlp
+  - telegram-bot
+  - python
+  - multi-agent
+  - enterprise
+  - postgresql
+  - multi-tenant
+abstract: |
+  THEA IA is a modular conversational AI assistant built with Python 3.11+.
+  Features a Finite State Machine (FSM) architecture, multi-agent system,
+  PostgreSQL database layer with multi-tenant support, Spanish NLP entity
+  extraction, and comprehensive testing suite. Designed for enterprise
+  scalability with 17 planned milestones covering core functionality,
+  smart agents, ML/NLP pipelines, web client, infrastructure, and release
+  management.
+preferred-citation:
+  type: software
+  title: "THEA IA - Modular Conversational AI Assistant"
+  authors:
+    - family-names: "Fernández Mota"
+      given-names: "Álvaro"
+  year: 2025
+  url: "https://github.com/alvarofernandezmota-tech/thea-ia"
+  version: "3.0.0"
