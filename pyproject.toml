@@ -8,8 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "theaia"
-version = "2.0.0"
-description = "Agente conversacional inteligente con FSM y NLP para gestión de eventos y notas"
+version = "3.0.0"description = "Agente conversacional inteligente con FSM y NLP para gestión de eventos y notas"
 authors = [
     {name = "Alvaro Fernandez Mota", email = "alvarofernandezmota@gmail.com"}
 ]
