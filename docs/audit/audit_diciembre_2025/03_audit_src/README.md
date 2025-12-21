@@ -28,12 +28,19 @@ Realizar una auditoría exhaustiva del código fuente en `src/theaia/` para eval
 ```
 src/theaia/
 ├── __pycache__/           # ⚠️  Cache Python (auto-generado)
-├── adapters/              # 🔍 Integraciones (Telegram, API, etc.)
-├── agents/                # 🔍 Agentes especializados
-├── api/                   # 🔍 FastAPI endpoints
-├── config/                # 🔍 Configuración aplicación
-├── core/                  # 🔍 FSM, State Machine, Context
-├── tests/                 # 🧪 Suite de tests
+├── adapters/              # 🔍 Integraciones (Telegram, API, webhooks)
+├── agents/                # 🔍 Agentes especializados (BookingAgent, etc.)
+├── api/                   # 🔍 FastAPI endpoints y routers
+├── config/                # 🔍 Configuración aplicación y settings
+├── core/                  # 🔍 FSM, State Machine, Context, Orchestrator
+├── database/              # 🔍 Conexiones DB, migrations, alembic
+├── ml/                    # 🔍 Machine Learning, NLP, modelos
+├── models/                # 🔍 SQLAlchemy models, Pydantic schemas
+├── services/              # 🔍 Business logic, external services
+├── tests/                 # 🧪 Suite completa de tests
+├── utils/                 # 🔍 Utilidades, helpers, decorators
+├── __init__.py            # 🔍 Exports públicos del paquete
+└── main.py                # 🔍 Entry point de la aplicación                # 🧪 Suite de tests
 ├── __init__.py           # 🔍 Exports públicos
 └── main.py               # 🔍 Entry point aplicación
 ```
@@ -69,6 +76,36 @@ src/theaia/
 - Integration tests
 - E2E tests
 - Fixtures y mocks
+
+- #### 6. **database/** - Capa de Datos
+- Conexión y pooling de base de datos
+- Configuración SQLAlchemy
+- Migraciones Alembic
+- Session management
+
+#### 7. **ml/** - Machine Learning y NLP
+- Modelos de NLP (spaCy, transformers)
+- Intent classification
+- Entity extraction
+- Model training y fine-tuning
+
+#### 8. **models/** - Data Models
+- SQLAlchemy ORM models
+- Pydantic schemas y validators
+- Type definitions
+- Database relationships
+
+#### 9. **services/** - Business Logic
+- External service integrations
+- Business rules y workflows
+- Third-party API clients
+- Service orchestration
+
+#### 10. **utils/** - Utilidades
+- Helper functions
+- Decorators y wrappers
+- Common utilities
+- Logging y monitoring helpers
 - Coverage reports
 
 ---
