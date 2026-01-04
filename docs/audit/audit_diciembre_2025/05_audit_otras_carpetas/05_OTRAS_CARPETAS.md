@@ -18,6 +18,48 @@ Este documento consolida la auditoría de las carpetas auxiliares y de configura
 - ⚠️ **.archive/ con contenido antiguo**: Archivos de hace 3 meses sin documentar
 - ✅ **GitHub templates profesionales**: Issue y PR templates bien estructurados
 
+## 📄 Contexto y Propósito de Esta Auditoría
+
+Este documento audita las **carpetas auxiliares** del proyecto THEA IA - aquellas que no contienen código fuente principal pero son esenciales para:
+
+### Por Qué Son Importantes
+
+1. **Infraestructura y Despliegue** (`.railway/`)
+   - Configuración para desplegar el proyecto en Railway (PaaS)
+   - Sin esto, el proyecto no se puede desplegar automáticamente
+   - Equivale a tener el código pero sin forma de ejecutarlo en producción
+
+2. **Colaboración y Flujos de Trabajo** (`.github/`)
+   - Templates de issues: Estandarizan cómo reportar bugs y solicitar features
+   - Workflows CI/CD: Automatizan testing y despliegue
+   - Templates de PR: Aseguran que los pull requests tengan la info necesaria
+   - **Impacto:** Sin esto, el trabajo en equipo sería caótico
+
+3. **Entorno de Desarrollo** (`.devcontainer/`)
+   - Permite abrir el proyecto en un contenedor Docker preconfigurado
+   - Garantiza que todos los desarrolladores tengan el mismo entorno
+   - Elimina "en mi máquina funciona" 😅
+
+4. **Almacenamiento de Datos** (`data/`)
+   - Carpeta destinada a datos locales, cacheos, o BD ligeras
+   - Importante para testing sin conexión a BD remota
+   - Puede servir como respaldo o modo offline
+
+5. **Historia y Aprendizaje** (`.archive/`)
+   - Componentes eliminados pero que se conservan para referencia
+   - Permite entender decisiones de diseño pasadas
+   - "Los que no conocen su historia están condenados a repetirla"
+
+### Qué Evaluamos
+
+Para cada carpeta analizamos:
+- ✅ **Completitud**: ¿Tiene todo lo necesario?
+- ✅ **Documentación**: ¿Es claro su propósito?
+- ✅ **Mantenimiento**: ¿Está actualizada?
+- ✅ **Coherencia**: ¿Sigue estándares del proyecto?
+- ⚠️ **Redundancias**: ¿Hay duplicaciones innecesarias?
+- ⚠️ **Obsoletos**: ¿Hay archivos que ya no sirven?
+
 ---
 
 ## 📊 Inventario Completo por Carpeta
