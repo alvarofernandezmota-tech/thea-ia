@@ -1,5 +1,4 @@
-# 📦 INSTRUCCIÓN: Mover Archivos de /src/core/agents/ a /src/theaia/
-
+# 📦 INSTRUCCIÓN: Mover Archivos de /src/core/agents/ a /src/theaia/core/agents/
 **Fecha:** 04 Enero 2026 16:45 CET  
 **Prioridad:** 🔴 ALTA - EJECUTAR ANTES DE CONTINUAR AUDITORÍA
 
@@ -25,8 +24,7 @@ git status
 # 3. Mover archivos con git mv (preserva historial)
 git mv src/core/agents/lifecycle.py src/theaia/
 git mv src/core/agents/metadata.py src/theaia/
-git mv src/core/agents/registry.py src/theaia/
-
+git mv src/core/agents/registry.py src/theaia/core/core/agents/
 # 4. Verificar que el __init__.py de src/core/agents/ no tiene contenido importante
 cat src/core/agents/__init__.py
 
