@@ -1,143 +1,318 @@
-Thea IA 3.0 — Documentación Técnica y Auditoría
-Última actualización: 2025-11-03
-Autor principal: Álvaro Fernández Mota
+# 📚 THEA IA - Documentation
 
-Índice
-Visión y contexto del proyecto
+**Version:** v3.0.0  
+**Last Updated:** 06 January 2026  
+**Status:** Production Ready (H01-H08) | In Development (H09+)
 
-Características funcionales y arquitectura
+---
 
-Detalle de módulos y estructura de carpetas
+## 🎯 Quick Links
 
-Instalación avanzada y despliegue
+| Document | Purpose | Status |
+|----------|---------|--------|
+| **[SCHEMA.md](./SCHEMA.md)** | 📊 Master reference - Complete project state | ✅ Updated |
+| **[Roadmap Master](./roadmap/master.md)** | 🗺️ H01-H17 development plan | ✅ Active |
+| **[Agents Overview](./agents/overview.md)** | 🤖 4 specialized agents architecture | ✅ Current |
+| **[Architecture](./architecture/overview.md)** | 🏗️ System architecture & design | ✅ Current |
+| **[API Reference](./api/README.md)** | 🔌 API documentation | ✅ Available |
+| **[Testing Guide](./testing/README.md)** | 🧪 Testing strategy & metrics | ✅ 786 tests |
+| **[Security](./security/README.md)** | 🔒 Security & compliance | ✅ Active |
 
-FSM y orquestación multiagente
+---
 
-Stack tecnológico y dependencias críticas
+## 🚀 What is THEA IA?
 
-Testing, QA y cobertura
+**THEA IA** is a production-ready multi-agent conversational AI system with specialized agents, built on a robust FSM (Finite State Machine) engine and designed for enterprise scalability.
 
-Seguridad, privacidad y compliance
+### Key Features
+- ✅ **4 Specialized Agents** - No functional overlap
+- ✅ **Multi-tenant Architecture** - PostgreSQL 14+ with full isolation
+- ✅ **FSM Engine** - 786 tests, 85% coverage, production-ready
+- ✅ **Repository Pattern** - 6 repositories + abstract base
+- ✅ **Async/Await** - Python 3.11+, FastAPI, SQLAlchemy 2.0
+- ✅ **Cross-Platform** - Windows/Mac/Linux compatible
 
-Planificación, auditoría y roadmap
+---
 
-Política de contribución y documentación interna
+## 📊 Current Project Status
 
-Licencia, contacto y créditos
+### Milestones Completed (H01-H08) ✅
 
-1. Visión y contexto
-Thea IA es una plataforma conversacional modular pensada para equipos/business, que integra IA, FSM, NLP y multiagente, con núcleo auditable y extensible para automatización de tareas, eventos y workflows empresariales y personales.
+| Milestone | Name | Tests | Coverage | Status |
+|-----------|------|-------|----------|--------|
+| **H01** | Router & Orchestrator | 10 | 60% | ✅ Done |
+| **H02** | Multi-tenancy & Database | 16 | 41-59% | ✅ Done |
+| **H03** | AgentConfig & NLP Extractors | 18 | 84-87% | ✅ Done |
+| **H04** | FSM Core System | 196 | 63-100% | ✅ Done |
+| **H05** | FSM Advanced Patterns | 174 | 85%+ | ✅ Done |
+| **H06** | FSM Integration & Polish | 261 | 90%+ | ✅ Done |
+| **H07** | Callbacks Manager | 71 | 96% | ✅ Done |
+| **H08** | FSM Production Ready | 40 | 95% | ✅ Done |
 
-2. Características y arquitectura
-FSM inteligente, desambiguación y agentes orquestados.
+**Total:** 786 tests passing | 85% average coverage | 12,300+ LOC
 
-Detección de intenciones ML + reglas; NLP (spaCy, custom).
+### Current Sprint (H09) 🔴
 
-Integraciones: Telegram, webhooks, API REST, WhatsApp.
+**H09: Real Ecosystem** (January 2026 - 15 days, 75 hours)
+- 🔴 Telegram Bot (20h)
+- 🔴 Database Services (15h)
+- 🔴 Calendar Engine (18h)
+- 🔴 Groq LLM Integration (15h)
+- 🔴 E2E Integration (7h)
 
-Métricas y logging exhaustivo—monitorización Prometheus y Grafana.
+**Agent Implemented:** AgendaAgent (Booking/Scheduling)
 
-Persistencia y migración industrial: PostgreSQL, Alembic, Redis.
+### Upcoming (H10-H17) ⏳
 
-Containerización, CI/CD, DevOps y compliance integrados.
+- **H10-H11:** QueryAgent, NoteAgent, ReminderAgent (Feb 2026)
+- **H12-H14:** Scalability & Integrations (Mar-Apr 2026)
+- **H15-H17:** Security, Monitoring, Web UI (May-Jun 2026)
 
-3. Estructura general del proyecto
+---
+
+## 🤖 The 4 Specialized Agents
+
+### 1️⃣ AgendaAgent (Booking) 📅
+**Status:** 🔴 H09 - In Development  
+**Purpose:** Event/appointment management
+
+**Responsibilities:**
+- Create, modify, cancel appointments
+- Detect scheduling conflicts
+- Google Calendar integration
+- Natural language date parsing
+- Pre-event reminders
+
+---
+
+### 2️⃣ QueryAgent (Search) 🔍
+**Status:** ⏳ H10 - Planned (Feb 2026)  
+**Purpose:** Semantic search & question answering
+
+**Responsibilities:**
+- Semantic search (meaning-based, not keyword)
+- Question answering ("When is my next appointment?")
+- Multi-source search (notes + events + docs)
+- Entity extraction
+- Relevance ranking
+
+---
+
+### 3️⃣ NoteAgent (Notes) 📝
+**Status:** ⏳ H10 - Planned (Feb 2026)  
+**Purpose:** Note management & organization
+
+**Responsibilities:**
+- Create/edit/delete notes
+- Full-text search
+- Tag management & auto-tagging
+- Archive old notes
+- Duplicate detection
+- Markdown support
+
+---
+
+### 4️⃣ ReminderAgent (Reminders) ⏰
+**Status:** ⏳ H11 - Planned (Feb 2026)  
+**Purpose:** Independent reminders (not tied to events)
+
+**Responsibilities:**
+- Create standalone reminders
+- Recurring reminders (daily/weekly)
+- Multi-channel notifications (Telegram, email, push)
+- Snooze functionality
+- Reminder management
+
+---
+
+## 🏗️ System Architecture
+
+┌─────────────────────────────────────────────────────┐
+│ INTEGRATION LAYER (Adapters) │
+│ ✅ TelegramAdapter (H02, H09) │
+│ ⏳ APIAdapter (H12) │
+│ ⏳ WhatsAppAdapter (H13) │
+└─────────────────────────────────────────────────────┘
+↓
+┌─────────────────────────────────────────────────────┐
+│ INTELLIGENCE LAYER (4 Agents) │
+│ 🔴 AgendaAgent (H09) — Booking │
+│ ⏳ QueryAgent (H10) — Semantic Search │
+│ ⏳ NoteAgent (H10) — Notes Management │
+│ ⏳ ReminderAgent (H11) — Reminders │
+└─────────────────────────────────────────────────────┘
+↓
+┌─────────────────────────────────────────────────────┐
+│ CORE LAYER (FSM + Context) │
+│ ✅ State Machine (732 LOC, 63% coverage) │
+│ ✅ Callbacks Manager (300 LOC, 96% coverage) │
+│ ✅ FSM Advanced (435 tests) │
+└─────────────────────────────────────────────────────┘
+↓
+┌─────────────────────────────────────────────────────┐
+│ DATA LAYER (Repository Pattern) │
+│ ✅ 6 Repositories + Base Abstract │
+│ ✅ PostgreSQL 14+ (11 tables) │
+│ ✅ SQLAlchemy 2.0 async │
+└─────────────────────────────────────────────────────┘
+
 text
-theaia/
-├── src/theaia/core/          # Núcleo FSM, state machine, context manager
-├── src/theaia/agents/        # Agentes verticales multi-fase
-├── src/theaia/adapters/      # Soporte multicanal y webhooks
-├── src/theaia/ml/            # Modelos y pipelines NLP/ML
-├── src/theaia/tests/         # Unittest, integración, e2e (README y TESTING.md)
-├── scripts/                  # Automatización y pipelines
-├── docs/                     # Esta documentación extendida y cross-linking
-├── .env.example              # Config auditada y comentada
-├── SECURITY.md               # Política seguridad avanzada
-├── ROADMAP.md                # Hitos y despliegue actual
-├── CHANGELOG.md              # Cambios y referencias cruzadas
-├── onboarding.md             # Guía para incorporaciones nuevas
-└── ...
-4. Instalación & despliegue avanzado
-Requerido: Python 3.11+, Postgres 14+, Redis, Docker, Git.
 
-Setup recomendado:
+---
 
-make setup para entorno virtual
+## 💾 Database Schema
 
-Edición de .env según ejemplo
+### Core Tables (H02) ✅
+- **tenants** - Multi-tenant isolation
+- **users** - User accounts
+- **conversations** - Chat sessions
+- **messages** - Message history
+- **agent_configs** - Agent configurations
+- **user_preferences** - User settings
+- **api_keys** - API key management
 
-docker-compose up -d y make migrate para BBDD
+### Agent Tables (H09-H11) ⏳
+- **appointments** - AgendaAgent (H09)
+- **availability** - AgendaAgent (H09)
+- **notes** - NoteAgent (H10)
+- **reminders** - ReminderAgent (H11)
 
-Uso recomendado de Makefile para flujos frecuentes
+---
 
-5. FSM & Orquestación Multiagente
-[docs/fsm.md]: Fundamentos y API de la máquina de estados, gestión de sesiones, timeouts y fallback handler.
+## 🧪 Testing & Quality
 
-Submódulos documentados: conversation_manager.py, state_machine.py, maps de intents y agentes.
+| Metric | Current | Target | Status |
+|--------|---------|--------|--------|
+| **Total Tests** | 786 | 500+ | ✅ |
+| **Code Coverage** | 85% | 80%+ | ✅ |
+| **Test Duration** | ~5 min | <10 min | ✅ |
+| **Pass Rate** | 100% | 100% | ✅ |
 
-6. Stack y dependencias técnicas
-Backend/Core: Python 3.11+, FastAPI, SQLAlchemy, Alembic, Transitions
+### Test Distribution
+- **Unit Tests:** 450
+- **Integration Tests:** 250
+- **E2E Tests:** 86
 
-ML/NLP: spaCy, scikit-learn, Transformers
+---
 
-Integraciones: aiogram, aiohttp, WebSockets
+## 📖 Documentation Structure
 
-Infraestructura: Docker, Kubernetes (amaduración), Prometheus/Grafana para monitoreo, Terraform
+docs/
+├── README.md ← You are here
+├── SCHEMA.md ← 📊 Master reference (START HERE)
+├── roadmap/
+│ ├── master.md ← H01-H17 roadmap
+│ └── milestones/ ← Individual milestone docs
+├── agents/
+│ ├── overview.md ← Agents architecture
+│ ├── agent_agenda.md ← AgendaAgent spec
+│ ├── agent_query.md ← QueryAgent spec
+│ ├── agent_note.md ← NoteAgent spec
+│ └── agent-reminder.md ← ReminderAgent spec
+├── architecture/
+│ ├── overview.md ← System architecture
+│ ├── fsmengine.md ← FSM documentation
+│ └── decisions.md ← ADRs
+├── api/
+│ └── README.md ← API reference
+├── testing/
+│ └── README.md ← Testing guide
+├── security/
+│ └── README.md ← Security docs
+├── guides/
+│ ├── getting-started.md ← Quick start
+│ ├── installation.md ← Setup guide
+│ └── quickstart.md ← 5-min demo
+├── audit/
+│ └── audit_diciembre_2025/ ← December audit
+└── diary/
+└── enero/2026-01-06.md ← Development diary
 
-7. Testing, QA y cobertura
-Unittest, integración y e2e: pytest, coverage, casos en src/theaia/tests/
+text
 
-Scripts de automatización: make test, make lint, make format
+---
 
-Guía de testing: [docs/tests.md], [docs/test_strategies.md]
+## 🚀 Getting Started
 
-8. Seguridad, privacidad y compliance
-Gestión exhaustiva de .env, compliance con GDPR y mejores prácticas DevSecOps
+### Prerequisites
+- Python 3.11+
+- PostgreSQL 14+
+- Git
 
-Checks de hardening y control de acceso en [SECURITY.md], [docs/audit_checklist.md]
+### Quick Setup
+```bash
+# Clone repository
+git clone https://github.com/alvarofernandezmota-tech/thea-ia.git
+cd thea-ia
 
-Proceso de auditoría avanzada: backups, logging seguro, protocolo de incidentes
+# Create virtual environment
+python -m venv .venv
+source .venv/bin/activate  # Linux/Mac
+.venv\Scripts\activate     # Windows
 
-Política de repositorio privado en fases críticas
+# Install dependencies
+pip install -r requirements.txt
 
-9. Planificación, auditoría y roadmap
-Documentos clave:
+# Setup database
+python scripts/setup.sh
 
-Plan Auditoría Completo
+# Run tests
+pytest
+See Installation Guide for detailed setup.
 
-ROADMAP.md
+🔒 Security
+✅ Multi-tenant isolation (tenant_id mandatory)
 
-CHANGELOG.md
+✅ Environment variables for secrets
 
-DIARY.md
+✅ Input validation (Pydantic schemas)
 
-Sesiones, responsables y avance por milestone referenciado
+✅ SQL injection protection (ORM)
 
-10. Contribución y documentación
-Política detallada: [docs/contributing.md]
+⏳ OAuth2 + JWT (H12, Q1 2026)
 
-Checklist y convenciones: PR, test mínimo, cobertura y aprobación técnica/auditora
+⏳ Rate limiting (H12)
 
-README, roadmap y changelog obligatorio/local en cada módulo
+⏳ Row-level security (H15)
 
-11. Licencia y contacto
-Licencia MIT, uso e integración libre con atribución
+See Security Documentation
 
-Contacto principal: Álvaro Fernández Mota (alvarofernandezmota-tech)
+📊 Project Metrics
+Metric	Value
+Lines of Code	12,300+
+Documentation	10/10
+Test Coverage	85%
+Technical Debt	0 (ZERO)
+Code Quality	95%
+Security Score	8.8/10
+🎯 Development Philosophy
+Ecosystem Functional > Beautiful Interfaces
+Real Data > Mockups
+Specialized Agents > General Agents
+Testing > Untested Code
+Documentation > Undocumented Code
 
-REF cross-linking (guías especializadas)
-[fsm.md]: FSM y lógica conversacional avanzada
+📞 Contact & Support
+Project Lead: Álvaro Fernández Mota
+Email: alvarofernandezmota@gmail.com
+GitHub: @alvarofernandezmota-tech
 
-[agents.md]: Detalle de agentes y estados
+📄 License
+Copyright © 2025-2026 THEA IA Project. All rights reserved.
 
-[ml.md]: Modelos, pipelines y métricas
+🔗 Additional Resources
+SCHEMA.md - Complete project state (START HERE)
 
-[adapters.md]: Integraciones multicanal y API hooks
+Roadmap Master - Development roadmap
 
-[tests.md]: Estrategias y cobertura
+Architecture Overview - System design
 
-[onboarding.md]: Proceso alta equipo nuevo
+API Reference - API documentation
 
-[audit_checklist.md]: Auditoría ciberseguridad y revisión
+Contributing Guide - How to contribute
 
-[security.md]: Política y respuesta incidentes
+FAQ - Frequently asked questions
+
+Last Updated: 06 January 2026, 16:35 CET
+Version: v3.0.0
+Status: ✅ Production Ready (H01-H08) | 🔴 In Development (H09)
