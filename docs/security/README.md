@@ -1,137 +1,172 @@
-📝 README 6/7: /docs/security/README.md
-Ejecuta:
-powershell
-notepad docs/security/README.md
-Copia y pega ESTE contenido:
+# Security Documentation
+
+**Status:** ⏳ PENDING (Not Yet Implemented)  
+**Implementation:** H15 (May 2026) - Advanced Security  
+**Priority:** CRITICAL (for production)  
+**Last Updated:** 06 January 2026
+
+---
+
+## 🎯 Current State
+
+### 🔐 Basic Security (H01-H09)
+Current security measures (minimal viable):
+- ✅ **Multi-tenancy isolation** (H02) - tenant_id in all queries
+- ✅ **PostgreSQL** - No SQL injection (parameterized queries)
+- ✅ **Environment variables** - Secrets not in code
+- ✅ **Telegram Bot Token** - Secured via .env
+
+### ❌ Advanced Security (Not Yet)
+Enterprise-grade security features coming in **H15 (May 2026)**:
+- ⏳ Row-level security (RLS)
+- ⏳ Encryption at rest
+- ⏳ Audit logging
+- ⏳ GDPR compliance
+- ⏳ Penetration testing
+
+---
+
+## 📅 Why Not Now?
+
+**Phased approach to security:**
+
+H01-H08: BASIC SECURITY ✅
+└─ Multi-tenancy, secure DB queries
+
+H09-H11: FUNCTIONAL FIRST 🔴
+└─ Get agents working (controlled access)
+
+H12-H14: SCALE SECURITY ⏳
+└─ OAuth2, rate limiting, API security
+
+H15: ENTERPRISE SECURITY ⏳
+└─ RLS, encryption, audit, compliance
+
 text
-# 🔒 Security Documentation
 
-**Propósito:** Documentación de seguridad y mejores prácticas de THEA IA.
-
-**Última actualización:** 06 Enero 2026
+**Rationale:** Build working system first with basic security, then harden for enterprise.
 
 ---
 
-## 📋 Visión General
+## 📚 Future Content (H15 - May 2026)
 
-THEA IA implementa múltiples capas de seguridad:
-- **Multi-tenant Isolation** - Aislamiento por tenant_id
-- **Environment Variables** - Secrets management
-- **PostgreSQL Security** - Row-level security (roadmap)
-- **Input Validation** - Pydantic schemas
-- **HTTPS** - Encryption in transit
+### Planned Security Documentation
+
+#### 1. Access Control
+- `authentication.md` - OAuth2 + JWT implementation
+- `authorization.md` - Role-based access control (RBAC)
+- `row_level_security.md` - PostgreSQL RLS policies
+- `api_security.md` - API token management
+
+#### 2. Data Protection
+- `encryption_at_rest.md` - Database encryption
+- `encryption_in_transit.md` - TLS/HTTPS
+- `data_retention.md` - Retention policies
+- `gdpr_compliance.md` - GDPR requirements
+
+#### 3. Audit & Monitoring
+- `audit_logging.md` - Complete audit trail
+- `security_monitoring.md` - Threat detection
+- `incident_response.md` - Security incident procedures
+- `penetration_testing.md` - Security testing results
+
+#### 4. Compliance
+- `compliance_overview.md` - Regulatory requirements
+- `gdpr.md` - General Data Protection Regulation
+- `iso27001.md` - ISO 27001 alignment (future)
+- `soc2.md` - SOC 2 compliance (future)
 
 ---
 
-## 📁 Estructura
+## 🔒 Planned Security Features (H15)
 
-security/
-├── SECURITY.md # Política de seguridad principal
-├── policies/ # Políticas de seguridad
-├── audits/ # Auditorías de seguridad
-├── incidents/ # Registro de incidentes
-└── README.md # Este archivo
-
+### Row-Level Security (RLS)
+```sql
+-- Users only see their own data
+CREATE POLICY tenant_isolation ON appointments
+  FOR ALL TO authenticated
+  USING (tenant_id = current_tenant_id());
+Encryption at Rest
 text
+Database: PostgreSQL with pgcrypto extension
+Encryption: AES-256
+Key Management: AWS KMS or HashiCorp Vault
+Audit Logging
+python
+# Every sensitive operation logged
+audit_log.record(
+  user_id=123,
+  action="DELETE_APPOINTMENT",
+  resource_id=456,
+  timestamp=now(),
+  ip_address="192.168.1.1"
+)
+GDPR Compliance
+✅ Right to access (export user data)
 
----
+✅ Right to erasure (delete user data)
 
-## 🛡️ Aspectos de Seguridad
+✅ Data portability (JSON export)
 
-### 1. Authentication & Authorization
-- **Estado actual:** API Key (temporal)
-- **Roadmap:** OAuth2 + JWT (H08, Q1 2026)
-- **Multi-tenant:** tenant_id obligatorio
+✅ Consent management
 
-### 2. Data Protection
-- **Encryption at rest:** PostgreSQL encryption
-- **Encryption in transit:** HTTPS/TLS
-- **Sensitive data:** Variables de entorno (.env)
-- **Database backups:** Daily backups, 30 días retención
+🎯 Security Timeline
+Milestone	Security Features	Status
+H01-H09	Basic (multi-tenant, secure queries)	✅🔴 Implemented
+H12	OAuth2 + JWT, rate limiting	⏳ Mar 2026
+H15	RLS, encryption, audit, GDPR	⏳ May 2026
+H16	Security monitoring, alerting	⏳ May 2026
+⚠️ Current Security Limitations
+What we DON'T have yet (acceptable for H09 dev):
 
-### 3. Input Validation
-- **Pydantic models:** Validación de schemas
-- **SQL Injection:** SQLAlchemy ORM (protección automática)
-- **XSS Prevention:** Sanitización de inputs
+❌ Encryption at rest
 
-### 4. Network Security
-- **HTTPS only:** TLS 1.2+
-- **CORS:** Configuración restrictiva (roadmap)
-- **Rate Limiting:** Anti-DDoS (roadmap P0)
+❌ Row-level security policies
 
----
+❌ Comprehensive audit logging
 
-## 🚨 Vulnerabilidades Conocidas
+❌ GDPR data export/delete tools
 
-### Estado: ZERO Vulnerabilidades Críticas ✅
+❌ Penetration testing
 
-**Última auditoría:** 30 Diciembre 2025  
-**Score de seguridad:** 8.8/10
+❌ Security monitoring/alerting
 
-### Mejoras Pendientes (P0/P1)
+What we DO have (sufficient for development):
 
-#### P0 - Alta Prioridad
-- **Rate Limiting** - Prevenir abuso de APIs
-- **CORS Configuration** - Restringir orígenes permitidos
-- **Incident Response Plan** - Protocolo de incidentes
+✅ Multi-tenant data isolation
 
-#### P1 - Media Prioridad
-- **Secrets Manager** - AWS Secrets Manager o Vault
-- **Row-Level Security** - PostgreSQL RLS
-- **Vulnerability Scanning** - Snyk/Dependabot
+✅ Secure database queries (no SQL injection)
 
----
+✅ Secrets in environment variables
 
-## 📊 Compliance
+✅ Basic authentication (Telegram)
 
-### GDPR (General Data Protection Regulation)
-- **Data retention:** 30 días de backups
-- **Right to erasure:** Implementado
-- **Data portability:** En roadmap (H09)
+📖 Related Documentation
+H15 Milestone - Security implementation
 
-### Security Best Practices
-- **OWASP Top 10:** Mitigado
-- **CIS Benchmarks:** En progreso
-- **ISO 27001:** Roadmap Q3 2026
+SCHEMA.md - Security architecture
 
----
+Roadmap Master - Timeline
 
-## 🚨 Reportar Vulnerabilidades
+🗂️ Archived Documentation
+Location: docs/archive/security_nov2025/
 
-### Responsible Disclosure
+Archived files (Nov 2025):
 
-**Email de seguridad:** security@theaia.com
+audit.md, authentication.md, authorization.md, compliance.md, controls.md, data-protection.md, overview.md
 
-**Proceso:**
-1. Enviar detalles de la vulnerabilidad a security@theaia.com
-2. No divulgar públicamente hasta resolución
-3. Recibirás respuesta en < 48 horas
-4. Reconocimiento público tras resolución (si deseas)
+Reason:
 
-**SLA de respuesta:**
-- **Crítico:** < 24 horas
-- **Alto:** < 48 horas
-- **Medio:** < 7 días
-- **Bajo:** < 30 días
+❌ Described features not yet implemented
 
----
+❌ Outdated approach
 
-## 🎯 Audiencia
+❌ Not aligned with H15 security plan
 
-- **Security Engineers** - Auditorías y hardening
-- **DevOps** - Configuración segura
-- **Compliance Officers** - GDPR, ISO 27001
-- **Researchers** - Responsible disclosure
+Will create fresh documentation when implementing H15 security features.
 
----
+Last Updated: 06 January 2026, 19:54 CET
+Next Update: May 2026 (H15 - Advanced Security)
+Maintained by: Security Team
 
-## 📚 Referencias
-
-- [SECURITY.md](../../SECURITY.md)
-- [Environment Variables Guide](../guides/setup/ENVIRONMENT-VARIABLES.md)
-- [OWASP Top 10](https://owasp.org/www-project-top-ten/)
-
----
-
-**Contacto:** alvarofernandezmota@gmail.com  
-**Security Contact:** security@theaia.com
+⏳ ENTERPRISE SECURITY COMING IN H15 ⏳

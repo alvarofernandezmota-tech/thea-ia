@@ -1,186 +1,245 @@
-📝 README 7/7: /docs/testing/README.md - ÚLTIMO! 🎉
-Ejecuta:
-powershell
-notepad docs/testing/README.md
-Copia y pega ESTE contenido:
+# Testing Documentation
+
+**Status:** 🟢 ACTIVE (786 tests passing, 85% coverage)  
+**Implementation:** H01-H08 (Complete) → H09+ (Ongoing)  
+**Priority:** CRITICAL  
+**Last Updated:** 06 January 2026
+
+---
+
+## 🎯 Current State
+
+### ✅ Foundation Tests (H01-H08) - COMPLETE
+
+**Total:** 786 tests passing | **Coverage:** 85%
+
+| Component | Tests | Coverage | Status |
+|-----------|-------|----------|--------|
+| **Router & Orchestrator** (H01) | 10 | 60% | ✅ |
+| **Database & Repositories** (H02) | 16 | 41-59% | ✅ |
+| **AgentConfig & NLP** (H03) | 18 | 84-87% | ✅ |
+| **FSM Core** (H04) | 196 | 63-100% | ✅ |
+| **FSM Advanced** (H05) | 174 | 85%+ | ✅ |
+| **FSM Integration** (H06) | 261 | 90%+ | ✅ |
+| **Callbacks** (H07) | 71 | 96% | ✅ |
+| **FSM Production** (H08) | 40 | 95% | ✅ |
+| **TOTAL** | **786** | **85%** | ✅ |
+
+### 🔴 Agent Tests (H09+) - IN PROGRESS
+
+| Agent | Tests Planned | Status |
+|-------|--------------|--------|
+| **AgendaAgent** (H09) | 81 | 🔴 In development |
+| **QueryAgent** (H10) | 40 | ⏳ Planned |
+| **NoteAgent** (H10) | 40 | ⏳ Planned |
+| **ReminderAgent** (H11) | 30 | ⏳ Planned |
+| **TOTAL AGENTS** | **191** | **⏳** |
+
+### ⏳ Infrastructure Tests (H12+) - PLANNED
+
+| Component | Tests Planned | Milestone |
+|-----------|--------------|-----------|
+| REST API | 50 | H12 |
+| WhatsApp/Slack | 40 | H13 |
+| Scalability | 30 | H14 |
+| Security | 20 | H15 |
+| Monitoring | 30 | H16 |
+| Web UI | 40 | H17 |
+| **TOTAL INFRA** | **210** | **⏳** |
+
+---
+
+## 📊 Overall Test Plan
+
+COMPLETED (H01-H08): 786 tests ✅
+IN PROGRESS (H09): 81 tests 🔴
+PLANNED (H10-H17): 310 tests ⏳
+────────────────────────────────────
+GRAND TOTAL: 1,177 tests
+
 text
-# 🧪 Testing Documentation
-
-**Propósito:** Documentación de estrategias y prácticas de testing de THEA IA.
-
-**Última actualización:** 06 Enero 2026
 
 ---
 
-## 📋 Visión General
+## 🧪 Test Types by Category
 
-THEA IA tiene una infraestructura de testing robusta:
-- **173 tests totales** (100% passing) ✅
-- **50% code coverage** (objetivo H03 cumplido) ✅
-- **3 niveles de testing** - Unit, Integration, E2E
-- **pytest framework** - Testing profesional
-- **CI/CD ready** - Automated testing
-
----
-
-## 📁 Estructura
-
-testing/
-├── unit/ # Unit tests
-├── integration/ # Integration tests
-├── e2e/ # End-to-end tests
-├── fixtures/ # Test fixtures
-├── mocks/ # Mock objects
-└── README.md # Este archivo
-
-text
-
----
-
-## 🧪 Niveles de Testing
-
-### 1. Unit Tests (77 tests)
-- **Propósito:** Testear componentes aislados
-- **Coverage target:** 80%+
-- **Ejemplos:**
-  - Entity extractors (DateTimeExtractor, LocationExtractor)
-  - AgentConfig system
-  - Utility functions
-
-### 2. Integration Tests (46 tests)
-- **Propósito:** Testear interacción entre componentes
-- **Coverage target:** 60%+
-- **Ejemplos:**
-  - Repository + Database
-  - Adapters + Core FSM
-  - Agent + Context Manager
-
-### 3. E2E Tests (50 tests)
-- **Propósito:** Testear flujos completos
-- **Coverage target:** 50%+
-- **Ejemplos:**
-  - Conversación completa Telegram
-  - API endpoints end-to-end
-  - User journey completo
-
----
-
-## 📊 Métricas Actuales
-
-| Métrica | Valor | Estado |
-|---------|-------|--------|
-| **Total Tests** | 173 | ✅ 100% passing |
-| **Unit Tests** | 77 | ✅ |
-| **Integration Tests** | 46 | ✅ |
-| **E2E Tests** | 50 | ✅ |
-| **Code Coverage** | 50% | ✅ H03 objetivo |
-| **Test Duration** | ~2 min | ⚡ Rápido |
-
----
-
-## 🚀 Ejecutar Tests
-
-### Todos los tests
-```bash
-pytest
-Solo unit tests
-bash
-pytest tests/unit/
-Solo integration tests
-bash
-pytest tests/integration/
-Con coverage report
-bash
-pytest --cov=src --cov-report=html
-Tests específicos
-bash
-pytest tests/unit/test_datetime_extractor.py -v
-✅ Testing Best Practices
-1. Naming Conventions
-Archivos: test_*.py
-
-Funciones: test_should_* (descriptivo)
-
-Classes: Test* (PascalCase)
-
-2. Arrange-Act-Assert (AAA)
+### Unit Tests (60%)
+```python
+# Test individual functions/methods
+def test_date_extractor():
+    result = DateExtractor.extract("mañana")
+    assert result == tomorrow_date
+Integration Tests (30%)
 python
-def test_should_extract_date():
-    # Arrange
-    extractor = DateTimeExtractor()
-    text = "Reserva para mañana"
-    
-    # Act
-    result = extractor.extract(text)
-    
-    # Assert
-    assert result.date == tomorrow()
-3. Fixtures
-Usar pytest fixtures para setup/teardown
+# Test database operations
+async def test_create_appointment():
+    appt = await appointment_repo.create(...)
+    assert appt.id is not None
+    assert await db.exists(appt.id)
+E2E Tests (10%)
+python
+# Test complete user flows
+async def test_booking_flow():
+    # User sends "Quiero cita mañana 3pm"
+    # System responds, asks confirmation
+    # User confirms
+    # Appointment created in DB
+    # Google Calendar synced
+    # Confirmation sent
+📂 Test Structure
+text
+tests/
+├── core/                        # H01-H08 (786 tests) ✅
+│   ├── test_message_router.py
+│   ├── test_orchestrator.py
+│   ├── nlp/extractors/
+│   └── fsm/
+│       ├── test_state_machine.py
+│       ├── test_callbacks.py
+│       └── advanced/
+├── data/                        # Repository tests ✅
+│   └── repositories/
+├── agents/                      # H09+ (81+ tests)
+│   ├── test_agenda_agent.py     # 🔴 H09 (40 tests)
+│   ├── test_query_agent.py      # ⏳ H10 (40 tests)
+│   ├── test_note_agent.py       # ⏳ H10 (40 tests)
+│   └── test_reminder_agent.py   # ⏳ H11 (30 tests)
+├── integration/                 # Cross-component tests
+│   └── test_e2e_h09.py          # 🔴 H09 (16 tests)
+├── performance/                 # H08 stress tests ✅
+│   └── fsm/
+└── api/                         # ⏳ H12 (50 tests)
+🎯 Testing Standards
+Coverage Requirements
+Minimum: 85% line coverage
 
-Mantener fixtures en conftest.py
+Target: 90%+ for critical components
 
-Reutilizar fixtures cuando sea posible
+Exceptions: UI code, external API mocks
 
-4. Mocking
-Mockear dependencias externas (DB, APIs)
+Test Naming Convention
+python
+# Pattern: test_mponent>_<scenario>_<expected>
+def test_agenda_agent_book_appointment_success()
+def test_agenda_agent_book_appointment_conflict()
+def test_agenda_agent_book_appointment_invalid_date()
+Fixtures & Mocks
+python
+# Use pytest fixtures
+@pytest.fixture
+async def db_session():
+    # Setup test database
+    yield session
+    # Cleanup
 
-Usar unittest.mock o pytest-mock
+# Mock external APIs
+@pytest.fixture
+def mock_google_calendar():
+    with patch('google.calendar.create_event'):
+        yield
+📚 Future Content (H09+)
+H09 (January 2026)
+testing_agenda_agent.md - AgendaAgent test guide
 
-No mockear lo que se está testeando
+e2e_testing_guide.md - E2E test patterns
 
-🎯 Coverage Goals
-Por Milestone
-Milestone	Coverage Target	Status
-H01	30%	✅
-H02	40%	✅
-H03	50%	✅
-H04	55%	⏳ Q1 2026
-H05	60%	⏳ Q1 2026
-H08	70%	⏳ Q3 2026
-🔧 Testing Tools
-Core
-pytest - Test framework
+mocking_external_apis.md - Google Calendar mocks
 
-pytest-cov - Coverage reporting
+H12 (March 2026)
+api_testing.md - REST API test strategies
 
-pytest-asyncio - Async testing
+integration_testing.md - API integration tests
 
-Mocking
-unittest.mock - Built-in mocking
+H14 (April 2026)
+load_testing.md - Performance test scenarios
 
-pytest-mock - pytest plugin
+stress_testing.md - 10k concurrent users
 
-factory_boy - Test data factories
+H16 (May 2026)
+testing_monitoring.md - Test metrics in Grafana
 
-Database
-pytest-postgresql - PostgreSQL fixtures
+🔧 Running Tests (Current)
+All Foundation Tests (H01-H08)
+bash
+# Run all 786 tests
+pytest tests/ -v
 
-sqlalchemy-utils - Database utilities
+# Run with coverage
+pytest tests/ --cov=src/theaia --cov-report=html
 
-📚 Documentación Adicional
-Unit Testing Guide - unit/UNIT-TESTING.md
+# Run specific component
+pytest tests/core/fsm/ -v
+AgendaAgent Tests (H09 - when ready)
+bash
+# Run AgendaAgent tests only
+pytest tests/agents/test_agenda_agent.py -v
 
-Integration Testing Guide - integration/INTEGRATION-TESTING.md
+# Run E2E tests
+pytest tests/integration/test_e2e_h09.py -v
+📊 Test Metrics Dashboard
+Current Metrics (H01-H08)
+text
+Total Tests:        786 ✅
+Passing:            786 (100%)
+Failing:            0
+Coverage:           85%
+Avg Duration:       0.8s per test
+Total Duration:     ~10 minutes
+Target Metrics (H09 completion)
+text
+Total Tests:        867 (786 + 81)
+Passing:            867 (100%)
+Coverage:           85%+
+Avg Duration:       <1s per test
+Total Duration:     <15 minutes
+🎓 Testing Best Practices
+1. Test Pyramid
+text
+      /\
+     /E2\    10% - E2E tests (slow, high value)
+    /────\
+   /Integ\   30% - Integration tests (medium)
+  /──────\
+ / Unit   \  60% - Unit tests (fast, many)
+/──────────\
+2. Test Independence
+python
+# Each test is independent
+✅ GOOD: Each test sets up its own data
+❌ BAD: Tests depend on each other's state
+3. Clear Assertions
+python
+# Clear, specific assertions
+✅ GOOD: assert appointment.date == expected_date
+❌ BAD: assert appointment  # What are we checking?
+📖 Related Documentation
+H08 Milestone - FSM testing complete
 
-E2E Testing Guide - e2e/E2E-TESTING.md
+H09 Milestone - AgendaAgent tests (current)
 
-Coverage Reports - htmlcov/index.html
+SCHEMA.md - Testing architecture
 
-🎯 Audiencia
-Desarrolladores - Escribir y mantener tests
+Roadmap Master - Test distribution H01-H17
 
-QA Engineers - Estrategias de testing
+🗂️ Archived Documentation
+Location: docs/archive/testing_nov2025/
 
-Tech Leads - Code review y calidad
+Archived files (Nov 2025):
 
-CI/CD Engineers - Automated testing
+ci_cd.md, coverage_report.md, e2e_tests.md, index.md, integration_tests.md, unit_tests.md
 
-📚 Referencias
-pytest Documentation
+Reason:
 
-Testing Best Practices
+❌ Outdated test counts
 
-Coverage.py
+❌ Referenced non-existent test files
 
-Contacto: alvarofernandezmota@gmail.com
+❌ Not aligned with current 786 tests passing
+
+Will update as more tests are added in H09+.
+
+Last Updated: 06 January 2026, 19:57 CET
+Next Update: Late January 2026 (H09 completion - 867 tests)
+Maintained by: QA Team
+
+🟢 786 TESTS PASSING - SOLID FOUNDATION 🟢
