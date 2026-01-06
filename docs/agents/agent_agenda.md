@@ -1,290 +1,188 @@
-📅 Agent: Agenda — THEA IA
-Versión: 1.0
-Última actualización: 2025-11-08 (Sesión 35)
-Responsable: Agents Team
-Estado: ✅ Activo
-Prioridad: 🔴 Alta (Core)
+# 📅 AgendaAgent — THEA IA
 
-📋 Propósito
-El Agente Agenda gestiona eventos, reuniones y calendarios del usuario. Es responsable de crear, listar, modificar y eliminar eventos integrándose con APIs de calendario externas.
+**Version:** 2.0  
+**Last Updated:** 06 January 2026  
+**Status:** 🔴 In Development (H09)  
+**Priority:** CRITICAL  
+**Milestone:** H09 (January 2026)
 
-Audiencia:
+---
 
-Desarrolladores integrando funcionalidad de eventos
+## 🎯 Purpose
 
-QA testeando flujos de agenda
+The **AgendaAgent** manages appointments, events, and calendar operations. It handles booking, scheduling, availability checks, conflict detection, and integration with external calendar services (Google Calendar).
 
-Usuarios finales usando comandos de calendario
+**This is the FIRST functional agent** being implemented in H09 as the foundation for THEA IA's real-world functionality.
 
-🎯 Responsabilidades
-Funcionalidad	Descripción
-Crear evento	Crear nuevo evento con título, fecha, hora, participantes
-Listar eventos	Mostrar eventos por rango de fechas
-Modificar evento	Actualizar título, fecha, hora, asistentes
-Eliminar evento	Borrar evento por ID
-Buscar eventos	Búsqueda por palabra clave o fecha
-Recordatorios	Configurar notificaciones previas
-🔧 Configuración
-Archivo: config/agents/agenda.yaml
+---
 
+## 📋 Core Responsibilities
+
+| Responsibility | Description | Status |
+|----------------|-------------|--------|
+| **Create Appointments** | Book new appointments with date, time, notes | 🔴 H09 |
+| **Check Availability** | Generate available time slots (9am-6pm, 30min intervals) | 🔴 H09 |
+| **Conflict Detection** | Prevent overbooking by checking existing appointments | 🔴 H09 |
+| **Modify Appointments** | Reschedule or update appointment details | 🔴 H09 |
+| **Cancel Appointments** | Delete appointments with proper cleanup | 🔴 H09 |
+| **List Appointments** | Retrieve appointments by date range | 🔴 H09 |
+| **Pre-Event Reminders** | Send reminders 15min/1h before appointment | 🔴 H09 |
+| **Google Calendar Sync** | Bi-directional sync with Google Calendar API | 🔴 H09 |
+
+---
+
+## 🏗️ Architecture
+
+### Technology Stack
+
+```yaml
+# Database Tables
+appointments:
+  - id, user_id, date, start_time, end_time
+  - notes, status (booked/cancelled/completed)
+  - reminder_minutes, created_at, updated_at
+
+availability:
+  - id, date, time_slot, available
+  - updated_at
+
+# Services
+- CalendarEngine: Slot generation, conflict detection
+- BookingService: CRUD operations
+- GoogleCalendarSync: External calendar integration
+- GroqLLM: Natural language understanding
+
+# Technology
+- Database: PostgreSQL 14+
+- NLP: Groq LLM (llama-3.1-70b-versatile)
+- External API: Google Calendar API v3
+- Timezone: UTC ↔ Local conversion
+Natural Language Processing
+AgendaAgent uses Groq LLM to understand user requests:
+
+python
+# Example interpretations:
+"Quiero una cita mañana a las 3pm"
+  → intent: BOOK_APPOINTMENT
+  → date: tomorrow
+  → time: 15:00
+  → duration: 30 (default)
+
+"¿Tienes disponibilidad el viernes?"
+  → intent: CHECK_AVAILABILITY
+  → date: next_friday
+  → time: any
+🔧 Implementation Status (H09)
+Phase 1: Database & Core Services ✅
+✅ PostgreSQL schema design
+
+✅ Repository pattern implementation
+
+✅ CalendarEngine with slot generation
+
+Phase 2: Booking Logic 🔴 In Progress
+🔴 Create appointment workflow
+
+🔴 Conflict detection algorithm
+
+🔴 Availability checking
+
+Phase 3: External Integration ⏳ Planned
+⏳ Google Calendar OAuth2 flow
+
+⏳ Bi-directional sync
+
+⏳ Timezone handling
+
+Phase 4: Reminders ⏳ Planned
+⏳ Pre-event reminder system
+
+⏳ Telegram notification delivery
+
+⏳ Email notification (secondary)
+
+📊 Testing Strategy
+Test Coverage Target: 85%+
+Test Type	Count	Status
+Unit Tests	40	🔴 H09
+Integration Tests	25	🔴 H09
+E2E Tests	16	🔴 H09
+Total	81	🔴 H09
+🌐 API Examples
+Create Appointment
 text
-agent:
-  name: "Agenda"
-  version: "1.0"
-  enabled: true
-  timeout: 30
-  max_retries: 3
+POST /api/v1/appointments
+Content-Type: application/json
 
-capabilities:
-  - create_event
-  - list_events
-  - modify_event
-  - delete_event
-  - search_events
-  - set_reminder
-
-models:
-  nlp: "bert-base-uncased"
-  date_parser: "dateutil"
-
-database:
-  table: "events"
-  cache_ttl: 3600
-
-external_apis:
-  google_calendar:
-    enabled: true
-    credentials_path: "/secrets/google_calendar_creds.json"
-    timeout: 10
-  
-  outlook_calendar:
-    enabled: false
-    credentials_path: "/secrets/outlook_creds.json"
-📥 Entrada esperada
-Formato general
-python
 {
-  "action": "create_event",  # create/list/modify/delete/search
-  "data": {
-    "title": "Reunión equipo",
-    "date": "2025-11-09",
-    "time": "10:00",
-    "duration": 60,  # minutos
-    "attendees": ["user@example.com"],
-    "description": "Discutir roadmap Q1",
-    "location": "Sala A",
-    "reminder": 15  # minutos antes
-  }
+  "user_id": 123,
+  "date": "2026-01-07",
+  "time": "15:00",
+  "duration": 30,
+  "notes": "Consulta médica"
 }
-Casos específicos
-Crear evento:
-
-python
-{
-  "action": "create_event",
-  "data": {
-    "title": "Reunión",
-    "date": "2025-11-09",
-    "time": "10:00"
-  }
-}
-Listar eventos:
-
-python
-{
-  "action": "list_events",
-  "data": {
-    "start_date": "2025-11-08",
-    "end_date": "2025-11-15"
-  }
-}
-Modificar evento:
-
-python
-{
-  "action": "modify_event",
-  "data": {
-    "event_id": "evt_12345",
-    "title": "Nuevo título",
-    "time": "11:00"
-  }
-}
-📤 Salida esperada
-Éxito
-python
-{
-  "status": "success",
-  "action": "create_event",
-  "event": {
-    "event_id": "evt_12345",
-    "title": "Reunión equipo",
-    "date": "2025-11-09",
-    "time": "10:00",
-    "duration": 60,
-    "attendees": ["user@example.com"],
-    "reminder": 15,
-    "url": "https://calendar.google.com/event?id=evt_12345"
-  },
-  "message": "Evento creado exitosamente"
-}
-Error
-python
-{
-  "status": "error",
-  "action": "create_event",
-  "error_code": "INVALID_DATE",
-  "message": "Fecha no válida: debe ser YYYY-MM-DD",
-  "details": {
-    "input": "invalid_date",
-    "expected": "YYYY-MM-DD"
-  }
-}
-🔄 Flujo de procesamiento
-1. Crear evento
+Check Availability
 text
-Usuario input
-     ↓
-Validar entrada (título, fecha, hora)
-     ↓
-Parsear fecha/hora con dateutil
-     ↓
-Verificar conflictos de horario
-     ↓
-Crear evento en BD local
-     ↓
-Sincronizar con API externa (Google Calendar)
-     ↓
-Configurar recordatorio (si aplica)
-     ↓
-Retornar evento creado + URL
-2. Listar eventos
+GET /api/v1/appointments/availability?date=2026-01-07
+Cancel Appointment
 text
-Usuario input (rango de fechas)
-     ↓
-Validar fechas
-     ↓
-Consultar BD local (cache)
-     ↓
-Si cache miss: consultar API externa
-     ↓
-Filtrar por rango de fechas
-     ↓
-Ordenar por fecha/hora
-     ↓
-Retornar lista de eventos
-🧠 Lógica interna
-Parseo de fechas natural
-El agente entiende lenguaje natural:
+DELETE /api/v1/appointments/456
+🔄 Differences from Other Agents
+Feature	AgendaAgent	ReminderAgent
+Purpose	Manage appointments	Standalone reminders
+Reminders	PRE-event (15 min before)	INDEPENDENT (not tied to events)
+Example	"Reminder: Meeting in 15 min"	"Buy milk tomorrow at 10am"
+Data	Linked to appointment	Self-contained message
+📂 File Locations
+text
+src/theaia/agents/agenda_agent/
+├── agent.py                    # Main AgendaAgent class
+├── handler.py                  # Command handler
+├── fsm_machine.py              # State machine
+├── context_manager.py          # Context handling
+├── conversation_manager.py     # Conversation flow
+├── datetime_parser.py          # Date/time parsing
+├── intent_parser.py            # Intent extraction
+├── nlp_engine.py               # NLP processing
+├── orchestrator.py             # Agent orchestration
+├── model/                      # Data models
+├── schemas/                    # Pydantic schemas
+├── services/                   # Business logic
+├── tests/                      # Test suite
+└── tools/                      # Utility functions
+🚀 Roadmap
+H09 (January 2026) - 🔴 Current
+Implement full booking workflow
 
-python
-"mañana a las 10"         → 2025-11-09 10:00
-"próximo lunes 15:00"     → 2025-11-11 15:00
-"en 2 horas"              → 2025-11-08 18:47
-"el 15 de diciembre"      → 2025-12-15 (hora default 09:00)
-Implementación:
+81 tests passing
 
-python
-from dateutil.parser import parse
-from dateutil.relativedelta import relativedelta
+Google Calendar basic sync
 
-def parse_natural_date(text):
-    # Maneja casos comunes
-    if "mañana" in text:
-        return datetime.now() + timedelta(days=1)
-    return parse(text, fuzzy=True)
-Detección de conflictos
-python
-def check_conflicts(start_time, end_time):
-    # Consultar eventos existentes
-    existing = db.query(Event).filter(
-        Event.start_time.between(start_time, end_time)
-    ).all()
-    
-    if existing:
-        return {
-            "conflict": True,
-            "conflicting_events": existing
-        }
-    return {"conflict": False}
-🔗 Integraciones
-Google Calendar API
-python
-from googleapiclient.discovery import build
+Telegram bot integration
 
-def sync_to_google_calendar(event_data):
-    service = build('calendar', 'v3', credentials=creds)
-    
-    event = {
-        'summary': event_data['title'],
-        'start': {
-            'dateTime': event_data['datetime'].isoformat(),
-            'timeZone': 'Europe/Madrid',
-        },
-        'end': {
-            'dateTime': (event_data['datetime'] + timedelta(minutes=event_data['duration'])).isoformat(),
-            'timeZone': 'Europe/Madrid',
-        }
-    }
-    
-    result = service.events().insert(calendarId='primary', body=event).execute()
-    return result['id']
-📊 Métricas
-Métrica	Actual	Target
-Response time	450ms	< 500ms
-Success rate	97%	> 95%
-API sync rate	95%	> 90%
-Conflict detection accuracy	98%	> 95%
-🚨 Errores comunes
-Error	Causa	Solución
-INVALID_DATE	Formato fecha incorrecto	Usar YYYY-MM-DD
-INVALID_TIME	Formato hora incorrecto	Usar HH:MM (24h)
-CONFLICT_DETECTED	Evento solapado	Modificar horario
-API_TIMEOUT	Google Calendar no responde	Retry automático
-EVENT_NOT_FOUND	ID evento no existe	Verificar event_id
-✅ Tests
-Unit test ejemplo
-python
-def test_agenda_create_event_valid_data():
-    agent = AgendaAgent()
-    
-    result = agent.process({
-        "action": "create_event",
-        "data": {
-            "title": "Test event",
-            "date": "2025-11-09",
-            "time": "10:00"
-        }
-    })
-    
-    assert result["status"] == "success"
-    assert result["event"]["title"] == "Test event"
-    assert "event_id" in result["event"]
-Ver más tests en: src/theaia/tests/unit/test_agents_agenda.py
+H10 (February 2026) - ⏳ Next
+Advanced conflict resolution
 
-🔗 Enlaces relacionados
-Agents Overview — Sistema multi-agente
+Recurring appointments
 
-Best Practices — Convenciones
+Multi-calendar support
 
-Testing — Cómo testear agentes
+H11+ - ⏳ Future
+AI-powered scheduling suggestions
 
-📌 Meta-información
-Campo	Valor
-Archivo	docs/agents/agent_agenda.md
-Versión	1.0
-Última revisión	2025-11-08 (Sesión 35)
-Responsable	Agents Team
-Estado	✅ Activo
-🛡️ Auditoría y cumplimiento
-Parte del Hito 35.1.3 (docs/agents/)
+Calendar sharing
 
-Agente core con prioridad alta
+Advanced timezone handling
 
-Integración validada con Google Calendar
+📖 Related Documentation
+Agents Overview - All 4 agents comparison
 
-Tests unitarios y de integración completos
+SCHEMA.md - Project architecture
 
-Validado en sesión 35
+Roadmap Master - H01-H17 timeline
 
-8/10/25. 16.46
+H09 Milestone - Current sprint details
 
+Last Updated: 06 January 2026, 17:45 CET
+Next Review: 15 January 2026 (H09 completion)
+Maintained by: Agents Team

@@ -1,336 +1,291 @@
-📝 Agent: Note — THEA IA
-Versión: 1.0
-Última actualización: 2025-11-08 (Sesión 35)
-Responsable: Agents Team
-Estado: ✅ Activo
-Prioridad: 🔴 Alta (Core)
+# 📝 NoteAgent — THEA IA
 
-📋 Propósito
-El Agente Note gestiona notas, apuntes y documentación del usuario. Es responsable de crear, buscar, modificar, etiquetas y organizar notas con indexación full-text.
+**Version:** 2.0  
+**Last Updated:** 06 January 2026  
+**Status:** ⏳ Planned (H10)  
+**Priority:** HIGH  
+**Milestone:** H10 (February 2026)
 
-Audiencia:
+---
 
-Desarrolladores integrando funcionalidad de notas
+## 🎯 Purpose
 
-QA testeando búsquedas y organización
+The **NoteAgent** manages user notes with full-text search, tagging, and organization capabilities. It handles creation, modification, deletion, and organization of markdown notes.
 
-Usuarios finales tomando y buscando notas
+**This is the NOTE MANAGEMENT specialist** - it creates and manages notes, while QueryAgent searches within them.
 
-🎯 Responsabilidades
-Funcionalidad	Descripción
-Crear nota	Nueva nota con título y contenido
-Listar notas	Mostrar todas las notas del usuario
-Buscar notas	Full-text search por palabra clave
-Modificar nota	Actualizar título y contenido
-Eliminar nota	Borrar nota por ID
-Etiquetas	Organizar notas por tags
-Archivar	Mover notas a archivo
-🔧 Configuración
-Archivo: config/agents/note.yaml
+---
 
+## 📋 Core Responsibilities
+
+| Responsibility | Description | Status |
+|----------------|-------------|--------|
+| **Create Notes** | Create new notes with title and markdown content | ⏳ H10 |
+| **Edit Notes** | Modify note title and content | ⏳ H10 |
+| **Delete Notes** | Soft delete notes to archive | ⏳ H10 |
+| **List Notes** | Retrieve notes with filtering | ⏳ H10 |
+| **Full-Text Search** | PostgreSQL ts_vector search | ⏳ H10 |
+| **Tagging System** | Manual and auto-generated tags | ⏳ H10 |
+| **Auto-Tagging** | NLP-based topic extraction | ⏳ H10 |
+| **Duplicate Detection** | Find similar notes (>0.9 similarity) | ⏳ H10 |
+| **Archive System** | Soft delete with recovery | ⏳ H10 |
+
+---
+
+## 🏗️ Architecture
+
+### Technology Stack
+
+```yaml
+# Database
+notes:
+  - id, user_id, title, content (markdown)
+  - tags (array), created_at, updated_at
+  - archived (bool), embedding (vector)
+
+# Indexes
+- Full-Text: to_tsvector('spanish', content)
+- Tags: GIN index on tags array
+- Vector: pgvector for similarity search
+
+# Services
+- NoteService: CRUD operations
+- FullTextSearchService: PostgreSQL search
+- AutoTaggerService: NLP-based topic extraction
+- DuplicateDetector: Embedding similarity
+- MarkdownProcessor: Parse and validate markdown
+Note Structure
 text
-agent:
-  name: "Note"
-  version: "1.0"
-  enabled: true
-  timeout: 20
-  max_retries: 2
+# Example Note
+**Title:** "Roadmap Q1 Planning"
+**Content:** (markdown)
+  # Q1 Goals
+  - Feature A: Timeline and scope
+  - Feature B: Dependencies
+  
+  ## Action Items
+  - [ ] Review with team
+  - [ ] Create tickets
+  
+**Tags:** ["planning", "roadmap", "Q1"]
+**Auto-Tags:** ["product", "quarterly", "goals"]
+**Created:** 2026-01-06 15:00:00
+**Updated:** 2026-01-06 15:30:00
+🔧 Implementation Plan (H10)
+Phase 1: Core CRUD ⏳
+⏳ Create note workflow
 
-capabilities:
-  - create_note
-  - list_notes
-  - search_notes
-  - modify_note
-  - delete_note
-  - add_tag
-  - archive_note
+⏳ Edit note functionality
 
-models:
-  nlp: "bert-base-uncased"
-  text_embedding: "sentence-transformers/all-MiniLM-L6-v2"
+⏳ Soft delete (archive)
 
-database:
-  table: "notes"
-  index: "notes_full_text_index"
-  cache_ttl: 1800
+⏳ List with pagination
 
-search:
-  engine: "elasticsearch"  # o sqlite full-text
-  batch_size: 50
-  timeout: 5
-📥 Entrada esperada
-Formato general
-python
+Phase 2: Search & Tags ⏳
+⏳ Full-text search (PostgreSQL)
+
+⏳ Manual tagging system
+
+⏳ Tag-based filtering
+
+⏳ Tag suggestions
+
+Phase 3: Smart Features ⏳
+⏳ Auto-tagging with NLP
+
+⏳ Duplicate detection
+
+⏳ Related notes suggestions
+
+⏳ Archive management
+
+Phase 4: Advanced ⏳
+⏳ Markdown validation
+
+⏳ Version history (future)
+
+⏳ Note templates (future)
+
+⏳ Export functionality
+
+📊 Testing Strategy
+Test Coverage Target: 85%+
+Test Type	Count	Status
+Unit Tests	25	⏳ H10
+Integration Tests	10	⏳ H10
+E2E Tests	5	⏳ H10
+Total	40	⏳ H10
+🌐 API Examples
+Create Note
+text
+POST /api/v1/notes
+Content-Type: application/json
+
 {
-  "action": "create_note",  # create/list/search/modify/delete
-  "data": {
-    "title": "Mi nota",
-    "content": "Contenido de la nota",
-    "tags": ["personal", "ideas"],
-    "color": "yellow"  # opcional
-  }
+  "title": "Roadmap Q1",
+  "content": "# Q1 Goals\n- Feature A\n- Feature B",
+  "tags": ["planning", "roadmap"]
 }
-Casos específicos
-Crear nota:
 
-python
+Response:
 {
-  "action": "create_note",
-  "data": {
-    "title": "Roadmap Q1",
-    "content": "- Feature A\n- Feature B\n- Testing",
-    "tags": ["roadmap", "planning"]
-  }
+  "id": "note_123",
+  "title": "Roadmap Q1",
+  "tags": ["planning", "roadmap"],
+  "auto_tags": ["product", "quarterly"],
+  "created_at": "2026-01-06T15:00:00Z"
 }
-Buscar notas:
+Search Notes
+text
+GET /api/v1/notes/search?q=roadmap&tags=planning
 
-python
+Response:
 {
-  "action": "search_notes",
-  "data": {
-    "query": "roadmap Q1",
-    "tags": ["planning"],
-    "limit": 10
-  }
-}
-Modificar nota:
-
-python
-{
-  "action": "modify_note",
-  "data": {
-    "note_id": "note_12345",
-    "title": "Nuevo título",
-    "content": "Contenido actualizado"
-  }
-}
-📤 Salida esperada
-Éxito - Crear nota
-python
-{
-  "status": "success",
-  "action": "create_note",
-  "note": {
-    "note_id": "note_12345",
-    "title": "Roadmap Q1",
-    "content": "- Feature A\n- Feature B",
-    "tags": ["roadmap", "planning"],
-    "created_at": "2025-11-08T14:50:00Z",
-    "updated_at": "2025-11-08T14:50:00Z"
-  },
-  "message": "Nota creada exitosamente"
-}
-Éxito - Búsqueda
-python
-{
-  "status": "success",
-  "action": "search_notes",
   "results": [
     {
-      "note_id": "note_12345",
+      "id": "note_123",
       "title": "Roadmap Q1",
-      "excerpt": "- Feature A\n- Feature B...",
-      "relevance_score": 0.95,
-      "tags": ["roadmap", "planning"]
-    },
-    {
-      "note_id": "note_67890",
-      "title": "Q1 Planning",
-      "excerpt": "Planificación para Q1...",
-      "relevance_score": 0.87,
-      "tags": ["planning"]
+      "excerpt": "Q1 Goals - Feature A...",
+      "relevance": 0.95,
+      "tags": ["planning", "roadmap"]
     }
   ],
-  "total": 2,
-  "query_time_ms": 125
+  "total": 3
 }
-Error
-python
-{
-  "status": "error",
-  "action": "create_note",
-  "error_code": "INVALID_INPUT",
-  "message": "Título requerido",
-  "details": {
-    "missing_fields": ["title"]
-  }
-}
-🔄 Flujo de procesamiento
-1. Crear nota
+Auto-Tag Note
 text
-Usuario input
-     ↓
-Validar entrada (título requerido)
-     ↓
-Generar note_id único
-     ↓
-Guardar en BD (tabla notes)
-     ↓
-Indexar para full-text search
-     ↓
-Procesar tags/etiquetas
-     ↓
-Retornar nota creada
-2. Buscar notas
-text
-Usuario query (ej: "roadmap")
-     ↓
-Tokenizar y normalizar query
-     ↓
-Ejecutar full-text search en BD
-     ↓
-Filtrar por tags (si aplica)
-     ↓
-Calcular relevancia/scoring
-     ↓
-Ordenar por relevancia
-     ↓
-Retornar resultados + metadata
-🧠 Lógica interna
-Full-text search
-El agente implementa búsqueda de texto completo:
+POST /api/v1/notes/123/auto-tag
 
-python
-def search_notes(query, tags=None, limit=10):
-    # Normalizar query
-    normalized_query = normalize_text(query)
-    
-    # Ejecutar búsqueda full-text
-    results = db.execute("""
-        SELECT note_id, title, content, 
-               ts_rank(to_tsvector('spanish', content), 
-                      plainto_tsquery('spanish', %s)) AS relevance
-        FROM notes
-        WHERE to_tsvector('spanish', content) @@ 
-              plainto_tsquery('spanish', %s)
-        ORDER BY relevance DESC
-        LIMIT %s
-    """, (normalized_query, normalized_query, limit))
-    
-    return results
-Etiquetado automático
-python
-def auto_tag_note(content):
-    # Usar NLP para sugerir tags
-    topics = nlp_model.extract_topics(content)
-    
-    return {
-        "auto_tags": topics,
-        "confidence": [0.95, 0.87, 0.72]
+Response:
+{
+  "suggested_tags": ["planning", "product", "quarterly"],
+  "confidence": 0.87
+}
+Find Duplicates
+text
+GET /api/v1/notes/123/duplicates
+
+Response:
+{
+  "duplicates": [
+    {
+      "id": "note_456",
+      "title": "Q1 Roadmap Planning",
+      "similarity": 0.93
     }
-Deduplicación
-python
-def check_duplicate(title, content):
-    # Calcular embedding del contenido
-    embedding = text_embedding_model.encode(content)
-    
-    # Buscar notas similares
-    similar = db.similarity_search(embedding, threshold=0.9)
-    
-    if similar:
-        return {
-            "is_duplicate": True,
-            "similar_notes": similar
-        }
-    return {"is_duplicate": False}
-📊 Métricas
-Métrica	Actual	Target
-Search response time	180ms	< 200ms
-Index update latency	50ms	< 100ms
-Search accuracy	0.92	> 0.90
-Dedup detection rate	0.98	> 0.95
-🚨 Errores comunes
-Error	Causa	Solución
-INVALID_INPUT	Título faltante	Proporcionar título
-DUPLICATE_DETECTED	Nota similar existe	Verificar nota existente
-SEARCH_TIMEOUT	Query muy compleja	Simplificar o agregar límites
-INDEXING_ERROR	Fallo al indexar	Reintentar o reindexar
-NOTE_NOT_FOUND	ID no existe	Verificar note_id
-🏷️ Sistema de etiquetas
-Etiquetas predefinidas:
-
-personal
-
-trabajo
-
-ideas
-
-research
-
-planning
-
-bug-report
-
-feature-request
-
-Etiquetas personalizadas:
-
-python
-{
-  "action": "add_tag",
-  "data": {
-    "note_id": "note_12345",
-    "tags": ["custom-tag-1", "custom-tag-2"]
-  }
+  ]
 }
-✅ Tests
-Unit test ejemplo
+🔄 Differences from Other Agents
+Agent	Responsibility
+NoteAgent	Manages notes (create/edit/organize)
+QueryAgent	Searches within notes (doesn't modify)
+Key Principle: NoteAgent is WRITE-focused (CRUD), QueryAgent is READ-focused (Search).
+
+💡 Smart Features
+Auto-Tagging Algorithm
 python
-def test_note_create_note_valid_data():
-    agent = NoteAgent()
-    
-    result = agent.process({
-        "action": "create_note",
-        "data": {
-            "title": "Test note",
-            "content": "Test content"
-        }
-    })
-    
-    assert result["status"] == "success"
-    assert result["note"]["title"] == "Test note"
-    assert "note_id" in result["note"]
+# NLP-based topic extraction
+Content: "# Q1 Roadmap\nWe need to plan features for Q1..."
+  ↓
+Topic Extraction (NLP):
+  - Keywords: ["roadmap", "plan", "features", "Q1"]
+  - Entities: ["Q1"]
+  - Topics: ["product", "planning", "quarterly"]
+  ↓
+Suggested Tags: ["planning", "product", "quarterly"]
+Confidence: 0.87
+Duplicate Detection
+python
+# Vector similarity comparison
+Note A: "Roadmap Q1 Planning"
+Note B: "Q1 Roadmap Plan"
+  ↓
+Embedding similarity: 0.93 (>0.90 threshold)
+  ↓
+Result: Potential duplicate detected
+Related Notes
+python
+# Find similar notes by content
+Current Note: "Roadmap Q1"
+  ↓
+Vector Search (top 5 similar):
+  1. "H09 Planning" (0.85)
+  2. "Feature Roadmap" (0.82)
+  3. "Q1 Goals" (0.79)
+📂 File Locations
+text
+src/theaia/agents/note_agent/           # (H10 - to be created)
+├── agent.py                             # Main NoteAgent class
+├── note_service.py                      # CRUD operations
+├── full_text_search.py                  # PostgreSQL search
+├── auto_tagger.py                       # NLP topic extraction
+├── duplicate_detector.py                # Similarity detection
+├── markdown_processor.py                # Parse & validate
+├── models/                              # Data models
+├── tests/                               # Test suite
+└── tools/                               # Utilities
+🚀 Roadmap
+H10 (February 2026) - ⏳ Planned
+Implement full CRUD
 
-def test_note_search_full_text():
-    agent = NoteAgent()
-    
-    # Crear nota primero
-    agent.process({
-        "action": "create_note",
-        "data": {"title": "Roadmap", "content": "roadmap content"}
-    })
-    
-    # Buscar
-    result = agent.process({
-        "action": "search_notes",
-        "data": {"query": "roadmap"}
-    })
-    
-    assert result["status"] == "success"
-    assert len(result["results"]) > 0
-Ver más tests en: src/theaia/tests/unit/test_agents_note.py
+Full-text search
 
-🔗 Enlaces relacionados
-Agents Overview — Sistema multi-agente
+Tagging system
 
-Best Practices — Convenciones
+Auto-tagging with NLP
 
-Testing — Cómo testear agentes
+40 tests passing
 
-📌 Meta-información
-Campo	Valor
-Archivo	docs/agents/agent_note.md
-Versión	1.0
-Última revisión	2025-11-08 (Sesión 35)
-Responsable	Agents Team
-Estado	✅ Activo
-🛡️ Auditoría y cumplimiento
-Parte del Hito 35.1.3 (docs/agents/)
+H11 (February 2026) - ⏳ Future
+Version history
 
-Agente core con prioridad alta
+Note templates
 
-Full-text search implementado
+Rich markdown editor support
 
-Tests unitarios completos
+H12+ - ⏳ Future
+Collaborative notes
 
-Validado en sesión 35
+Real-time sync
+
+Export to PDF/DOCX
+
+Note linking (wiki-style)
+
+💡 Example Use Cases
+text
+User: "Crea una nota sobre la reunión de hoy"
+NoteAgent:
+  → Creates note with title "Reunión 06 Ene 2026"
+  → Auto-tags: ["meeting", "date:2026-01"]
+  → Returns note_id
+
+User: "Edita la nota y añade acción items"
+NoteAgent:
+  → Opens note for editing
+  → User adds content
+  → Saves changes
+  → Updates updated_at timestamp
+
+User: "Busca notas sobre roadmap"
+QueryAgent (not NoteAgent):
+  → Performs semantic search
+  → Returns matching notes
+
+User: "¿Esta nota es duplicada?"
+NoteAgent:
+  → Runs duplicate detection
+  → Returns similarity scores
+  → Suggests merging if >0.9
+📖 Related Documentation
+Agents Overview - All 4 agents comparison
+
+SCHEMA.md - Project architecture
+
+Roadmap Master - H01-H17 timeline
+
+H10 Milestone - Future sprint
+
+Last Updated: 06 January 2026, 17:51 CET
+Next Review: February 2026 (H10 start)
+Maintained by: Agents Team

@@ -1,194 +1,334 @@
-🎓 Agents Best Practices — THEA IA
-Versión: 1.0
-Última actualización: 2025-11-08 (Sesión 35)
-Responsable: Agents Team / Álvaro Fernández Mota (CEO)
-Estado: ✅ Activo
+# 🎓 Agent Best Practices — THEA IA
 
-📋 Propósito
-Guía de mejores prácticas para diseñar, implementar y mantener agentes en THEA IA: patrones, convenciones, anti-patrones y checklist.
+**Version:** 2.0  
+**Last Updated:** 06 January 2026  
+**Status:** ✅ Active  
+**Maintained by:** Agents Team
 
-🎯 Principios fundamentales
-1. Responsabilidad única
-Cada agente hace UNA cosa y la hace bien
+---
 
-❌ NO: Agente que crea eventos Y notas Y búsquedas
+## 🎯 Fundamental Principles
 
-✅ SÍ: Agente Agenda solo eventos, Note solo notas
+### 1️⃣ Single Responsibility Principle
 
-2. Comunicación mediada por FSM
-Nunca Agent A → Agent B directamente
+Each agent does **ONE thing** and does it well.
 
-Siempre Agent A → FSM → Agent B
+✅ GOOD:
 
-FSM es el único orquestador
+AgendaAgent: ONLY manages appointments
 
-3. Idempotencia
-Mismo input = Mismo output (siempre que sea posible)
+NoteAgent: ONLY manages notes
 
-Operaciones críticas deben ser idempotentes
+QueryAgent: ONLY searches (read-only)
 
-4. Error handling robusto
-Nunca fallar sin explicación
+ReminderAgent: ONLY manages standalone reminders
 
-Siempre retornar error estructurado
+❌ BAD:
 
-Log completo de errores
+AgendaAgent that also handles notes
 
-5. Validación estricta de entrada
-Sanitizar TODOS los inputs
+QueryAgent that modifies data
 
-Validar tipos y rangos
+One "SuperAgent" doing everything
 
-Rechazar early si input inválido
+text
 
-📐 Estructura de un agente
+### 2️⃣ Agent Isolation
+
+Agents **NEVER** communicate directly with each other.
+
+❌ BAD: AgentA → AgentB (direct call)
+✅ GOOD: AgentA → Orchestrator → AgentB
+
+The Orchestrator is the ONLY coordinator.
+
+text
+
+### 3️⃣ Read vs Write Separation
+
+Clear distinction between read-only and write agents.
+
+WRITE Agents (CRUD):
+
+AgendaAgent: Create/update/delete appointments
+
+NoteAgent: Create/update/delete notes
+
+ReminderAgent: Create/update/delete reminders
+
+READ Agent (Search):
+
+QueryAgent: Search-only, NO modifications
+
+text
+
+### 4️⃣ Idempotency
+
+Same input = Same output (when possible).
+
+```python
+# Idempotent: Creating appointment with same ID
+create_appointment(id=123, date="2026-01-07")
+  → First call: Creates appointment
+  → Second call: Returns existing (no duplicate)
+
+# Non-idempotent is acceptable for:
+- Searches (results may change over time)
+- List operations (data changes)
+5️⃣ Robust Error Handling
+Never fail silently. Always return structured errors.
+
 python
-from src.theaia.agents.base import BaseAgent
-
-class MyAgent(BaseAgent):
-    def __init__(self):
-        super().__init__("MyAgent")
-        self.config = self.load_config("my_agent.yaml")
-    
-    def initialize(self):
-        """Cargar recursos: modelos, BD, etc."""
-        self.model = load_model(self.config['model'])
-        self.db = connect_db()
-    
-    def process(self, task_data):
-        """Lógica principal"""
-        # 1. Validar entrada
-        if not self.validate_input(task_data):
-            return self.error_response("INVALID_INPUT")
-        
-        # 2. Procesar
-        try:
-            result = self._execute_task(task_data)
-            return self.success_response(result)
-        except Exception as e:
-            self.log_error(e)
-            return self.error_response("PROCESSING_ERROR", str(e))
-    
-    def shutdown(self):
-        """Liberar recursos"""
-        self.db.close()
-✅ Checklist para nuevo agente
-Diseño
- Responsabilidad única y clara
-
- No duplica funcionalidad de otro agente
-
- Casos de uso documentados
-
- Interfaz de entrada/salida definida
-
-Implementación
- Hereda de BaseAgent
-
- Implementa initialize(), process(), shutdown()
-
- Validación estricta de entrada
-
- Error handling robusto
-
- Logging en pasos clave
-
- Timeouts configurados
-
-Configuración
- Archivo YAML en config/agents/
-
- Configuración versionada
-
- Secrets externalizados (no hardcoded)
-
-Testing
- Tests unitarios (>=85% cobertura)
-
- Tests integración con FSM
-
- Tests de error handling
-
- Tests de edge cases
-
-Documentación
- README en docs/agents/agent_xxx.md
-
- Ejemplos de uso
-
- Entrada/salida documentada
-
- Métricas definidas
-
-🚨 Anti-patrones (NO hacer)
-❌ Agent-to-Agent directo
-python
-# MAL
-result = AgentB().process(data)
-python
-# BIEN
-fsm.route_to_agent('agent_b', data)
-❌ Estado global compartido
-python
-# MAL
-global_var = {}
-class MyAgent:
-    def process(self, data):
-        global_var['key'] = data  # Estado compartido peligroso
-❌ Bloqueos largos
-python
-# MAL
-def process(self, data):
-    time.sleep(60)  # Bloquea todo el sistema
-python
-# BIEN
-@async_task
-def process_async(self, data):
-    await asyncio.sleep(60)
-❌ Errores sin contexto
-python
-# MAL
-return {"status": "error"}
-python
-# BIEN
-return {
-    "status": "error",
-    "error_code": "INVALID_INPUT",
-    "message": "Título requerido",
-    "details": {"missing": ["title"]}
+# Good error response
+{
+  "success": False,
+  "error": {
+    "code": "CONFLICT",
+    "message": "Appointment conflicts with existing booking",
+    "details": {
+      "existing_appointment": "appt_456",
+      "conflict_time": "15:00"
+    }
+  }
 }
-📊 Métricas recomendadas
-Todo agente debe exponer:
+🔄 Orchestrator Patterns
+Pattern 1: Intent Routing
+The Orchestrator classifies intents and routes to agents.
 
-Response time: Latencia promedio
+python
+class Orchestrator:
+    def route_message(self, message):
+        intent = self.classify_intent(message)
+        
+        # Route to appropriate agent
+        if intent == "BOOK_APPOINTMENT":
+            return self.agenda_agent.handle(message)
+        elif intent == "SEARCH":
+            return self.query_agent.handle(message)
+        elif intent == "CREATE_NOTE":
+            return self.note_agent.handle(message)
+        elif intent == "SET_REMINDER":
+            return self.reminder_agent.handle(message)
+        else:
+            # Fallback handled by Orchestrator
+            return self.handle_unknown_intent(message)
+Pattern 2: Fallback Handling
+Fallback is NOT an agent - it's an Orchestrator responsibility.
 
-Success rate: % éxito vs errores
+python
+class Orchestrator:
+    def handle_unknown_intent(self, message):
+        """Handles unrecognized user input"""
+        return {
+            "response": "No entendí tu solicitud. ¿Podrías reformularla?",
+            "suggestions": [
+                "Agendar una cita",
+                "Buscar información",
+                "Crear una nota",
+                "Configurar un recordatorio"
+            ],
+            "help_available": True
+        }
+❌ DON'T: Create a FallbackAgent
+✅ DO: Implement orchestrator.handle_unknown_intent()
 
-Error rate: % errores
+Pattern 3: Help System
+Each agent exposes its help, Orchestrator aggregates.
 
-Throughput: Requests/segundo
+python
+# Each agent implements
+class AgendaAgent:
+    def get_help(self):
+        return {
+            "name": "AgendaAgent",
+            "description": "Gestiona citas y calendario",
+            "commands": [
+                {"example": "Agendar cita mañana 3pm", "intent": "BOOK"},
+                {"example": "Ver disponibilidad viernes", "intent": "CHECK"},
+                {"example": "Cancelar cita", "intent": "CANCEL"}
+            ],
+            "keywords": ["cita", "agendar", "calendario", "disponibilidad"]
+        }
 
-Availability: Uptime %
+# Orchestrator aggregates
+class Orchestrator:
+    def get_global_help(self):
+        return {
+            "agents": [
+                self.agenda_agent.get_help(),
+                self.query_agent.get_help(),
+                self.note_agent.get_help(),
+                self.reminder_agent.get_help()
+            ],
+            "general_commands": [
+                "/help - Ver esta ayuda",
+                "/status - Ver estado del sistema"
+            ]
+        }
+❌ DON'T: Create a HelpAgent
+✅ DO: Implement agent.get_help() in each agent
 
-🔗 Referencias
-Agents Overview
+🏗️ Agent Structure
+Recommended File Structure
+text
+src/theaia/agents/<agent_name>/
+├── agent.py              # Main agent class
+├── handler.py            # Command handler (if needed)
+├── services/             # Business logic
+│   ├── service_a.py
+│   └── service_b.py
+├── models/               # Data models
+├── schemas/              # Pydantic schemas
+├── tests/                # Test suite
+│   ├── test_agent.py
+│   ├── test_services.py
+│   └── test_integration.py
+└── tools/                # Utilities
+Agent Class Template
+python
+from typing import Dict, Any, Optional
 
-Testing
+class AgentTemplate:
+    """Agent description"""
+    
+    def __init__(self, config: Dict[str, Any]):
+        self.config = config
+        self.name = "AgentName"
+        self.version = "1.0"
+    
+    def handle(self, message: str, context: Dict) -> Dict[str, Any]:
+        """Main entry point"""
+        try:
+            # 1. Validate input
+            self._validate_input(message, context)
+            
+            # 2. Process request
+            result = self._process(message, context)
+            
+            # 3. Return success
+            return {
+                "success": True,
+                "data": result,
+                "agent": self.name
+            }
+        except Exception as e:
+            # 4. Return structured error
+            return self._handle_error(e)
+    
+    def get_help(self) -> Dict[str, Any]:
+        """Return agent help information"""
+        return {
+            "name": self.name,
+            "description": "What this agent does",
+            "commands": [],
+            "keywords": []
+        }
+    
+    def _validate_input(self, message: str, context: Dict):
+        """Validate and sanitize input"""
+        if not message:
+            raise ValueError("Empty message")
+    
+    def _process(self, message: str, context: Dict) -> Any:
+        """Core business logic"""
+        pass
+    
+    def _handle_error(self, error: Exception) -> Dict[str, Any]:
+        """Return structured error"""
+        return {
+            "success": False,
+            "error": {
+                "code": type(error).__name__,
+                "message": str(error)
+            }
+        }
+✅ DO's
+✅ Agent Design
+One agent = One responsibility
 
-Architecture
+Expose .get_help() method
 
-📌 Meta-información
-Campo	Valor
-Archivo	docs/agents/best_practices.md
-Versión	1.0
-Última revisión	2025-11-08 (Sesión 35)
-Responsable	Agents Team / CEO
-Estado	✅ Activo
-🛡️ Auditoría
-Parte del Hito 35.1.3 (docs/agents/)
+Return structured responses ({success, data/error})
 
-Guía de referencia para todos los agentes
+Validate ALL inputs
 
-Actualizar cuando se agreguen nuevos patrones
+Log all operations
 
-Validado en sesión 35
+✅ Communication
+Route through Orchestrator
+
+Use standardized message format
+
+Include agent name in responses
+
+Provide helpful error messages
+
+✅ Testing
+Unit tests for each method
+
+Integration tests with database
+
+E2E tests with Orchestrator
+
+Mock external APIs
+
+Target 85%+ coverage
+
+❌ DON'Ts
+❌ Anti-Patterns
+❌ Direct agent-to-agent calls
+
+❌ Creating FallbackAgent or HelpAgent
+
+❌ Agents doing multiple responsibilities
+
+❌ Silent failures (no error messages)
+
+❌ Hardcoded configuration
+
+❌ Common Mistakes
+❌ QueryAgent modifying data (should be read-only)
+
+❌ Duplicate functionality between agents
+
+❌ Not validating user input
+
+❌ Exposing internal errors to users
+
+❌ Not handling edge cases
+
+🧪 Testing Checklist
+For each agent:
+
+ Unit tests: Individual methods work
+
+ Integration tests: Database operations
+
+ E2E tests: Full user workflows
+
+ Error handling: All error paths covered
+
+ Edge cases: Empty input, invalid data, conflicts
+
+ Performance: Response time < 200ms
+
+ Coverage: ≥ 85%
+
+📊 Agent Comparison Matrix
+Agent	Write	Read	External API	Milestone
+AgendaAgent	✅	✅	Google Calendar	H09
+QueryAgent	❌	✅	-	H10
+NoteAgent	✅	✅	-	H10
+ReminderAgent	✅	✅	-	H11
+📖 Related Documentation
+Agents Overview - All 4 agents architecture
+
+SCHEMA.md - Complete system design
+
+Orchestrator - Routing & coordination
+
+FSM Engine - State machine patterns
+
+Last Updated: 06 January 2026, 18:00 CET
+Next Review: February 2026 (H10 completion)
+Version: 2.0 - Aligned with 4-agent architecture
