@@ -2,8 +2,8 @@
 Fixtures compartidas para Repository Tests y E2E Tests.
 
 Autor: Álvaro Fernández Mota
-Fecha: 19 Nov 2025 (actualizado 04 Dic 2025)
-Hito: H02 FASE 8 - Advanced Persistence + AgendaAgent E2E
+Fecha: 19 Nov 2025 (actualizado 08 Ene 2026)
+Hito: H09 - Groq Tools Testing + No autouse fix
 
 WINDOWS FIX: Engine por test + WindowsSelectorEventLoopPolicy
 """
@@ -56,33 +56,39 @@ DATABASE_URL = os.getenv(
 
 
 # ============================================================================
-# DATABASE SETUP
+# DATABASE SETUP - FIX: REMOVIDO autouse=True
 # ============================================================================
 
-@pytest_asyncio.fixture(scope="session", autouse=True)
-async def setup_test_database():
+@pytest.fixture(scope="session")
+def setup_test_database():
     """
-    Inicializa database de test UNA SOLA VEZ al inicio de la sesión.
-    
-    Esta fixture se ejecuta automáticamente antes de todos los tests
-    y garantiza que las tablas existan en la BD.
+    Inicializa database de test UNA VEZ al inicio de la sesión.
+
+    FIX H09: REMOVIDO autouse=True para que solo se active en tests que lo necesitan.
+    Los tests unitarios (mocks) NO necesitan BD.
+
+    Esta fixture se debe pedir explícitamente en tests de integración/E2E.
     """
-    # Crear engine para setup (solo crear tablas)
-    setup_engine = create_async_engine(
-        DATABASE_URL,
-        echo=False,
-        pool_pre_ping=False,
-        pool_size=1,
-        max_overflow=0,
-    )
+    async def _create_tables():
+        # Crear engine para setup (solo crear tablas)
+        setup_engine = create_async_engine(
+            DATABASE_URL,
+            echo=False,
+            pool_pre_ping=False,
+            pool_size=1,
+            max_overflow=0,
+        )
+
+        # Crear todas las tablas
+        async with setup_engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+        await setup_engine.dispose()
     
-    # Crear todas las tablas
-    async with setup_engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
-    
+    # Ejecutar setup de forma sincrónica
+    asyncio.run(_create_tables())
     print("✅ Base de datos inicializada")
     
-    await setup_engine.dispose()
     yield
 
 
@@ -91,99 +97,68 @@ async def setup_test_database():
 # ============================================================================
 
 @pytest_asyncio.fixture
-async def db_session():
+async def db_session(setup_test_database):
     """
     Fixture que proporciona sesión limpia por test.
-    
+
+    REQUIERE setup_test_database explícitamente.
+    Solo para tests de integración/E2E que necesitan BD.
+
     WINDOWS FIX CRÍTICO:
     - Crea engine NUEVO por test
     - Cada test obtiene su propio pool
     - Evita event loop mismatch en asyncpg
     - pool_pre_ping=False en Windows
-    
-    El problema sin esto:
-    - Session global reutiliza conexiones del pool
-    - Pool intenta reutilizar con event loop viejo
-    - asyncpg en Windows no puede migrar loops
-    - RuntimeError: Task got Future attached to a different loop
-    
-    IMPORTANTE:
-    - pytest_asyncio.fixture para async fixtures
-    - async with para context manager correcto
-    - Cada test obtiene sesión nueva
-    - Rollback automático al final (no commit)
-    - engine.dispose() después de cada test
     """
     # Crear engine NUEVO para este test específico
     test_engine = create_async_engine(
         DATABASE_URL,
         echo=False,
-        pool_pre_ping=False,  # ❌ DESHABILITADO: causa loop mismatch en Windows
-        pool_size=1,  # Pool mínimo para test
+        pool_pre_ping=False,  # Crítico en Windows
+        pool_size=2,
         max_overflow=0,
     )
-    
-    # Session factory para este test
-    TestSessionLocal = async_sessionmaker(
+
+    # Crear session maker con este engine
+    async_session = async_sessionmaker(
         test_engine,
         class_=AsyncSession,
         expire_on_commit=False,
     )
-    
-    # Crear sesión
-    async with TestSessionLocal() as session:
+
+    # Proporcionar sesión al test
+    async with async_session() as session:
         yield session
-        await session.rollback()
-    
-    # CRÍTICO: Dispose engine de este test para liberar conexiones
+        await session.rollback()  # No commit, mantener test aislado
+
+    # Crítico: Dispose engine de este test para liberar conexiones
     await test_engine.dispose()
 
 
 # ============================================================================
-# ✅ LIMPIEZA DE BASE DE DATOS
+# ✅ LIMPIEZA DE BASE DE DATOS - Solo si db_session está presente
 # ============================================================================
 
-@pytest_asyncio.fixture(autouse=True)
+@pytest_asyncio.fixture
 async def clean_database(db_session):
     """
     Limpia todas las tablas después de cada test.
-    
-    CRÍTICO para tests aislados:
-    - Se ejecuta automáticamente (autouse=True)
-    - Limpia DESPUÉS del test (yield)
-    - Orden de DELETE respeta FK constraints
-    - Usa TRUNCATE para reset completo de IDs
-    
-    ORDEN DE LIMPIEZA (importante por FK):
-    1. message_history (FK a conversations + users)
-    2. conversations (FK a users)
-    3. notes (FK a users)
-    4. events (FK a users)
-    5. users (sin FKs dependientes)
-    
-    WINDOWS COMPATIBLE:
-    - Usa DELETE en vez de TRUNCATE (más compatible)
-    - Si necesitas reset de IDs, usa RESTART IDENTITY
+
+    NOTA: Solo se activa si el test usa db_session.
+    Tests unitarios sin BD no ejecutan esto.
     """
     yield  # El test se ejecuta AQUÍ
-    
+
     # Después del test, limpiar en orden inverso de dependencias
     try:
-        # Opción 1: DELETE simple (más compatible)
         await db_session.execute(text("DELETE FROM message_history"))
         await db_session.execute(text("DELETE FROM conversations"))
         await db_session.execute(text("DELETE FROM notes"))
         await db_session.execute(text("DELETE FROM events"))
         await db_session.execute(text("DELETE FROM users"))
-        
-        # Opción 2: TRUNCATE con restart (si quieres IDs desde 1)
-        # await db_session.execute(text("""
-        #     TRUNCATE TABLE message_history, conversations, notes, events, users 
-        #     RESTART IDENTITY CASCADE
-        # """))
-        
+
         await db_session.commit()
-        
+
     except Exception as e:
         print(f"⚠️ Error limpiando base de datos: {e}")
         await db_session.rollback()
@@ -195,26 +170,13 @@ async def clean_database(db_session):
 
 @pytest.fixture
 def test_tenant_id() -> str:
-    """
-    Tenant ID para tests.
-    
-    Returns:
-        str: ID del tenant de prueba
-    """
+    """Tenant ID para tests."""
     return "test_tenant_001"
 
 
 @pytest.fixture
 def test_user_data(test_tenant_id: str) -> dict:
-    """
-    Datos de usuario de prueba.
-    
-    Args:
-        test_tenant_id: ID del tenant de prueba
-    
-    Returns:
-        dict: Datos completos de usuario para create()
-    """
+    """Datos de usuario de prueba."""
     return {
         "tenant_id": test_tenant_id,
         "telegram_id": 123456789,
@@ -227,15 +189,7 @@ def test_user_data(test_tenant_id: str) -> dict:
 
 @pytest.fixture
 def test_event_data(test_tenant_id: str) -> dict:
-    """
-    Datos de evento de prueba.
-    
-    Args:
-        test_tenant_id: ID del tenant de prueba
-    
-    Returns:
-        dict: Datos completos de evento para create()
-    """
+    """Datos de evento de prueba."""
     return {
         "tenant_id": test_tenant_id,
         "user_id": 1,
@@ -248,15 +202,7 @@ def test_event_data(test_tenant_id: str) -> dict:
 
 @pytest.fixture
 def test_note_data(test_tenant_id: str) -> dict:
-    """
-    Datos de nota de prueba.
-    
-    Args:
-        test_tenant_id: ID del tenant de prueba
-    
-    Returns:
-        dict: Datos completos de nota para create()
-    """
+    """Datos de nota de prueba."""
     return {
         "tenant_id": test_tenant_id,
         "user_id": 1,
@@ -267,15 +213,7 @@ def test_note_data(test_tenant_id: str) -> dict:
 
 @pytest.fixture
 def test_conversation_data(test_tenant_id: str) -> dict:
-    """
-    Datos de conversación de prueba.
-    
-    Args:
-        test_tenant_id: ID del tenant de prueba
-    
-    Returns:
-        dict: Datos completos de conversación para create()
-    """
+    """Datos de conversación de prueba."""
     return {
         "tenant_id": test_tenant_id,
         "user_id": 1,
@@ -287,15 +225,7 @@ def test_conversation_data(test_tenant_id: str) -> dict:
 
 @pytest.fixture
 def test_message_data(test_tenant_id: str) -> dict:
-    """
-    Datos de mensaje de prueba.
-    
-    Args:
-        test_tenant_id: ID del tenant de prueba
-    
-    Returns:
-        dict: Datos completos de mensaje para create()
-    """
+    """Datos de mensaje de prueba."""
     return {
         "tenant_id": test_tenant_id,
         "user_id": 1,
@@ -313,21 +243,12 @@ def test_message_data(test_tenant_id: str) -> dict:
 
 @pytest_asyncio.fixture
 async def test_user(db_session, test_tenant_id):
-    """
-    Create test user instance for E2E tests (tenant 1)
-    
-    Args:
-        db_session: Database session
-        test_tenant_id: Tenant ID fixture
-        
-    Returns:
-        User instance
-    """
+    """Create test user instance for E2E tests (tenant 1)"""
     from src.theaia.database.models.user import User
     from src.theaia.database.repositories.user_repository import UserRepository
-    
+
     repo = UserRepository(db_session)
-    
+
     user = await repo.create(
         tenant_id=test_tenant_id,
         telegram_id=123456789,
@@ -336,24 +257,16 @@ async def test_user(db_session, test_tenant_id):
         last_name="User",
         language_code="es"
     )
-    
+
     return user
 
 
 @pytest_asyncio.fixture
 async def test_user_tenant2(db_session):
-    """
-    Create test user instance for E2E tests (tenant 2 - multi-tenant testing)
-    
-    Args:
-        db_session: Database session
-        
-    Returns:
-        User instance for tenant 2
-    """
+    """Create test user instance for E2E tests (tenant 2 - multi-tenant testing)"""
     from src.theaia.database.models.user import User
     from src.theaia.database.repositories.user_repository import UserRepository
-    
+
     repo = UserRepository(db_session)
     
     user = await repo.create(
@@ -364,5 +277,5 @@ async def test_user_tenant2(db_session):
         last_name="User2",
         language_code="es"
     )
-    
+
     return user
