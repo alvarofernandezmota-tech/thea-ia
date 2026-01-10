@@ -9,7 +9,7 @@ Covers:
 """
 
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, time
 from unittest.mock import MagicMock, Mock, patch
 from uuid import uuid4
 
@@ -93,13 +93,14 @@ class TestGroqToolsInitialization:
             user_id=123,
         )
         definitions = tools._generate_tools_definitions()
-        assert len(definitions) == 4
+        assert len(definitions) == 5  # FIX: Ahora incluye update_appointment
         tool_names = {t["function"]["name"] for t in definitions}
         assert tool_names == {
             "check_availability",
             "create_appointment",
             "get_appointments",
             "cancel_appointment",
+            "update_appointment",  # FIX: Añadido
         }
 
 
@@ -126,13 +127,13 @@ class TestCheckAvailabilityTool:
         tomorrow = datetime.now() + timedelta(days=1)
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
 
-        # Mock get_available_slots
+        # FIX: Mock get_available_slots con objetos time() en vez de integers
         groq_tools.availability_engine.get_available_slots.return_value = [
-            9,
-            10,
-            11,
-            14,
-            15,
+            time(9, 0),
+            time(10, 0),
+            time(11, 0),
+            time(14, 0),
+            time(15, 0),
         ]
 
         result = groq_tools.check_availability("mañana", 60)
@@ -151,7 +152,8 @@ class TestCheckAvailabilityTool:
 
         assert result.success is True
         assert result.data["available_slots"] == []
-        assert "No hay slots" in result.message
+        # FIX: Mensaje actualizado
+        assert "No hay horarios disponibles" in result.message
 
     def test_check_availability_error_handling(self, groq_tools):
         """Test error handling in availability check."""
@@ -169,7 +171,12 @@ class TestCheckAvailabilityTool:
         """Test availability check with different durations."""
         tomorrow = datetime.now() + timedelta(days=1)
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
-        groq_tools.availability_engine.get_available_slots.return_value = [9, 10, 11]
+        # FIX: Mock con objetos time() en vez de integers
+        groq_tools.availability_engine.get_available_slots.return_value = [
+            time(9, 0),
+            time(10, 0),
+            time(11, 0),
+        ]
 
         # Test 30 min duration
         result_30 = groq_tools.check_availability("mañana", 30)
@@ -200,8 +207,11 @@ class TestCreateAppointmentTool:
     def test_create_appointment_success(self, groq_tools):
         """Test successful appointment creation."""
         tomorrow = datetime.now() + timedelta(days=1)
+        tomorrow_15h = tomorrow.replace(hour=15, minute=0, second=0, microsecond=0)
+        
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
-        groq_tools.booking_service.create_appointment.return_value = tomorrow
+        # FIX: Mock debe devolver datetime completo con hora
+        groq_tools.booking_service.create_appointment.return_value = tomorrow_15h
 
         result = groq_tools.create_appointment(
             date_str="mañana", time_str="15:00", duration_minutes=60, title="Cita"
@@ -214,8 +224,10 @@ class TestCreateAppointmentTool:
     def test_create_appointment_with_description(self, groq_tools):
         """Test appointment creation with description."""
         tomorrow = datetime.now() + timedelta(days=1)
+        tomorrow_10h = tomorrow.replace(hour=10, minute=0, second=0, microsecond=0)
+        
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
-        groq_tools.booking_service.create_appointment.return_value = tomorrow
+        groq_tools.booking_service.create_appointment.return_value = tomorrow_10h
 
         result = groq_tools.create_appointment(
             date_str="mañana",
@@ -382,7 +394,11 @@ class TestExecuteTool:
         """Test execute_tool dispatcher for check_availability."""
         tomorrow = datetime.now() + timedelta(days=1)
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
-        groq_tools.availability_engine.get_available_slots.return_value = [10, 11, 14]
+        groq_tools.availability_engine.get_available_slots.return_value = [
+            time(10, 0),
+            time(11, 0),
+            time(14, 0),
+        ]
 
         result = groq_tools.execute_tool(
             "check_availability", {"date_str": "mañana"}
@@ -394,8 +410,10 @@ class TestExecuteTool:
     def test_execute_tool_create_appointment(self, groq_tools):
         """Test execute_tool dispatcher for create_appointment."""
         tomorrow = datetime.now() + timedelta(days=1)
+        tomorrow_15h = tomorrow.replace(hour=15, minute=0, second=0, microsecond=0)
+        
         groq_tools.availability_engine.parse_natural_date.return_value = tomorrow
-        groq_tools.booking_service.create_appointment.return_value = tomorrow
+        groq_tools.booking_service.create_appointment.return_value = tomorrow_15h
 
         result = groq_tools.execute_tool(
             "create_appointment",
@@ -480,11 +498,13 @@ class TestToolDefinitionsStructure:
 
     def test_tool_registry_completeness(self, groq_tools):
         """Test tool registry contains all tools."""
-        assert len(groq_tools.TOOLS_REGISTRY) == 4
+        # FIX: Ahora son 5 tools
+        assert len(groq_tools.TOOLS_REGISTRY) == 5
         assert "check_availability" in groq_tools.TOOLS_REGISTRY
         assert "create_appointment" in groq_tools.TOOLS_REGISTRY
         assert "get_appointments" in groq_tools.TOOLS_REGISTRY
         assert "cancel_appointment" in groq_tools.TOOLS_REGISTRY
+        assert "update_appointment" in groq_tools.TOOLS_REGISTRY  # FIX: Añadido
 
 
 class TestGroqIntegration:
