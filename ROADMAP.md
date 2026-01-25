@@ -1,7 +1,7 @@
 ROADMAP — THEA IA (Raíz)
 Proyecto: THEA IA
 Actualizado por: Álvaro Fernández Mota (CEO THEA IA)
-Última actualización: 2025-11-16 00:23 CET
+Última actualización: 2026-01-25 18:49 CET
 
 ⚠️ IMPORTANTE
 El roadmap general orquesta los 17 hitos grandes y todos los micro-hitos del ecosistema THEA IA.
@@ -195,20 +195,98 @@ Horas estimadas: 86h en 3-4 sesiones
 
 Nota: Multi-tenant base ya en H02
 
-H09: Docker/K8s Optimización & CI/CD
-Dockerfiles optimizados producción (base ya existe)
+H09: Real Ecosystem - AgendaAgent 🟡 EN CURSO (75% COMPLETADO)
+🟡 UPDATED: 25 Enero 2026, 18:49 CET
 
-K8s manifests completos
+Estado: 75% completado (45h/75h invertidas)
 
-CI/CD pipelines GitHub Actions
+Tests: 40/81 pasando (50% coverage)
 
-Deployment strategy automatizada
+Target cierre: 2 Febrero 2026
 
-Deadline: 2026-01-20
+✅ COMPLETADO:
 
-Horas estimadas: 52h en 2-3 sesiones
+✅ Groq LLM Integration (100%) - 15h
 
-Nota: Docker básico ya implementado en H01
+Tool calling, intent extraction, entity extraction
+
+llama-3.3-70b-versatile model
+
+16 tests pasando, 100% coverage
+
+✅ BookingAgent (100%) - 12h
+
+100% conversational AI (LLM-based)
+
+Tool integration (create, check, cancel, list)
+
+Spanish language support
+
+Decisión: Conversational > FSM (mejor UX)
+
+✅ Database Services (85%) - 10h
+
+UserService, BookingService, AvailabilityEngine
+
+Multi-tenant architecture
+
+Repository Pattern aplazado a H10
+
+✅ Telegram Bot Base (70%) - 8h
+
+Conversational message handling
+
+User auto-registration
+
+BookingAgent integration
+
+Pending: Commands + Menu
+
+🔴 PENDIENTE (26 Enero - 2 Febrero):
+
+🔴 Google Calendar API (CRÍTICO) - 12-15h
+
+OAuth2 authentication
+
+Bi-directional sync
+
+Event CRUD operations
+
+Target: 30 Enero
+
+🟡 Command Handlers + Menu (ALTA) - 8-10h
+
+6 comandos (/start, /help, /mis_citas, etc.)
+
+Interactive keyboards (5 menus)
+
+Callback handlers
+
+Target: 1 Febrero
+
+🟢 Tests E2E Completos (MEDIA) - 6-8h
+
+15 tests Google Calendar
+
+18 tests commands
+
+8 tests menu flow
+
+Target: 2 Febrero
+
+Decisiones Arquitectónicas:
+
+Conversational > FSM (mejor UX, más flexible)
+
+Repository Pattern → Aplazado a H10 (no crítico)
+
+Híbrido Commands + Conversation (mejor experiencia)
+
+Horas totales: 71-78h (ajustado de 75h)
+
+Deadline actualizado: 2 Febrero 2026
+
+Ver detalle H09
 
 H10: WhatsApp & REST API
 WhatsApp adapter (patrón TelegramAdapter)
@@ -217,7 +295,7 @@ REST API pública OpenAPI 3.1
 
 Webhooks WhatsApp
 
-Deadline: 2026-02-01
+Deadline: 2026-02-15
 
 Horas estimadas: 56h en 2-3 sesiones
 
@@ -232,7 +310,7 @@ Jaeger distributed tracing
 
 Alerting configurado
 
-Deadline: 2026-02-15
+Deadline: 2026-02-28
 
 Horas estimadas: 52h en 2 sesiones
 
@@ -245,7 +323,7 @@ Google Calendar sync
 
 Notion integration
 
-Deadline: 2026-03-01
+Deadline: 2026-03-15
 
 Horas estimadas: 56h en 2-3 sesiones
 
@@ -258,7 +336,7 @@ Penetration testing
 
 Vulnerability fixes
 
-Deadline: 2026-03-15
+Deadline: 2026-03-31
 
 Horas estimadas: 60h en 2-3 sesiones
 
@@ -271,7 +349,7 @@ Runbooks operativos
 
 FAQ & troubleshooting
 
-Deadline: 2026-04-01
+Deadline: 2026-04-15
 
 Horas estimadas: 58h en 2-3 sesiones
 
@@ -284,7 +362,7 @@ Stress testing results
 
 Benchmarks documentados
 
-Deadline: 2026-04-20
+Deadline: 2026-05-05
 
 Horas estimadas: 44h en 2 sesiones
 
@@ -295,7 +373,7 @@ SDK development
 
 Example plugins
 
-Deadline: 2026-05-10
+Deadline: 2026-05-25
 
 Horas estimadas: 46h en 2 sesiones
 
@@ -308,35 +386,35 @@ Deployment & go-live
 
 Post-launch monitoring
 
-Deadline: 2026-06-01
+Deadline: 2026-06-15
 
 Horas estimadas: 50h en 2 sesiones
 
-📅 Fases y fechas críticas (Actualizado 2025-11-16)
+📅 Fases y fechas críticas (Actualizado 2026-01-25)
 Fase 1: Core y FSM — ✅ COMPLETADA (2025-10-08 ~ 2025-10-31)
 H01: Tests, core, FSM, documentación raíz ✅
 
 Horas reales: 53.3h
 
-Fase 2: Multi-agente y adaptadores — 🔄 EN CURSO (2025-11-01 ~ 2025-12-15) — 21% completado
+Fase 2: Multi-agente y adaptadores — 🔄 EN CURSO (2025-11-01 ~ 2026-02-15) — 30% completado
 H02: Database + Telegram ✅ (core 70% completado)
 
 H03: Agent Config & Entity Extraction ✅ (100% completado)
 
 H04: Persistencia avanzada ⏸️ (~50% adelantado en H02)
 
-H05: Agentes inteligentes ⏳ (próximo)
+H05: Agentes inteligentes ⏳ (aplazado)
 
-H06: ML/NLP arquitectura híbrida ⏳
+H06: ML/NLP arquitectura híbrida ⏳ (aplazado)
 
-H07: E2E Tests completos ⏳
+H07: E2E Tests completos ⏳ (aplazado)
 
-Horas completadas: 64.9h / ~490h estimadas
+H09: Real Ecosystem AgendaAgent 🟡 (75% EN CURSO) ✨ NUEVO
 
-Fase 3: Infraestructura, observabilidad y seguridad — ⏳ PRÓXIMA (2025-12-16 ~ 2026-04-01)
+Horas completadas: 109.9h / ~550h estimadas
+
+Fase 3: Infraestructura, observabilidad y seguridad — ⏳ PRÓXIMA (2026-02-15 ~ 2026-04-15)
 H08: Multi-empresa RBAC + Web (incluye componentes H02)
-
-H09: Docker/K8s optimización
 
 H10: WhatsApp + REST API
 
@@ -348,9 +426,9 @@ H13: Seguridad enterprise
 
 H14: Onboarding profesional
 
-Horas estimadas: ~420h
+Horas estimadas: ~368h
 
-Fase 4: Escalabilidad, customización y release — ⏳ FUTURA (2026-04-01 ~ 2026-06-01)
+Fase 4: Escalabilidad, customización y release — ⏳ FUTURA (2026-04-15 ~ 2026-06-15)
 H15: Performance & stress testing
 
 H16: Plugins & customización
@@ -360,7 +438,7 @@ H17: Auditoría final y go-live
 Horas estimadas: ~140h
 
 Total proyecto: 947.6h estimadas (~28 semanas)
-Completado hasta ahora: 64.9h (7%)
+Completado hasta ahora: 109.9h (11.6%) ✨ UPDATED
 
 🎯 Decisiones Estratégicas Recientes
 1. Adelanto Database Layer (11 nov 2025)
@@ -399,16 +477,46 @@ Impacto: +86 tests, 50% coverage, 3 extractors funcionales
 
 Resultado: ✅ Fundamentos completos para H05-H06
 
-📊 Progreso por Hito
+5. H09 Real Ecosystem - AgendaAgent (06-25 ene 2026) ✨ NUEVO
+Decisión: Crear primer agente funcional completo (Telegram + DB + Google Calendar + LLM)
+
+Razón: Probar arquitectura completa end-to-end
+
+Impacto: Primera prueba real del ecosistema
+
+Progreso: 75% completado (45h/75h)
+
+Pendiente: Google Calendar API (crítico), Commands + Menu
+
+6. Conversational > FSM (enero 2026) ✨ NUEVO
+Decisión: BookingAgent 100% conversacional (LLM-based) en lugar de FSM
+
+Razón: Mejor UX, más flexible, interacciones naturales
+
+Impacto: Trade-off: Más flexible pero requiere LLM activo (costo)
+
+Resultado: ✅ Mantenido - Mejor experiencia de usuario
+
+7. Repository Pattern → H10 (enero 2026) ✨ NUEVO
+Decisión: Aplazar Repository Pattern de H09 a H10
+
+Razón: Services directos funcionan bien, no crítico para funcionalidad
+
+Impacto: Ahorra 6-8h en H09, puede refactorizar después si necesario
+
+Resultado: ⚪ Neutral - Enfoque en features críticos primero
+
+📊 Progreso por Hito (Actualizado 25 Enero 2026)
 Hito	Estado	Horas Est.	Horas Reales	Completado	Notas
 H01	✅	20h	53.3h	100%	Completado 31 oct
 H02	✅ 70%	18h	4.3h	70%	Core: Database + Telegram
 H03	✅	66h	7.3h	100%	Complete 16 nov
 H04	⏸️ 50%	48h	-	~50%	Parcialmente en H02
-H05	⏳	78h	-	0%	Próximo - +Arquitectura LLM
+H05	⏳	78h	-	0%	Aplazado - +Arquitectura LLM
 H06	⏳	84h	-	0%	+LangChain, RAG
 H07	⏳	62h	-	0%	+Tests H02 pendientes
-H08-H17	⏳	555.3h	-	0%	Planificados 2026
+H09	🟡 75%	75h	45h	75%	✨ EN CURSO - Cierre 2 Feb
+H08-H17	⏳	541.3h	-	0%	Planificados 2026
 🛡️ Auditoría y panel de equipo
 Todos los hitos y cambios están reflejados en el CHANGELOG general y por carpeta
 
@@ -428,9 +536,11 @@ H02 Milestone — Core completado, componentes aplazados
 
 H03 Milestone — ✅ Complete
 
+H09 Milestone — ✨ 75% Complete - En cierre
+
 H03-H17 Milestones — Planificación completa
 
-Diario Noviembre — Sesiones 1-10
+Diario Enero 2026 — Sesiones H09
 
 🔗 Enlaces Relacionados
 CHANGELOG.md — Historial de versiones
@@ -448,6 +558,6 @@ Actualízalo tras cada release de hito/versión, micro-hito importante o cambio 
 
 Así, todas las auditorías y equipos de THEA IA tienen acceso inmediato a la planificación y estado real del ecosistema.
 
-Última actualización: 16 Nov 2025, 00:23 CET
+Última actualización: 25 Ene 2026, 18:49 CET
 Responsable: Álvaro Fernández Mota (CEO THEA IA)
-Estado actual: H01 ✅ | H02 ✅ (70%) | H03 ✅ COMPLETADO (100%) | H04-H05 ⏳ PRÓXIMOS
+Estado actual: H01 ✅ | H02 ✅ (70%) | H03 ✅ (100%) | H09 🟡 (75% - EN CIERRE) | H04-H08, H10-H17 ⏳ PLANIFICADOS
